@@ -1,0 +1,30 @@
+target/
+build/
+lint.xml
+bin/
+gen/
+.settings
+.project
+.classpath
+out
+gen-external-apklibs/
+classes/
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Android Studio
+.idea/
+*/out
+!*/build/apk/
+*/production/
+*.iws
+*.ipr
+*.iml
+*~
+*.swp
+
+# gradle
+.gradle
+
+.DS_Store
