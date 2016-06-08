@@ -245,6 +245,7 @@ public class ScrollBar extends View {
     /** methods for integration with PDFView */
     void addToPDFView(PDFView pdfView) {
         this.pdfView = pdfView;
+        calculateHandlerHeight();
         pageChanged(pdfView.getCurrentPage());
     }
 

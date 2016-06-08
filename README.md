@@ -47,41 +47,41 @@ Use **ScrollBar** class to place scrollbar view near **PDFView**
 
 1. in layout XML (it's important that the parent view is **RelativeLayout**)
 
-``` xml
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:layout_width="match_parent"
-	android:layout_height="match_parent">
-
-    <com.github.barteksc.pdfviewer.PDFView
-        android:id="@+id/pdfView"
+    ``` xml
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-		android:layout_toLeftOf="@+id/scrollBar"/>
+        android:layout_height="match_parent">
 
-	<com.github.barteksc.pdfviewer.ScrollBar
-		android:id="@+id/scrollBar"
-		android:layout_width="wrap_content"
-		android:layout_height="match_parent"
-		android:layout_alignParentRight="true"
-		android:layout_alignParentEnd="true" />
+        <com.github.barteksc.pdfviewer.PDFView
+            android:id="@+id/pdfView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_toLeftOf="@+id/scrollBar"/>
 
-</RelativeLayout>
-```
+        <com.github.barteksc.pdfviewer.ScrollBar
+            android:id="@+id/scrollBar"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
+
+    </RelativeLayout>
+    ```
 2. in activity or fragment
-``` java
+    ``` java
 
-@Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    @Override
+        protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
 
-        ...
+            ...
 
-        PDFView pdfView = (PDFView) findViewById(R.id.pdfView);
-        ScrollBar scrollBar = (ScrollBar) findViewById(R.id.scrollBar);
-        pdfView.setScrollBar(scrollBar);
-    }
+            PDFView pdfView = (PDFView) findViewById(R.id.pdfView);
+            ScrollBar scrollBar = (ScrollBar) findViewById(R.id.scrollBar);
+            pdfView.setScrollBar(scrollBar);
+        }
 
-```
+    ```
 
 Scrollbar styling:
 ``` xml
@@ -94,6 +94,9 @@ Scrollbar styling:
         android:background="..." <!-- scrollbar background -->
         />
 ```
+
+**ScrollBarPageIndicator** is added to scrollbar automatically and is shown while dragging scrollbar handler,
+ displaying number of page on current position.
 
 ## Additional options
 
