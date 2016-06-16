@@ -6,11 +6,20 @@ Library for displaying PDF documents on Android, with `animations`, `gestures`, 
 It is based on [PdfiumAndroid](https://github.com/barteksc/PdfiumAndroid) for decoding PDF files. Works on API 11 and higher.
 Licensed under Apache License 2.0.
 
+## What's new in 1.1.0?
+* added method `pdfView.fromUri(Uri)` for opening files from content providers
+* updated PdfiumAndroid to 1.0.3, which should fix bug with exception
+* updated sample with demonstration of `fromUri()` method
+* some minor fixes
+
+Next release is coming soon, it will introduce continuous scroll through whole document
+and some incompatibilities with current API (only few small).
+
 ## Installation
 
 Add to _build.gradle_:
 
-`compile 'com.github.barteksc:android-pdf-viewer:1.0.0'`
+`compile 'com.github.barteksc:android-pdf-viewer:1.1.0'`
 
 Library is available in jcenter repository, probably it'll be in Maven Central soon.
 
@@ -25,12 +34,15 @@ Library is available in jcenter repository, probably it'll be in Maven Central s
 
 ## Load a PDF file
 
+All available options with default values:
 ``` java
 pdfView.fromAsset(pdfName)
-    .pages(0, 2, 1, 3, 3, 3)
+    .pages(0, 2, 1, 3, 3, 3) //all pages are displayed by default
+    .enableSwipe(true)
+    .enableDoubletap(true)
+    .swipeVertical(false)
     .defaultPage(1)
     .showMinimap(false)
-    .enableSwipe(true)
     .onDraw(onDrawListener)
     .onLoad(onLoadCompleteListener)
     .onPageChange(onPageChangeListener)
@@ -38,8 +50,9 @@ pdfView.fromAsset(pdfName)
     .load();
 ```
 
-* ```pages``` is optional, it allows you to filter and order the pages of the PDF as you need
-* ```onDraw``` is also optional, and allows you to draw something on a provided canvas, above the current page
+* `enableSwipe` is optional, it allows you to block changing pages using swipe
+* `pages` is optional, it allows you to filter and order the pages of the PDF as you need
+* `onDraw` is also optional, and allows you to draw something on a provided canvas, above the current page
 
 ## Show scrollbar
 

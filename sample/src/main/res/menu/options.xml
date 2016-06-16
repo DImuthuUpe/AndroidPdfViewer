@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/pickFile"
+        android:icon="@drawable/ic_open_in_browser_grey_800_48dp"
+        android:title="@string/pick_file"
+        app:showAsAction="always" />
+</menu>

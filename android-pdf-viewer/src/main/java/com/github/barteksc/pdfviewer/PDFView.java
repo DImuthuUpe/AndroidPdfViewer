@@ -1,12 +1,12 @@
 /**
  * Copyright 2016 Bartosz Schiller
- * <p/>
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p/>
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- * <p/>
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,6 +24,7 @@ import android.graphics.Paint.Style;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -279,7 +280,6 @@ public class PDFView extends SurfaceView {
         animationManager = new AnimationManager(this);
         dragPinchManager = new DragPinchManager(this);
 
-
         paint = new Paint();
         debugPaint = new Paint();
         debugPaint.setStyle(Style.STROKE);
@@ -352,10 +352,11 @@ public class PDFView extends SurfaceView {
 
         // Reset the zoom and center the page on the screen
         resetZoom();
-        if (swipeVertical)
+        if (swipeVertical) {
             animationManager.startYAnimation(currentYOffset, calculateCenterOffsetForPage(pageNb));
-        else
+        } else {
             animationManager.startXAnimation(currentXOffset, calculateCenterOffsetForPage(pageNb));
+        }
         loadPages();
 
         if (scrollBar != null) {
@@ -410,8 +411,9 @@ public class PDFView extends SurfaceView {
         if (pdfiumCore != null && pdfDocument != null) {
             pdfiumCore.closeDocument(pdfDocument);
         }
-        openedPages.clear();
 
+        openedPages.clear();
+        pdfDocument = null;
         recycled = true;
         state = State.DEFAULT;
     }
@@ -611,7 +613,7 @@ public class PDFView extends SurfaceView {
 
     /**
      * Render a page, creating 1 to <i>nbOfPartsLoadable</i> page parts. <br><br>
-     * <p>
+     * <p/>
      * This is one of the trickiest method of this library. It finds
      * the DocumentPage associated with the given UserPage, loads its
      * thumbnail, cut this page into 256x256 blocs considering the
@@ -959,7 +961,6 @@ public class PDFView extends SurfaceView {
                 }
 
             } else {
-
                 float maxY = calculateCenterOffsetForPage(currentFilteredPage + 1);
                 float minY = calculateCenterOffsetForPage(currentFilteredPage - 1);
                 if (offsetY < maxY) {
@@ -995,7 +996,6 @@ public class PDFView extends SurfaceView {
                 }
 
             } else {
-
                 float maxX = calculateCenterOffsetForPage(currentFilteredPage + 1);
                 float minX = calculateCenterOffsetForPage(currentFilteredPage - 1);
                 if (offsetX < maxX) {
@@ -1088,6 +1088,10 @@ public class PDFView extends SurfaceView {
         return optimalPageWidth;
     }
 
+    public float getOptimalPageHeight() {
+        return optimalPageHeight;
+    }
+
     private void setUserWantsMinimap(boolean userWantsMinimap) {
         this.userWantsMinimap = userWantsMinimap;
     }
@@ -1166,9 +1170,17 @@ public class PDFView extends SurfaceView {
      * Use a file as the pdf source
      */
     public Configurator fromFile(File file) {
-        if (!file.exists())
-            throw new FileNotFoundException(file.getAbsolutePath() + "does not exist.");
+        if (!file.exists()) {
+            throw new FileNotFoundException(file.getAbsolutePath() + " does not exist.");
+        }
         return new Configurator(file.getAbsolutePath(), false);
+    }
+
+    /**
+     * Use URI as the pdf source, for use with content providers
+     */
+    public Configurator fromUri(Uri uri) {
+        return new Configurator(uri.toString(), false);
     }
 
     private enum State {DEFAULT, LOADED, SHOWN}

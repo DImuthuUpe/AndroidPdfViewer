@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">AndroidPdfViewer demo</string>
+    <string name="pick_file">Pick file</string>
 </resources>
