@@ -49,7 +49,7 @@ public class ArrayUtils {
         }
 
         int index = 0;
-        result[0] = originalUserPages[0];
+        result[0] = index;
         for (int i = 1; i < originalUserPages.length; i++) {
             if (originalUserPages[i] != originalUserPages[i - 1]) {
                 index++;

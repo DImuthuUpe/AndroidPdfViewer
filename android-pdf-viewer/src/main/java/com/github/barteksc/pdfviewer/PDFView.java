@@ -412,6 +412,9 @@ public class PDFView extends SurfaceView {
             pdfiumCore.closeDocument(pdfDocument);
         }
 
+        originalUserPages = null;
+        filteredUserPages = null;
+        filteredUserPageIndexes = null;
         openedPages.clear();
         pdfDocument = null;
         recycled = true;
@@ -763,12 +766,17 @@ public class PDFView extends SurfaceView {
     public void loadComplete(PdfDocument pdfDocument) {
         this.documentPageCount = pdfiumCore.getPageCount(pdfDocument);
 
+        int firstPageIdx = 0;
+        if(originalUserPages != null) {
+            firstPageIdx = originalUserPages[0];
+        }
+
         // We assume all the pages are the same size
         this.pdfDocument = pdfDocument;
-        pdfiumCore.openPage(pdfDocument, 0);
-        openedPages.add(0);
-        this.pageWidth = pdfiumCore.getPageWidth(pdfDocument, 0);
-        this.pageHeight = pdfiumCore.getPageHeight(pdfDocument, 0);
+        pdfiumCore.openPage(pdfDocument, firstPageIdx);
+        openedPages.add(firstPageIdx);
+        this.pageWidth = pdfiumCore.getPageWidth(pdfDocument, firstPageIdx);
+        this.pageHeight = pdfiumCore.getPageHeight(pdfDocument, firstPageIdx);
         state = State.LOADED;
         calculateOptimalWidthAndHeight();
 

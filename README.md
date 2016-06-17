@@ -12,6 +12,9 @@ Licensed under Apache License 2.0.
 * updated sample with demonstration of `fromUri()` method
 * some minor fixes
 
+Version 1.1.1 fixes bug with strange behavior when indices passed to `.pages()` don't start with `0`.
+
+
 Next release is coming soon, it will introduce continuous scroll through whole document
 and some incompatibilities with current API (only few small).
 
@@ -19,7 +22,7 @@ and some incompatibilities with current API (only few small).
 
 Add to _build.gradle_:
 
-`compile 'com.github.barteksc:android-pdf-viewer:1.1.0'`
+`compile 'com.github.barteksc:android-pdf-viewer:1.1.1'`
 
 Library is available in jcenter repository, probably it'll be in Maven Central soon.
 
