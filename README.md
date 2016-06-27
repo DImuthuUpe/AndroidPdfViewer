@@ -14,6 +14,7 @@ Licensed under Apache License 2.0.
 
 Version 1.1.1 fixes bug with strange behavior when indices passed to `.pages()` don't start with `0`.
 
+Version 1.1.2 updates PdfiumAndroid to 1.1.0, which fixes displaying multiple `PDFView`s at the same time and few errors with loading PDF documents.
 
 Next release is coming soon, it will introduce continuous scroll through whole document
 and some incompatibilities with current API (only few small).
@@ -22,7 +23,7 @@ and some incompatibilities with current API (only few small).
 
 Add to _build.gradle_:
 
-`compile 'com.github.barteksc:android-pdf-viewer:1.1.1'`
+`compile 'com.github.barteksc:android-pdf-viewer:1.1.2'`
 
 Library is available in jcenter repository, probably it'll be in Maven Central soon.
 
