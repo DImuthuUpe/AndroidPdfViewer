@@ -266,6 +266,12 @@ public class PDFView extends SurfaceView {
     private boolean bestQuality = false;
 
     /**
+     * True if annotation should be rendered
+     * False otherwise
+     */
+    private boolean annotationRendering = false;
+
+    /**
      * Storing already opened pages. Used form optimizing Pdfium calls
      */
     private List<Integer> openedPages = new ArrayList<>();
@@ -658,7 +664,7 @@ public class PDFView extends SurfaceView {
             renderingAsyncTask.addRenderingTask(userPage, documentPage, //
                     (int) (optimalPageWidth * Constants.THUMBNAIL_RATIO), //
                     (int) (optimalPageHeight * Constants.THUMBNAIL_RATIO), //
-                    new RectF(0, 0, 1, 1), true, 0, bestQuality);
+                    new RectF(0, 0, 1, 1), true, 0, bestQuality, annotationRendering);
         }
 
         // When we want to render a 256x256 bloc, we also need to provide
@@ -738,7 +744,7 @@ public class PDFView extends SurfaceView {
                         // If not already in cache, register the rendering
                         // task for further execution.
                         renderingAsyncTask.addRenderingTask(userPage, documentPageFinal, //
-                                renderWidth, renderHeight, pageRelativeBounds, false, nbItemTreated, bestQuality);
+                                renderWidth, renderHeight, pageRelativeBounds, false, nbItemTreated, bestQuality, annotationRendering);
                     }
 
                 }
@@ -1153,6 +1159,8 @@ public class PDFView extends SurfaceView {
         this.bestQuality = bestQuality;
     }
 
+    public void enableAnnotationRendering(boolean annotationRendering) { this.annotationRendering = annotationRendering; }
+
     /**
      * Use an asset file as the pdf source
      */
@@ -1219,6 +1227,8 @@ public class PDFView extends SurfaceView {
 
         private boolean swipeVertical = false;
 
+        private boolean annotationRendering = false;
+
         private int maskColor = Color.BLACK;
 
         private int maskAlpha = Constants.MASK_ALPHA;
@@ -1240,6 +1250,11 @@ public class PDFView extends SurfaceView {
 
         public Configurator enableDoubletap(boolean enableDoubletap) {
             this.enableDoubletap = enableDoubletap;
+            return this;
+        }
+
+        public Configurator enableAnnotationRendering(boolean annotationRendering) {
+            this.annotationRendering = annotationRendering;
             return this;
         }
 
@@ -1293,6 +1308,7 @@ public class PDFView extends SurfaceView {
             PDFView.this.setDefaultPage(defaultPage);
             PDFView.this.setUserWantsMinimap(showMinimap);
             PDFView.this.setSwipeVertical(swipeVertical);
+            PDFView.this.enableAnnotationRendering(annotationRendering);
             PDFView.this.dragPinchManager.setSwipeVertical(swipeVertical);
             PDFView.this.maskPaint = new Paint();
             PDFView.this.maskPaint.setColor(maskColor);
