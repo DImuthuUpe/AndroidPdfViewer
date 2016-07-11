@@ -26,7 +26,7 @@ public interface Constants {
     int LOADED_SIZE = 3;
 
     /** Between 0 and 1, the thumbnails quality (default 0.2) */
-    float THUMBNAIL_RATIO = 0.2f;
+    float THUMBNAIL_RATIO = 0.3f;
 
     /**
      * The size of the rendered parts (default 256)

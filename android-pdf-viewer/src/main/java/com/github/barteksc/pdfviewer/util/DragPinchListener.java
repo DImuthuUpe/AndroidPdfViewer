@@ -21,6 +21,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 
+import com.github.barteksc.pdfviewer.PDFView;
+
 /**
  *         This class manage MotionEvents. Use it on your view with
  *         setOnTouchListener(dragManager);
@@ -53,7 +55,7 @@ public class DragPinchListener implements OnTouchListener {
      * Handler used for perfom click (only if it's not a double tap)
      */
     private final Handler handlerClick = new Handler();
-    private View mView;
+    private PDFView mView;
     private final Runnable runnableClick = new Runnable() {
         @Override
         public void run() {
@@ -123,7 +125,10 @@ public class DragPinchListener implements OnTouchListener {
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        mView = v;
+        mView = (PDFView) v;
+        if(mView.isRecycled()) {
+            return false;
+        }
         switch (event.getAction()) {
 
             // NORMAL CASE : FIRST POINTER DOWN

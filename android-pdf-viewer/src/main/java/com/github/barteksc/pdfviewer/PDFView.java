@@ -65,7 +65,7 @@ import static com.github.barteksc.pdfviewer.util.Constants.Cache.CACHE_SIZE;
  * - DocumentPage = A page of the PDF document.
  * - UserPage = A page as defined by the user.
  * By default, they're the same. But the user can change the pages order
- * using {@link #load(String, boolean, OnLoadCompleteListener, OnErrorListener, int[])}. In this
+ * using {@link #load(String, boolean, String, OnLoadCompleteListener, OnErrorListener, int[])}. In this
  * particular case, a userPage of 5 can refer to a documentPage of 17.
  */
 public class PDFView extends SurfaceView {
@@ -275,6 +275,11 @@ public class PDFView extends SurfaceView {
      */
     public PDFView(Context context, AttributeSet set) {
         super(context, set);
+
+        if(isInEditMode()) {
+            return;
+        }
+
         miniMapRequired = false;
         cacheManager = new CacheManager();
         animationManager = new AnimationManager(this);
@@ -299,11 +304,11 @@ public class PDFView extends SurfaceView {
         pdfiumCore = new PdfiumCore(context);
     }
 
-    private void load(String path, boolean isAsset, OnLoadCompleteListener listener, OnErrorListener onErrorListener) {
-        load(path, isAsset, listener, onErrorListener, null);
+    private void load(String path, boolean isAsset, String password, OnLoadCompleteListener listener, OnErrorListener onErrorListener) {
+        load(path, isAsset, password, listener, onErrorListener, null);
     }
 
-    private void load(String path, boolean isAsset, OnLoadCompleteListener onLoadCompleteListener, OnErrorListener onErrorListener, int[] userPages) {
+    private void load(String path, boolean isAsset, String password, OnLoadCompleteListener onLoadCompleteListener, OnErrorListener onErrorListener, int[] userPages) {
 
         if (!recycled) {
             throw new IllegalStateException("Don't call load on a PDF View without recycling it first.");
@@ -319,10 +324,10 @@ public class PDFView extends SurfaceView {
         this.onLoadCompleteListener = onLoadCompleteListener;
         this.onErrorListener = onErrorListener;
 
+        recycled = false;
         // Start decoding document
-        decodingAsyncTask = new DecodingAsyncTask(path, isAsset, this, pdfiumCore);
+        decodingAsyncTask = new DecodingAsyncTask(path, isAsset, password, this, pdfiumCore);
         decodingAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
 
     }
 
@@ -336,6 +341,9 @@ public class PDFView extends SurfaceView {
     }
 
     void showPage(int pageNb) {
+        if(recycled) {
+            return;
+        }
         state = State.SHOWN;
 
         // Check the page number and makes the
@@ -421,6 +429,10 @@ public class PDFView extends SurfaceView {
         state = State.DEFAULT;
     }
 
+    public boolean isRecycled() {
+        return recycled;
+    }
+
     @Override
     protected void onDetachedFromWindow() {
         recycle();
@@ -429,6 +441,9 @@ public class PDFView extends SurfaceView {
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        if(isInEditMode()) {
+            return;
+        }
         animationManager.stopAll();
         calculateOptimalWidthAndHeight();
         loadPages();
@@ -474,6 +489,10 @@ public class PDFView extends SurfaceView {
 
         // Draws background
         canvas.drawColor(Color.WHITE);
+
+        if(recycled) {
+            return;
+        }
 
         if (state != State.SHOWN) {
             return;
@@ -795,6 +814,8 @@ public class PDFView extends SurfaceView {
     }
 
     public void loadError(Throwable t) {
+        recycle();
+        invalidate();
         if (this.onErrorListener != null) {
             this.onErrorListener.onError(t);
         } else {
@@ -1153,6 +1174,20 @@ public class PDFView extends SurfaceView {
         this.bestQuality = bestQuality;
     }
 
+    public PdfDocument.Meta getDocumentMeta() {
+        if(pdfDocument == null) {
+            return null;
+        }
+        return pdfiumCore.getDocumentMeta(pdfDocument);
+    }
+
+    public List<PdfDocument.Bookmark> getTableOfContents() {
+        if(pdfDocument == null) {
+            return new ArrayList<>();
+        }
+        return pdfiumCore.getTableOfContents(pdfDocument);
+    }
+
     /**
      * Use an asset file as the pdf source
      */
@@ -1223,6 +1258,8 @@ public class PDFView extends SurfaceView {
 
         private int maskAlpha = Constants.MASK_ALPHA;
 
+        private String password = null;
+
         private Configurator(String path, boolean isAsset) {
             this.path = path;
             this.isAsset = isAsset;
@@ -1273,6 +1310,11 @@ public class PDFView extends SurfaceView {
             return this;
         }
 
+        public Configurator password(String password) {
+            this.password = password;
+            return this;
+        }
+
         /**
          * @param maskColor - mask color (default Color.BLACK)
          * @param maskAlpha - alpha value in [0,255] (default 20)
@@ -1298,9 +1340,9 @@ public class PDFView extends SurfaceView {
             PDFView.this.maskPaint.setColor(maskColor);
             PDFView.this.maskPaint.setAlpha(maskAlpha);
             if (pageNumbers != null) {
-                PDFView.this.load(path, isAsset, onLoadCompleteListener, onErrorListener, pageNumbers);
+                PDFView.this.load(path, isAsset, password, onLoadCompleteListener, onErrorListener, pageNumbers);
             } else {
-                PDFView.this.load(path, isAsset, onLoadCompleteListener, onErrorListener);
+                PDFView.this.load(path, isAsset, password, onLoadCompleteListener, onErrorListener);
             }
         }
 

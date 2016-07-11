@@ -40,11 +40,13 @@ class DecodingAsyncTask extends AsyncTask<Void, Void, Throwable> {
     private Context context;
     private PdfiumCore pdfiumCore;
     private PdfDocument pdfDocument;
+    private String password;
 
-    public DecodingAsyncTask(String path, boolean isAsset, PDFView pdfView, PdfiumCore pdfiumCore) {
+    public DecodingAsyncTask(String path, boolean isAsset, String password, PDFView pdfView, PdfiumCore pdfiumCore) {
         this.cancelled = false;
         this.pdfView = pdfView;
         this.isAsset = isAsset;
+        this.password = password;
         this.pdfiumCore = pdfiumCore;
         this.path = path;
         context = pdfView.getContext();
@@ -56,7 +58,7 @@ class DecodingAsyncTask extends AsyncTask<Void, Void, Throwable> {
             if (isAsset) {
                 path = FileUtils.fileFromAsset(context, path).getAbsolutePath();
             }
-            pdfDocument = pdfiumCore.newDocument(getSeekableFileDescriptor(path));
+            pdfDocument = pdfiumCore.newDocument(getSeekableFileDescriptor(path), password);
             return null;
         } catch (Throwable t) {
             return t;

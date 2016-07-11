@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="ScrollBar">
-        <attr name="sb_handlerColor" format="color|reference"/>
-        <attr name="sb_indicatorColor" format="color|reference"/>
-        <attr name="sb_indicatorTextColor" format="color|reference"/>
+        <attr name="sb_handlerColor" format="color|reference" />
+        <attr name="sb_indicatorColor" format="color|reference" />
+        <attr name="sb_indicatorTextColor" format="color|reference" />
+        <attr name="sb_horizontal" format="boolean|reference" />
     </declare-styleable>
 </resources>

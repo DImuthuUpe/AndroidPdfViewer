@@ -6,15 +6,14 @@ Library for displaying PDF documents on Android, with `animations`, `gestures`, 
 It is based on [PdfiumAndroid](https://github.com/barteksc/PdfiumAndroid) for decoding PDF files. Works on API 11 and higher.
 Licensed under Apache License 2.0.
 
-## What's new in 1.1.0?
-* added method `pdfView.fromUri(Uri)` for opening files from content providers
-* updated PdfiumAndroid to 1.0.3, which should fix bug with exception
-* updated sample with demonstration of `fromUri()` method
-* some minor fixes
-
-Version 1.1.1 fixes bug with strange behavior when indices passed to `.pages()` don't start with `0`.
-
-Version 1.1.2 updates PdfiumAndroid to 1.1.0, which fixes displaying multiple `PDFView`s at the same time and few errors with loading PDF documents.
+## What's new in 1.2.0?
+* update PdfiumAndroid to 1.3.1 with support for bookmarks, Table Of Contents and documents with password:
+  * added method `PDFView#getDocumentMeta()`, which returns document metadata
+  * added method `PDFView#getTableOfContents()`, which returns whole tree of bookmarks in PDF document
+  * added method `Configurator#password(String)`
+* added horizontal mode to **ScrollBar** - use `ScrollBar#setHorizontal(true)` or `app:sb_horizontal="true"` in XML
+* block interaction with `PDFView` when document is not loaded - prevent some exceptions
+* fix `PDFView` exceptions in layout preview (edit mode)
 
 Next release is coming soon, it will introduce continuous scroll through whole document
 and some incompatibilities with current API (only few small).
@@ -23,7 +22,7 @@ and some incompatibilities with current API (only few small).
 
 Add to _build.gradle_:
 
-`compile 'com.github.barteksc:android-pdf-viewer:1.1.2'`
+`compile 'com.github.barteksc:android-pdf-viewer:1.2.0'`
 
 Library is available in jcenter repository, probably it'll be in Maven Central soon.
 
@@ -40,8 +39,12 @@ Library is available in jcenter repository, probably it'll be in Maven Central s
 
 All available options with default values:
 ``` java
-pdfView.fromAsset(pdfName)
-    .pages(0, 2, 1, 3, 3, 3) //all pages are displayed by default
+pdfView.fromUri(Uri)
+or
+pdfView.fromFile(File)
+or
+pdfView.fromAsset(String)
+    .pages(0, 2, 1, 3, 3, 3) // all pages are displayed by default
     .enableSwipe(true)
     .enableDoubletap(true)
     .swipeVertical(false)
@@ -51,6 +54,7 @@ pdfView.fromAsset(pdfName)
     .onLoad(onLoadCompleteListener)
     .onPageChange(onPageChangeListener)
     .onError(onErrorListener)
+    .password(null)
     .load();
 ```
 
@@ -62,8 +66,9 @@ pdfView.fromAsset(pdfName)
 
 Use **ScrollBar** class to place scrollbar view near **PDFView**
 
-1. in layout XML (it's important that the parent view is **RelativeLayout**)
+1. in layout XML (it's important that the parent view is **RelativeLayout**):
 
+    Vertically:
     ``` xml
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
@@ -84,6 +89,27 @@ Use **ScrollBar** class to place scrollbar view near **PDFView**
 
     </RelativeLayout>
     ```
+    Horizontally:
+    ``` xml
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    	android:layout_width="match_parent"
+    	android:layout_height="match_parent"
+    	xmlns:app="http://schemas.android.com/apk/res-auto">
+
+        <com.github.barteksc.pdfviewer.PDFView
+            android:id="@+id/pdfView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+    	<com.github.barteksc.pdfviewer.ScrollBar
+    		android:id="@+id/scrollBar"
+    		android:layout_width="match_parent"
+    		android:layout_height="wrap_content"
+    		app:sb_horizontal="true"
+    		android:layout_alignParentBottom="true" />
+
+    </RelativeLayout>
+    ```
 2. in activity or fragment
     ``` java
 
@@ -97,8 +123,10 @@ Use **ScrollBar** class to place scrollbar view near **PDFView**
             ScrollBar scrollBar = (ScrollBar) findViewById(R.id.scrollBar);
             pdfView.setScrollBar(scrollBar);
         }
-
     ```
+
+    `scrollBar.setHorizontal(true);` or `app:sb_horizontal="true"` may be used to set **ScrollBar** in horizontal mode.
+
 
 Scrollbar styling:
 ``` xml
@@ -108,12 +136,13 @@ Scrollbar styling:
         app:sb_handlerColor="..." <!-- scrollbar handler color -->
         app:sb_indicatorColor="..." <!-- background color of current page indicator -->
         app:sb_indicatorTextColor="..." <!-- text color of current page indicator -->
+        app:sb_horizontal="true|false|reference" <!-- whether to set horizontal mode -->
         android:background="..." <!-- scrollbar background -->
         />
 ```
 
 **ScrollBarPageIndicator** is added to scrollbar automatically and is shown while dragging scrollbar handler,
- displaying number of page on current position.
+ displaying number of page on current position. Its position is automatically calculated based on **ScrollBar**'s position.
 
 ## Additional options
 

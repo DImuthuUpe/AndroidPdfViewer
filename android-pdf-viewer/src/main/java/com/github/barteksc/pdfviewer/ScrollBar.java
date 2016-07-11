@@ -1,12 +1,12 @@
 /**
  * Copyright 2016 Bartosz Schiller
- * <p>
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
+ * <p/>
  * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,6 +44,7 @@ public class ScrollBar extends View {
     private PointF handlerPos;
     private int currentPage = 0;
     private ScrollBarPageIndicator indicator;
+    private boolean horizontal = false;
 
     public ScrollBar(Context context) {
         super(context);
@@ -97,6 +98,7 @@ public class ScrollBar extends View {
             handlerColor = a.getColor(R.styleable.ScrollBar_sb_handlerColor, Color.parseColor("#FF4081"));
             indicatorColor = a.getColor(R.styleable.ScrollBar_sb_indicatorColor, Color.parseColor("#FF4081"));
             indicatorTextColor = a.getColor(R.styleable.ScrollBar_sb_indicatorTextColor, Color.WHITE);
+            horizontal = a.getBoolean(R.styleable.ScrollBar_sb_horizontal, false);
         } finally {
             a.recycle();
         }
@@ -116,12 +118,20 @@ public class ScrollBar extends View {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int minw = getPaddingLeft() + getPaddingRight() + viewWidth;
-        int w = resolveSizeAndState(minw, widthMeasureSpec, 1);
+        int w, h;
+        if (!horizontal) {
+            int minw = getPaddingLeft() + getPaddingRight() + viewWidth;
+            w = resolveSizeAndState(minw, widthMeasureSpec, 1);
 
-        int minh = MeasureSpec.getSize(heightMeasureSpec) + getPaddingBottom() + getPaddingTop();
-        int h = resolveSizeAndState(minh, heightMeasureSpec, 0);
+            int minh = MeasureSpec.getSize(heightMeasureSpec) + getPaddingBottom() + getPaddingTop();
+            h = resolveSizeAndState(minh, heightMeasureSpec, 0);
+        } else {
+            int minh = getPaddingTop() + getPaddingBottom() + viewWidth;
+            h = resolveSizeAndState(minh, heightMeasureSpec, 1);
 
+            int minw = MeasureSpec.getSize(heightMeasureSpec) + getPaddingLeft() + getPaddingRight();
+            w = resolveSizeAndState(minw, widthMeasureSpec, 0);
+        }
         setMeasuredDimension(w, h);
     }
 
@@ -130,26 +140,49 @@ public class ScrollBar extends View {
         super.onDraw(canvas);
 
         if (isInEditMode()) {
-            canvas.drawRect(0, 0, getWidth(), Util.getDP(getContext(), 40), handlerPaint);
+            if (!horizontal) {
+                canvas.drawRect(0, 0, getWidth(), Util.getDP(getContext(), 40), handlerPaint);
+            } else {
+                canvas.drawRect(0, 0, Util.getDP(getContext(), 40), getHeight(), handlerPaint);
+
+            }
             return;
         } else if (!isPDFViewReady()) {
             return;
         }
 
-        if (Float.isNaN(handlerPos.y) || Float.isInfinite(handlerPos.y)) {
+        if (Float.isNaN(getHandlerPos()) || Float.isInfinite(getHandlerPos())) {
             calculateHandlerPosByPage(currentPage);
         }
 
-        canvas.drawRect(handlerPos.x, handlerPos.y, getWidth(), handlerPos.y + handlerHeight, handlerPaint);
+        if (!horizontal) {
+            canvas.drawRect(handlerPos.x, handlerPos.y,
+                    getWidth(),
+                    getHandlerPos() + handlerHeight, handlerPaint);
+        } else {
+            canvas.drawRect(handlerPos.x, handlerPos.y,
+                    getHandlerPos() + handlerHeight, getHeight(), handlerPaint);
+        }
+    }
 
+    private float getHandlerPos() {
+        return !horizontal ? handlerPos.y : handlerPos.x;
+    }
+
+    private void setHandlerPos(float pos) {
+        if (!horizontal) {
+            handlerPos.y = pos;
+        } else {
+            handlerPos.x = pos;
+        }
     }
 
     private void calculateHandlerPosByPage(int position) {
-        handlerPos.y = position * handlerHeight;
+        setHandlerPos(position * handlerHeight);
     }
 
     private void calculateHandlerHeight() {
-        handlerHeight = getHeight() / (float) getPagesCount();
+        handlerHeight = (!horizontal ? getHeight() : getWidth()) / (float) getPagesCount();
     }
 
     private boolean isPDFViewReady() {
@@ -163,7 +196,7 @@ public class ScrollBar extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
-        if(!isPDFViewReady()) {
+        if (!isPDFViewReady()) {
             return super.onTouchEvent(event);
         }
 
@@ -171,32 +204,44 @@ public class ScrollBar extends View {
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_MOVE:
             case MotionEvent.ACTION_POINTER_DOWN:
-                float y = event.getY();
-                if (y < 0 || y > getHeight())
+                float pos;
+                int viewSize;
+                if (!horizontal) {
+                    pos = event.getY();
+                    viewSize = getHeight();
+                } else {
+                    pos = event.getX();
+                    viewSize = getWidth();
+                }
+                if (pos < 0 || pos > viewSize)
                     return true;
 
-                int pageNum = (int) Math.floor(y / handlerHeight);
+                int pageNum = (int) Math.floor(pos / handlerHeight);
 
-                float handleY = pageNum * handlerHeight;
-                if (handleY < 0) {
-                    handleY = 0;
-                } else if (y + handlerHeight / 2 > getHeight()) {
-                    handleY = getHeight() - handlerHeight;
+                float handlePos = pageNum * handlerHeight;
+                if (handlePos < 0) {
+                    handlePos = 0;
+                } else if (pos + handlerHeight / 2 > viewSize) {
+                    handlePos = viewSize - handlerHeight;
                 }
-                handlerPos.y = handleY;
+                setHandlerPos(handlePos);
 
-                if (pageNum != currentPage) {
-                    indicator.setPageNum(pageNum + 1);
-                }
+                indicator.setPageNum(pageNum + 1);
+
                 currentPage = pageNum;
                 indicator.setVisibility(VISIBLE);
-                indicator.setScroll(handleY);
+                indicator.setScroll(handlePos);
                 invalidate();
                 return true;
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_POINTER_UP:
-                int pgNum = (int) Math.floor(event.getY() / handlerHeight);
+                int pgNum;
+                if (!horizontal) {
+                    pgNum = (int) Math.floor(event.getY() / handlerHeight);
+                } else {
+                    pgNum = (int) Math.floor(event.getX() / handlerHeight);
+                }
                 pdfView.jumpTo(pgNum + 1);
                 currentPage = pgNum;
                 indicator.setVisibility(INVISIBLE);
@@ -225,6 +270,14 @@ public class ScrollBar extends View {
         indicator.setPageNum(position + 1);
     }
 
+    public void setHorizontal(boolean horizontal) {
+        this.horizontal = horizontal;
+    }
+
+    public boolean isHorizontal() {
+        return horizontal;
+    }
+
     @Override
     public void onRestoreInstanceState(Parcelable state) {
         SavedState savedState = (SavedState) state;
@@ -242,7 +295,9 @@ public class ScrollBar extends View {
         return savedState;
     }
 
-    /** methods for integration with PDFView */
+    /**
+     * methods for integration with PDFView
+     */
     void addToPDFView(PDFView pdfView) {
         this.pdfView = pdfView;
         calculateHandlerHeight();
