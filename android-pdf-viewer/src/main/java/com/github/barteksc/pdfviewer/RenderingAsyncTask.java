@@ -47,8 +47,8 @@ class RenderingAsyncTask extends AsyncTask<Void, PagePart, Void> {
         this.pdfDocument = pdfDocument;
     }
 
-    public void addRenderingTask(int userPage, int page, float width, float height, RectF bounds, boolean thumbnail, int cacheOrder, boolean bestQuality) {
-        RenderingTask task = new RenderingTask(width, height, bounds, userPage, page, thumbnail, cacheOrder, bestQuality);
+    public void addRenderingTask(int userPage, int page, float width, float height, RectF bounds, boolean thumbnail, int cacheOrder, boolean bestQuality, boolean annotationRendering) {
+        RenderingTask task = new RenderingTask(width, height, bounds, userPage, page, thumbnail, cacheOrder, bestQuality, annotationRendering);
         renderingTasks.add(task);
         wakeUp();
     }
@@ -107,7 +107,7 @@ class RenderingAsyncTask extends AsyncTask<Void, PagePart, Void> {
 
         pdfiumCore.renderPageBitmap(pdfDocument, render, renderingTask.page,
                 roundedRenderBounds.left, roundedRenderBounds.top,
-                roundedRenderBounds.width(), roundedRenderBounds.height());
+                roundedRenderBounds.width(), roundedRenderBounds.height(), renderingTask.annotationRendering);
 
         if (!renderingTask.bestQuality) {
             Bitmap cpy = render.copy(Bitmap.Config.RGB_565, false);
@@ -157,7 +157,9 @@ class RenderingAsyncTask extends AsyncTask<Void, PagePart, Void> {
 
         boolean bestQuality;
 
-        public RenderingTask(float width, float height, RectF bounds, int userPage, int page, boolean thumbnail, int cacheOrder, boolean bestQuality) {
+        boolean annotationRendering;
+
+        public RenderingTask(float width, float height, RectF bounds, int userPage, int page, boolean thumbnail, int cacheOrder, boolean bestQuality, boolean annotationRendering) {
             super();
             this.page = page;
             this.width = width;
@@ -167,6 +169,7 @@ class RenderingAsyncTask extends AsyncTask<Void, PagePart, Void> {
             this.thumbnail = thumbnail;
             this.cacheOrder = cacheOrder;
             this.bestQuality = bestQuality;
+            this.annotationRendering = annotationRendering;
         }
 
     }
