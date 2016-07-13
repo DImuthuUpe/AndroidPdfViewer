@@ -1,3 +1,7 @@
+## 1.3.0 (2016-07-13)
+* update PdfiumAndroid to 1.4.0 with support for rendering annotations
+* merge pull request by [usef](https://github.com/usef) for rendering annotations
+
 ## 1.2.0 (2016-07-11)
 * update PdfiumAndroid to 1.3.1 with support for bookmarks, Table Of Contents and documents with password:
   * added method `PDFView#getDocumentMeta()`, which returns document metadata

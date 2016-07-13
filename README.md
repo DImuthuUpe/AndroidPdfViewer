@@ -6,6 +6,10 @@ Library for displaying PDF documents on Android, with `animations`, `gestures`, 
 It is based on [PdfiumAndroid](https://github.com/barteksc/PdfiumAndroid) for decoding PDF files. Works on API 11 and higher.
 Licensed under Apache License 2.0.
 
+## What's new in 1.3.0?
+* update PdfiumAndroid to 1.4.0 with support for rendering annotations
+* merge pull request by [usef](https://github.com/usef) for rendering annotations
+
 ## What's new in 1.2.0?
 * update PdfiumAndroid to 1.3.1 with support for bookmarks, Table Of Contents and documents with password:
   * added method `PDFView#getDocumentMeta()`, which returns document metadata
@@ -22,7 +26,7 @@ and some incompatibilities with current API (only few small).
 
 Add to _build.gradle_:
 
-`compile 'com.github.barteksc:android-pdf-viewer:1.2.0'`
+`compile 'com.github.barteksc:android-pdf-viewer:1.3.0'`
 
 Library is available in jcenter repository, probably it'll be in Maven Central soon.
 
@@ -54,6 +58,7 @@ pdfView.fromAsset(String)
     .onLoad(onLoadCompleteListener)
     .onPageChange(onPageChangeListener)
     .onError(onErrorListener)
+    .enableAnnotationRendering(false)
     .password(null)
     .load();
 ```
