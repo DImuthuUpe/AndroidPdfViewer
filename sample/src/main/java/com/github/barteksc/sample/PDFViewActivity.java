@@ -88,6 +88,7 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
                 .onPageChange(this)
                 .swipeVertical(true)
                 .showMinimap(false)
+                .enableAnnotationRendering(true)
                 .onLoad(this)
                 .load();
     }
@@ -100,6 +101,7 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
                 .onPageChange(this)
                 .swipeVertical(true)
                 .showMinimap(false)
+                .enableAnnotationRendering(true)
                 .onLoad(this)
                 .load();
     }
