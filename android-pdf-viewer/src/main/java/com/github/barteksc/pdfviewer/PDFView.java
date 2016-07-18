@@ -251,6 +251,11 @@ public class PDFView extends SurfaceView {
     private boolean swipeVertical = false;
 
     /**
+     * True if should show a page with animation
+     */
+    private boolean showPageWithAnimation = true;
+
+    /**
      * Pdfium core for loading and rendering PDFs
      */
     private PdfiumCore pdfiumCore;
@@ -282,7 +287,7 @@ public class PDFView extends SurfaceView {
     public PDFView(Context context, AttributeSet set) {
         super(context, set);
 
-        if(isInEditMode()) {
+        if (isInEditMode()) {
             return;
         }
 
@@ -347,7 +352,7 @@ public class PDFView extends SurfaceView {
     }
 
     void showPage(int pageNb) {
-        if(recycled) {
+        if (recycled) {
             return;
         }
         state = State.SHOWN;
@@ -366,11 +371,20 @@ public class PDFView extends SurfaceView {
 
         // Reset the zoom and center the page on the screen
         resetZoom();
-        if (swipeVertical) {
-            animationManager.startYAnimation(currentYOffset, calculateCenterOffsetForPage(pageNb));
+        if (showPageWithAnimation) {
+            if (swipeVertical) {
+                animationManager.startYAnimation(currentYOffset, calculateCenterOffsetForPage(pageNb));
+            } else {
+                animationManager.startXAnimation(currentXOffset, calculateCenterOffsetForPage(pageNb));
+            }
         } else {
-            animationManager.startXAnimation(currentXOffset, calculateCenterOffsetForPage(pageNb));
+            if (swipeVertical) {
+                moveTo(getCurrentXOffset(), calculateCenterOffsetForPage(pageNb));
+            } else {
+                moveTo(calculateCenterOffsetForPage(pageNb), getCurrentYOffset());
+            }
         }
+
         loadPages();
 
         if (scrollBar != null) {
@@ -447,7 +461,7 @@ public class PDFView extends SurfaceView {
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        if(isInEditMode()) {
+        if (isInEditMode()) {
             return;
         }
         animationManager.stopAll();
@@ -496,7 +510,7 @@ public class PDFView extends SurfaceView {
         // Draws background
         canvas.drawColor(Color.WHITE);
 
-        if(recycled) {
+        if (recycled) {
             return;
         }
 
@@ -641,7 +655,7 @@ public class PDFView extends SurfaceView {
 
     /**
      * Render a page, creating 1 to <i>nbOfPartsLoadable</i> page parts. <br><br>
-     * <p/>
+     * <p>
      * This is one of the trickiest method of this library. It finds
      * the DocumentPage associated with the given UserPage, loads its
      * thumbnail, cut this page into 256x256 blocs considering the
@@ -792,7 +806,7 @@ public class PDFView extends SurfaceView {
         this.documentPageCount = pdfiumCore.getPageCount(pdfDocument);
 
         int firstPageIdx = 0;
-        if(originalUserPages != null) {
+        if (originalUserPages != null) {
             firstPageIdx = originalUserPages[0];
         }
 
@@ -1185,14 +1199,14 @@ public class PDFView extends SurfaceView {
     }
 
     public PdfDocument.Meta getDocumentMeta() {
-        if(pdfDocument == null) {
+        if (pdfDocument == null) {
             return null;
         }
         return pdfiumCore.getDocumentMeta(pdfDocument);
     }
 
     public List<PdfDocument.Bookmark> getTableOfContents() {
-        if(pdfDocument == null) {
+        if (pdfDocument == null) {
             return new ArrayList<>();
         }
         return pdfiumCore.getTableOfContents(pdfDocument);
@@ -1264,6 +1278,8 @@ public class PDFView extends SurfaceView {
 
         private boolean swipeVertical = false;
 
+        private boolean showPageWithAnimation = true;
+
         private boolean annotationRendering = false;
 
         private int maskColor = Color.BLACK;
@@ -1327,6 +1343,11 @@ public class PDFView extends SurfaceView {
             return this;
         }
 
+        public Configurator showPageWithAnimation(boolean showPageWithAnimation) {
+            this.showPageWithAnimation = showPageWithAnimation;
+            return this;
+        }
+
         public Configurator password(String password) {
             this.password = password;
             return this;
@@ -1352,6 +1373,7 @@ public class PDFView extends SurfaceView {
             PDFView.this.setDefaultPage(defaultPage);
             PDFView.this.setUserWantsMinimap(showMinimap);
             PDFView.this.setSwipeVertical(swipeVertical);
+            PDFView.this.setShowPageWithAnimation(showPageWithAnimation);
             PDFView.this.enableAnnotationRendering(annotationRendering);
             PDFView.this.dragPinchManager.setSwipeVertical(swipeVertical);
             PDFView.this.maskPaint = new Paint();
@@ -1376,5 +1398,9 @@ public class PDFView extends SurfaceView {
 
     public void setSwipeVertical(boolean swipeVertical) {
         this.swipeVertical = swipeVertical;
+    }
+
+    public void setShowPageWithAnimation(boolean showPageWithAnimation) {
+        this.showPageWithAnimation = showPageWithAnimation;
     }
 }
