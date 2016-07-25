@@ -1,3 +1,8 @@
+## 1.4.0 (2016-07-25)
+* Fix NPE and IndexOutOfBound bugs when rendering parts
+* Merge pull request by [paulo-sato-daitan](https://github.com/paulo-sato-daitan) for disabling page change animation
+* Merge pull request by [Miha-x64](https://github.com/Miha-x64) for drawing background if set on `PDFView`
+
 ## 1.3.0 (2016-07-13)
 * update PdfiumAndroid to 1.4.0 with support for rendering annotations
 * merge pull request by [usef](https://github.com/usef) for rendering annotations
