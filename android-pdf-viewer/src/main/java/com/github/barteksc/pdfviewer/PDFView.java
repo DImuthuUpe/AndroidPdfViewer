@@ -24,6 +24,7 @@ import android.graphics.Paint.Style;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.AttributeSet;
@@ -508,7 +509,12 @@ public class PDFView extends SurfaceView {
         // abstraction of the screen position when rendering the parts.
 
         // Draws background
-        canvas.drawColor(Color.WHITE);
+        Drawable bg = getBackground();
+        if (bg == null) {
+            canvas.drawColor(Color.WHITE);
+        } else {
+            bg.draw(canvas);
+        }
 
         if (recycled) {
             return;
