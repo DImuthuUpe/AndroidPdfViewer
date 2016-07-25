@@ -62,14 +62,24 @@ class RenderingAsyncTask extends AsyncTask<Void, PagePart, Void> {
         while (!isCancelled()) {
 
             // Proceed all tasks
-            while (!renderingTasks.isEmpty()) {
-                RenderingTask task = renderingTasks.get(0);
-                PagePart part = proceed(task);
+            while (true) {
+                RenderingTask task;
+                synchronized (renderingTasks) {
+                    if(!renderingTasks.isEmpty()) {
+                        task = renderingTasks.get(0);
+                    } else {
+                        break;
+                    }
+                }
 
-                if (renderingTasks.remove(task)) {
-                    publishProgress(part);
-                } else {
-                    part.getRenderedBitmap().recycle();
+                if(task != null) { // very rare case, but may happen
+                    PagePart part = proceed(task);
+
+                    if (renderingTasks.remove(task)) {
+                        publishProgress(part);
+                    } else {
+                        part.getRenderedBitmap().recycle();
+                    }
                 }
             }
 
@@ -132,7 +142,9 @@ class RenderingAsyncTask extends AsyncTask<Void, PagePart, Void> {
     }
 
     public void removeAllTasks() {
-        renderingTasks.clear();
+        synchronized (renderingTasks) {
+            renderingTasks.clear();
+        }
     }
 
     public void wakeUp() {
