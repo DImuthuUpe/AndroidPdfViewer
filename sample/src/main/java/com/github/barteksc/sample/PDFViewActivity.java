@@ -36,6 +36,8 @@ import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.ViewById;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 @EActivity(R.layout.activity_main)
@@ -75,7 +77,8 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
         if (uri != null) {
             displayFromUri(uri);
         } else {
-            displayFromAsset(SAMPLE_FILE);
+            // displayFromAsset(SAMPLE_FILE);
+            displayFromInputStream(SAMPLE_FILE);
         }
         setTitle(pdfFileName);
     }
@@ -84,6 +87,24 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
         pdfFileName = assetFileName;
 
         pdfView.fromAsset(SAMPLE_FILE)
+                .defaultPage(pageNumber)
+                .onPageChange(this)
+                .swipeVertical(true)
+                .showMinimap(false)
+                .enableAnnotationRendering(true)
+                .onLoad(this)
+                .load();
+    }
+
+    private void displayFromInputStream(String assetFileName) {
+        pdfFileName = assetFileName;
+        InputStream inputStream = null;
+        try {
+            inputStream = getApplicationContext().getAssets().open(SAMPLE_FILE);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        pdfView.fromInputStream(assetFileName, inputStream)
                 .defaultPage(pageNumber)
                 .onPageChange(this)
                 .swipeVertical(true)

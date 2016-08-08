@@ -26,6 +26,7 @@ import com.shockwave.pdfium.PdfiumCore;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 class DecodingAsyncTask extends AsyncTask<Void, Void, Throwable> {
 
@@ -42,6 +43,8 @@ class DecodingAsyncTask extends AsyncTask<Void, Void, Throwable> {
     private PdfDocument pdfDocument;
     private String password;
 
+    private InputStream inputStream;
+
     public DecodingAsyncTask(String path, boolean isAsset, String password, PDFView pdfView, PdfiumCore pdfiumCore) {
         this.cancelled = false;
         this.pdfView = pdfView;
@@ -52,12 +55,27 @@ class DecodingAsyncTask extends AsyncTask<Void, Void, Throwable> {
         context = pdfView.getContext();
     }
 
+    public DecodingAsyncTask(String path, InputStream inputStream, boolean isAsset, String password, PDFView pdfView, PdfiumCore pdfiumCore) {
+        this.cancelled = false;
+        this.pdfView = pdfView;
+        this.isAsset = isAsset;
+        this.password = password;
+        this.pdfiumCore = pdfiumCore;
+        this.path = path;
+        context = pdfView.getContext();
+        this.inputStream = inputStream;
+    }
+
     @Override
     protected Throwable doInBackground(Void... params) {
         try {
             if (isAsset) {
                 path = FileUtils.fileFromAsset(context, path).getAbsolutePath();
             }
+            if (inputStream != null) {
+                path = FileUtils.fileFromInputStream(inputStream, context, path).getAbsolutePath();
+            }
+
             pdfDocument = pdfiumCore.newDocument(getSeekableFileDescriptor(path), password);
             return null;
         } catch (Throwable t) {
