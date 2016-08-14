@@ -1,3 +1,19 @@
+## 2.0.0 (2016-08-14)
+* few API changes
+* improved rendering speed and accuracy
+* added continuous scroll - now it behaves like Adobe Reader and others
+* added `fling` scroll gesture for velocity based scrolling
+* added scroll handle as a replacement for scrollbar
+
+### Changes in 2.0 API
+* `Configurator#defaultPage(int)` and `PDFView#jumpTo(int)` now require page index (i.e. starting from 0)
+* `OnPageChangeListener#onPageChanged(int, int)` is called with page index (i.e. starting from 0)
+* removed scrollbar
+* added scroll handle as a replacement for scrollbar, use with `Configurator#scrollHandle()`
+* added `OnPageScrollListener` listener due to continuous scroll, register with `Configurator#onPageScroll()`
+* default scroll direction is vertical, so `Configurator#swipeVertical()` was changed to `Configurator#swipeHorizontal()`
+* removed minimap and mask configuration
+
 ## 1.4.0 (2016-07-25)
 * Fix NPE and IndexOutOfBound bugs when rendering parts
 * Merge pull request by [paulo-sato-daitan](https://github.com/paulo-sato-daitan) for disabling page change animation

@@ -23,9 +23,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.github.barteksc.pdfviewer.PDFView;
-import com.github.barteksc.pdfviewer.ScrollBar;
 import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener;
 import com.github.barteksc.pdfviewer.listener.OnPageChangeListener;
+import com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle;
+import com.github.barteksc.pdfviewer.scroll.ScrollHandle;
 import com.shockwave.pdfium.PdfDocument;
 
 import org.androidannotations.annotations.AfterViews;
@@ -37,7 +38,6 @@ import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.ViewById;
 
 import java.util.List;
-
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.options)
 public class PDFViewActivity extends AppCompatActivity implements OnPageChangeListener, OnLoadCompleteListener {
@@ -51,14 +51,11 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
     @ViewById
     PDFView pdfView;
 
-    @ViewById
-    ScrollBar scrollBar;
-
     @NonConfigurationInstance
     Uri uri;
 
     @NonConfigurationInstance
-    Integer pageNumber = 1;
+    Integer pageNumber = 0;
 
     String pdfFileName;
 
@@ -71,7 +68,17 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
 
     @AfterViews
     void afterViews() {
-        pdfView.setScrollBar(scrollBar);
+        try {
+            Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+
+                @Override
+                public void uncaughtException(Thread t, Throwable e) {
+                    e.printStackTrace();
+                }
+            });
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        }
         if (uri != null) {
             displayFromUri(uri);
         } else {
@@ -86,10 +93,9 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
         pdfView.fromAsset(SAMPLE_FILE)
                 .defaultPage(pageNumber)
                 .onPageChange(this)
-                .swipeVertical(true)
-                .showMinimap(false)
                 .enableAnnotationRendering(true)
                 .onLoad(this)
+                .scrollHandle(new DefaultScrollHandle(this))
                 .load();
     }
 
@@ -99,10 +105,9 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
         pdfView.fromUri(uri)
                 .defaultPage(pageNumber)
                 .onPageChange(this)
-                .swipeVertical(true)
-                .showMinimap(false)
                 .enableAnnotationRendering(true)
                 .onLoad(this)
+                .scrollHandle(new DefaultScrollHandle(this))
                 .load();
     }
 
@@ -117,7 +122,7 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
     @Override
     public void onPageChanged(int page, int pageCount) {
         pageNumber = page;
-        setTitle(String.format("%s %s / %s", pdfFileName, page, pageCount));
+        setTitle(String.format("%s %s / %s", pdfFileName, page + 1, pageCount));
     }
 
     public String getFileName(Uri uri) {

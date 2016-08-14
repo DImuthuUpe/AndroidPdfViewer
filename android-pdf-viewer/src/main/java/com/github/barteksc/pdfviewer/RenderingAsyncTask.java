@@ -1,12 +1,12 @@
 /**
  * Copyright 2016 Bartosz Schiller
- * <p>
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
+ * <p/>
  * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,35 +26,36 @@ import com.shockwave.pdfium.PdfDocument;
 import com.shockwave.pdfium.PdfiumCore;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 class RenderingAsyncTask extends AsyncTask<Void, PagePart, Void> {
 
     private PdfiumCore pdfiumCore;
     private PdfDocument pdfDocument;
 
-    private final List<RenderingTask> renderingTasks = new ArrayList<>();
-
+    private final List<RenderingTask> renderingTasks;
     private PDFView pdfView;
 
     private RectF renderBounds = new RectF();
     private Rect roundedRenderBounds = new Rect();
     private Matrix renderMatrix = new Matrix();
+    private final Set<Integer> openedPages = new HashSet<>();
 
     public RenderingAsyncTask(PDFView pdfView, PdfiumCore pdfiumCore, PdfDocument pdfDocument) {
         this.pdfView = pdfView;
         this.pdfiumCore = pdfiumCore;
         this.pdfDocument = pdfDocument;
+        this.renderingTasks = Collections.synchronizedList(new ArrayList<RenderingTask>());
+
     }
 
     public void addRenderingTask(int userPage, int page, float width, float height, RectF bounds, boolean thumbnail, int cacheOrder, boolean bestQuality, boolean annotationRendering) {
         RenderingTask task = new RenderingTask(width, height, bounds, userPage, page, thumbnail, cacheOrder, bestQuality, annotationRendering);
         renderingTasks.add(task);
         wakeUp();
-    }
-
-    @Override
-    protected void onPreExecute() {
     }
 
     @Override
@@ -65,16 +66,15 @@ class RenderingAsyncTask extends AsyncTask<Void, PagePart, Void> {
             while (true) {
                 RenderingTask task;
                 synchronized (renderingTasks) {
-                    if(!renderingTasks.isEmpty()) {
+                    if (!renderingTasks.isEmpty()) {
                         task = renderingTasks.get(0);
                     } else {
                         break;
                     }
                 }
-
-                if(task != null) { // very rare case, but may happen
+                //it is very rare case, but sometimes null can appear
+                if (task != null) {
                     PagePart part = proceed(task);
-
                     if (renderingTasks.remove(task)) {
                         publishProgress(part);
                     } else {
@@ -110,6 +110,11 @@ class RenderingAsyncTask extends AsyncTask<Void, PagePart, Void> {
     }
 
     private PagePart proceed(RenderingTask renderingTask) {
+        if (!openedPages.contains(renderingTask.page)) {
+            openedPages.add(renderingTask.page);
+            pdfiumCore.openPage(pdfDocument, renderingTask.page);
+        }
+
         int w = Math.round(renderingTask.width);
         int h = Math.round(renderingTask.height);
         Bitmap render = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
