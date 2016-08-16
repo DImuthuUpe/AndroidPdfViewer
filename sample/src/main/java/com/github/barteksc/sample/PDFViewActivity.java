@@ -68,17 +68,6 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
 
     @AfterViews
     void afterViews() {
-        try {
-            Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-
-                @Override
-                public void uncaughtException(Thread t, Throwable e) {
-                    e.printStackTrace();
-                }
-            });
-        } catch (SecurityException e) {
-            e.printStackTrace();
-        }
         if (uri != null) {
             displayFromUri(uri);
         } else {

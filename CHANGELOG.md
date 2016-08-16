@@ -1,3 +1,6 @@
+## 2.0.1 (2016-08-16)
+* Fix NPE when onDetachFromWindow is called
+
 ## 2.0.0 (2016-08-14)
 * few API changes
 * improved rendering speed and accuracy

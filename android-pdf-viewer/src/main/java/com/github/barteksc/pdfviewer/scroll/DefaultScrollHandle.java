@@ -100,7 +100,12 @@ public class DefaultScrollHandle extends RelativeLayout implements ScrollHandle 
 
     @Override
     public void destroyLayout() {
-        ((ViewGroup) pdfView.getParent()).removeView(this);
+        post(new Runnable() {
+            @Override
+            public void run() {
+                ((ViewGroup) pdfView.getParent()).removeView(DefaultScrollHandle.this);
+            }
+        });
     }
 
     @Override
