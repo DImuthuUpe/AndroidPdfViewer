@@ -75,7 +75,9 @@ class RenderingAsyncTask extends AsyncTask<Void, PagePart, Void> {
                 //it is very rare case, but sometimes null can appear
                 if (task != null) {
                     PagePart part = proceed(task);
-                    if (renderingTasks.remove(task)) {
+                    if (part == null) {
+                        break;
+                    } else if (renderingTasks.remove(task)) {
                         publishProgress(part);
                     } else {
                         part.getRenderedBitmap().recycle();
@@ -120,9 +122,14 @@ class RenderingAsyncTask extends AsyncTask<Void, PagePart, Void> {
         Bitmap render = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         calculateBounds(w, h, renderingTask.bounds);
 
-        pdfiumCore.renderPageBitmap(pdfDocument, render, renderingTask.page,
-                roundedRenderBounds.left, roundedRenderBounds.top,
-                roundedRenderBounds.width(), roundedRenderBounds.height(), renderingTask.annotationRendering);
+        if (!isCancelled()) {
+            pdfiumCore.renderPageBitmap(pdfDocument, render, renderingTask.page,
+                    roundedRenderBounds.left, roundedRenderBounds.top,
+                    roundedRenderBounds.width(), roundedRenderBounds.height(), renderingTask.annotationRendering);
+        } else {
+            render.recycle();
+            return null;
+        }
 
         if (!renderingTask.bestQuality) {
             Bitmap cpy = render.copy(Bitmap.Config.RGB_565, false);
