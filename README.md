@@ -14,7 +14,10 @@ Licensed under Apache License 2.0.
 * added scroll handle as a replacement for scrollbar
 
 2.0.1 fixes NPE when onDetachFromWindow is called.
+
 2.0.2 fixes exceptions caused by improperly finishing rendering task.
+
+2.0.3 fixes scroll handle NPE after document loading error
 
 ## Changes in 2.0 API
 * `Configurator#defaultPage(int)` and `PDFView#jumpTo(int)` now require page index (i.e. starting from 0)
@@ -29,7 +32,7 @@ Licensed under Apache License 2.0.
 
 Add to _build.gradle_:
 
-`compile 'com.github.barteksc:android-pdf-viewer:2.0.2'`
+`compile 'com.github.barteksc:android-pdf-viewer:2.0.3'`
 
 Library is available in jcenter repository, probably it'll be in Maven Central soon.
 

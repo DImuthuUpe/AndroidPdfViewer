@@ -446,7 +446,7 @@ public class PDFView extends View {
         // Clear caches
         cacheManager.recycle();
 
-        if (scrollHandle != null) {
+        if (scrollHandle != null && state != State.ERROR) {
             scrollHandle.destroyLayout();
         }
 
@@ -644,6 +644,7 @@ public class PDFView extends View {
      * Called when the PDF is loaded
      */
     public void loadComplete(PdfDocument pdfDocument) {
+        state = State.LOADED;
         this.documentPageCount = pdfiumCore.getPageCount(pdfDocument);
 
         int firstPageIdx = 0;
@@ -656,7 +657,6 @@ public class PDFView extends View {
         pdfiumCore.openPage(pdfDocument, firstPageIdx);
         this.pageWidth = pdfiumCore.getPageWidth(pdfDocument, firstPageIdx);
         this.pageHeight = pdfiumCore.getPageHeight(pdfDocument, firstPageIdx);
-        state = State.LOADED;
         calculateOptimalWidthAndHeight();
 
         pagesLoader = new PagesLoader(this);
@@ -676,6 +676,7 @@ public class PDFView extends View {
     }
 
     public void loadError(Throwable t) {
+        state = State.ERROR;
         recycle();
         invalidate();
         if (this.onErrorListener != null) {
@@ -1129,7 +1130,7 @@ public class PDFView extends View {
         return new Configurator(uri.toString(), false);
     }
 
-    private enum State {DEFAULT, LOADED, SHOWN}
+    private enum State {DEFAULT, LOADED, SHOWN, ERROR}
 
     public class Configurator {
 
