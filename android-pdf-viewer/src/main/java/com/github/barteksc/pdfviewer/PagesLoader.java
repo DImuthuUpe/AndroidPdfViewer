@@ -116,7 +116,11 @@ class PagesLoader {
         loadThumbnail(holder.page, documentPage);
 
         if (pdfView.isSwipeVertical()) {
-            for (int col = 0; col < colsRows.first; col++) {
+            int firstCol = MathUtils.floor(xOffset / colWidth);
+            firstCol = MathUtils.min(firstCol - 1, 0);
+            int lastCol = MathUtils.ceil((xOffset + pdfView.getWidth()) / colWidth);
+            lastCol = MathUtils.max(lastCol + 1, colsRows.first);
+            for (int col = firstCol; col <= lastCol; col++) {
                 if (loadCell(holder.page, documentPage, holder.row, col, pageRelativePartWidth, pageRelativePartHeight)) {
                     loaded++;
                 }
@@ -125,7 +129,11 @@ class PagesLoader {
                 }
             }
         } else {
-            for (int row = 0; row < colsRows.second; row++) {
+            int firstRow = MathUtils.floor(yOffset / rowHeight);
+            firstRow = MathUtils.min(firstRow - 1, 0);
+            int lastRow = MathUtils.ceil((yOffset + pdfView.getHeight()) / rowHeight);
+            lastRow = MathUtils.max(lastRow + 1, colsRows.second);
+            for (int row = firstRow; row <= lastRow; row++) {
                 if (loadCell(holder.page, documentPage, row, holder.col, pageRelativePartWidth, pageRelativePartHeight)) {
                     loaded++;
                 }

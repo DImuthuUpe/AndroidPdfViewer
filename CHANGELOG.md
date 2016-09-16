@@ -1,3 +1,10 @@
+## 2.1.0 (2016-09-16)
+* fixed loading document from subfolder in assets directory
+* fixed scroll handle NPE after document loading error (improvement of 2.0.3 fix)
+* fixed incorrect scroll handle position with additional views in RelativeLayout
+* improved cache usage and fixed bug with rendering when zooming
+* if you are using custom scroll handle: scroll handle implementation changed a little bit, check DefaultScrollHandle source for details
+
 ## 2.0.3 (2016-08-30)
 * Fix scroll handle NPE after document loading error
 

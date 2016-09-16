@@ -73,6 +73,20 @@ public class MathUtils {
         return number;
     }
 
+    public static int max(int number, int max) {
+        if (number > max) {
+            return max;
+        }
+        return number;
+    }
+
+    public static int min(int number, int min) {
+        if (number < min) {
+            return min;
+        }
+        return number;
+    }
+
     /**
      * Methods from libGDX - https://github.com/libgdx/libgdx
      */

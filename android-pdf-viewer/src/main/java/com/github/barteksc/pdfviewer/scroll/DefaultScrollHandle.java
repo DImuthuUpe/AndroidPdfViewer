@@ -60,20 +60,20 @@ public class DefaultScrollHandle extends RelativeLayout implements ScrollHandle 
             width = HANDLE_LONG;
             height = HANDLE_SHORT;
             if (inverted) { // left
-                align = ALIGN_LEFT;
+                align = ALIGN_PARENT_LEFT;
                 background = ContextCompat.getDrawable(context, R.drawable.default_scroll_handle_left);
             } else { // right
-                align = ALIGN_RIGHT;
+                align = ALIGN_PARENT_RIGHT;
                 background = ContextCompat.getDrawable(context, R.drawable.default_scroll_handle_right);
             }
         } else {
             width = HANDLE_SHORT;
             height = HANDLE_LONG;
             if (inverted) { // top
-                align = ALIGN_TOP;
+                align = ALIGN_PARENT_TOP;
                 background = ContextCompat.getDrawable(context, R.drawable.default_scroll_handle_top);
             } else { // bottom
-                align = ALIGN_BOTTOM;
+                align = ALIGN_PARENT_BOTTOM;
                 background = ContextCompat.getDrawable(context, R.drawable.default_scroll_handle_bottom);
             }
         }
@@ -92,20 +92,15 @@ public class DefaultScrollHandle extends RelativeLayout implements ScrollHandle 
 
         addView(textView, tvlp);
 
-        lp.addRule(align, pdfView.getId());
-        ((ViewGroup) pdfView.getParent()).addView(this, lp);
+        lp.addRule(align);
+        pdfView.addView(this, lp);
 
         this.pdfView = pdfView;
     }
 
     @Override
     public void destroyLayout() {
-        post(new Runnable() {
-            @Override
-            public void run() {
-                ((ViewGroup) pdfView.getParent()).removeView(DefaultScrollHandle.this);
-            }
-        });
+        pdfView.removeView(this);
     }
 
     @Override

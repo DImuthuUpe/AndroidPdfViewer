@@ -6,18 +6,12 @@ Library for displaying PDF documents on Android, with `animations`, `gestures`, 
 It is based on [PdfiumAndroid](https://github.com/barteksc/PdfiumAndroid) for decoding PDF files. Works on API 11 and higher.
 Licensed under Apache License 2.0.
 
-## What's new in 2.0.0?
-* few API changes
-* improved rendering speed and accuracy
-* added continuous scroll - now it behaves like Adobe Reader and others
-* added `fling` scroll gesture for velocity based scrolling
-* added scroll handle as a replacement for scrollbar
-
-2.0.1 fixes NPE when onDetachFromWindow is called.
-
-2.0.2 fixes exceptions caused by improperly finishing rendering task.
-
-2.0.3 fixes scroll handle NPE after document loading error
+## What's new in 2.1.0?
+* fixed loading document from subfolder in assets directory
+* fixed scroll handle NPE after document loading error (improvement of 2.0.3 fix)
+* fixed incorrect scroll handle position with additional views in RelativeLayout
+* improved cache usage and fixed bug with rendering when zooming
+* if you are using custom scroll handle: scroll handle implementation changed a little bit, check DefaultScrollHandle source for details
 
 ## Changes in 2.0 API
 * `Configurator#defaultPage(int)` and `PDFView#jumpTo(int)` now require page index (i.e. starting from 0)
@@ -32,7 +26,7 @@ Licensed under Apache License 2.0.
 
 Add to _build.gradle_:
 
-`compile 'com.github.barteksc:android-pdf-viewer:2.0.3'`
+`compile 'com.github.barteksc:android-pdf-viewer:2.1.0'`
 
 Library is available in jcenter repository, probably it'll be in Maven Central soon.
 
@@ -78,7 +72,7 @@ pdfView.fromAsset(String)
 
 Scroll handle is replacement for **ScrollBar** from 1.x branch.
 
-If you want to use **ScrollHandle**, it's important that the parent view is **RelativeLayout**.
+From version 2.1.0 putting **PDFView** in **RelativeLayout** to use **ScrollHandle** is not required, you can use any layout.
 
 To use scroll handle just register it using method `Configurator#scrollHandle()`.
 This method accepts implementations of **ScrollHandle** interface.

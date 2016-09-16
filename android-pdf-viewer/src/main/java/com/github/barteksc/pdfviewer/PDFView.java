@@ -29,6 +29,7 @@ import android.os.AsyncTask;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.widget.RelativeLayout;
 
 import com.github.barteksc.pdfviewer.exception.FileNotFoundException;
 import com.github.barteksc.pdfviewer.listener.OnDrawListener;
@@ -68,7 +69,7 @@ import java.util.List;
  * using {@link #load(String, boolean, String, OnLoadCompleteListener, OnErrorListener, int[])}. In this
  * particular case, a userPage of 5 can refer to a documentPage of 17.
  */
-public class PDFView extends View {
+public class PDFView extends RelativeLayout {
 
     private static final String TAG = PDFView.class.getSimpleName();
 
@@ -238,6 +239,8 @@ public class PDFView extends View {
 
     private ScrollHandle scrollHandle;
 
+    private boolean isScrollHandleInit = false;
+
     ScrollHandle getScrollHandle() {
         return scrollHandle;
     }
@@ -273,6 +276,7 @@ public class PDFView extends View {
         debugPaint.setStyle(Style.STROKE);
 
         pdfiumCore = new PdfiumCore(context);
+        setWillNotDraw(false);
     }
 
     private void load(String path, boolean isAsset, String password, OnLoadCompleteListener listener, OnErrorListener onErrorListener) {
@@ -446,7 +450,7 @@ public class PDFView extends View {
         // Clear caches
         cacheManager.recycle();
 
-        if (scrollHandle != null && state != State.ERROR) {
+        if (scrollHandle != null && isScrollHandleInit) {
             scrollHandle.destroyLayout();
         }
 
@@ -459,6 +463,7 @@ public class PDFView extends View {
         filteredUserPageIndexes = null;
         pdfDocument = null;
         scrollHandle = null;
+        isScrollHandleInit = false;
         currentXOffset = currentYOffset = 0;
         zoom = 1f;
         recycled = true;
@@ -666,6 +671,7 @@ public class PDFView extends View {
 
         if (scrollHandle != null) {
             scrollHandle.setupLayout(this);
+            isScrollHandleInit = true;
         }
 
         // Notify the listener
