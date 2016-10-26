@@ -119,7 +119,13 @@ class RenderingAsyncTask extends AsyncTask<Void, PagePart, Void> {
 
         int w = Math.round(renderingTask.width);
         int h = Math.round(renderingTask.height);
-        Bitmap render = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        Bitmap render = null;
+        try {
+            render = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            return null;
+        }
         calculateBounds(w, h, renderingTask.bounds);
 
         if (!isCancelled()) {
