@@ -80,6 +80,7 @@ public class PDFView extends RelativeLayout {
     private float minZoom = DEFAULT_MIN_SCALE;
     private float midZoom = DEFAULT_MID_SCALE;
     private float maxZoom = DEFAULT_MAX_SCALE;
+    private int mBgColor = Color.WHITE;
 
     /**
      * START - scrolling in first page direction
@@ -392,6 +393,10 @@ public class PDFView extends RelativeLayout {
         loadPageByOffset();
     }
 
+    public void setBgColor(int bgColor){
+        this.mBgColor = bgColor;
+    }
+
     public void setPositionOffset(float progress) {
         setPositionOffset(progress, true);
     }
@@ -529,7 +534,7 @@ public class PDFView extends RelativeLayout {
         // abstraction of the screen position when rendering the parts.
 
         // Draws background
-        canvas.drawColor(Color.WHITE);
+        canvas.drawColor(mBgColor);
 
         if (recycled) {
             return;
