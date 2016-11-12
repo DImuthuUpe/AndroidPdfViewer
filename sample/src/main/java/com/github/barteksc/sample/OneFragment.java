@@ -40,7 +40,7 @@ public class OneFragment extends Fragment{
         View rootView = inflater.inflate(R.layout.fragment_one, container, false);
 
         output = (TextView) rootView.findViewById(R.id.textView);
-        //output.setMovementMethod(new ScrollingMovementMethod());
+        output.setMovementMethod(new ScrollingMovementMethod());
 
         editText=(EditText)rootView.findViewById(R.id.editText);
 
