@@ -15,8 +15,13 @@
  */
 package com.github.barteksc.sample;
 
+
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.provider.OpenableColumns;
 import android.support.v7.app.AppCompatActivity;
@@ -36,12 +41,6 @@ import org.androidannotations.annotations.OnActivityResult;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.ViewById;
-
-import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentTransaction;
-import android.view.View;
-import android.widget.LinearLayout;
 
 
 import java.util.List;
@@ -66,6 +65,7 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
 
     String pdfFileName;
 
+
     @OptionsItem(R.id.pickFile)
     void pickFile() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -76,12 +76,7 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
     @OptionsItem(R.id.pickImage)
     void pickFragment() {
         OneFragment fragment = new OneFragment();
-        if(fragment.isHidden()){
-            getSupportFragmentManager().beginTransaction().add(R.id.pdfView, fragment).commit();
-        }
-        if(fragment.isVisible()) {
-            getFragmentManager().beginTransaction().remove(OneFragment.this).commit();
-        }
+        getSupportFragmentManager().beginTransaction().add(R.id.pdfView, fragment).commit();
     }
 
     @AfterViews
@@ -92,6 +87,16 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
             displayFromAsset(SAMPLE_FILE);
         }
         setTitle(pdfFileName);
+    }
+
+    protected boolean isOnline(){
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        if(networkInfo != null && networkInfo.isConnectedOrConnecting()){
+            return true;
+        }else{
+            return false;
+        }
     }
 
     private void displayFromAsset(String assetFileName) {
