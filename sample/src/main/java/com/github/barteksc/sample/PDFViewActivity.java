@@ -37,6 +37,13 @@ import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.ViewById;
 
+import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
+import android.view.View;
+import android.widget.LinearLayout;
+
+
 import java.util.List;
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.options)
@@ -64,6 +71,17 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("application/pdf");
         startActivityForResult(intent, REQUEST_CODE);
+    }
+
+    @OptionsItem(R.id.pickImage)
+    void pickFragment() {
+        OneFragment fragment = new OneFragment();
+        if(fragment.isHidden()){
+            getSupportFragmentManager().beginTransaction().add(R.id.pdfView, fragment).commit();
+        }
+        if(fragment.isVisible()) {
+            getFragmentManager().beginTransaction().remove(OneFragment.this).commit();
+        }
     }
 
     @AfterViews
