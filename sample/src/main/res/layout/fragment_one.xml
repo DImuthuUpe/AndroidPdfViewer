@@ -3,12 +3,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent" android:layout_height="match_parent"
     tools:context="com.github.barteksc.sample.OneFragment">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/darker_gray"
         android:orientation="vertical"
-        >
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -46,15 +49,21 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:layout_weight="1">
 
             <TextView
                 android:text="TextView"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/textView"
-                android:layout_weight="1" />
+                android:layout_weight=".2" />
+
+            <ListView
+                android:id="@+id/list_item"
+                android:layout_width="fill_parent"
+                android:layout_height="match_parent"
+                android:layout_weight=".8"/>
         </LinearLayout>
 
     </LinearLayout>

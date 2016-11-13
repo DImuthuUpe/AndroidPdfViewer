@@ -26,6 +26,7 @@ import android.net.Uri;
 import android.provider.OpenableColumns;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.github.barteksc.pdfviewer.PDFView;
 import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener;
@@ -76,7 +77,8 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
     @OptionsItem(R.id.pickImage)
     void pickFragment() {
         OneFragment fragment = new OneFragment();
-        getSupportFragmentManager().beginTransaction().add(R.id.pdfView, fragment).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.pdfView, fragment).commit();
+//        Toast.makeText(getApplicationContext(),"Hello world",Toast.LENGTH_SHORT);
     }
 
     @AfterViews
