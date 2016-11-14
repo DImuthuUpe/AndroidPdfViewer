@@ -15,12 +15,18 @@
  */
 package com.github.barteksc.sample;
 
+
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.provider.OpenableColumns;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.github.barteksc.pdfviewer.PDFView;
 import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener;
@@ -36,6 +42,7 @@ import org.androidannotations.annotations.OnActivityResult;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.ViewById;
+
 
 import java.util.List;
 @EActivity(R.layout.activity_main)
@@ -59,11 +66,19 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
 
     String pdfFileName;
 
+
     @OptionsItem(R.id.pickFile)
     void pickFile() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("application/pdf");
         startActivityForResult(intent, REQUEST_CODE);
+    }
+
+    @OptionsItem(R.id.pickImage)
+    void pickFragment() {
+        OneFragment fragment = new OneFragment();
+        getSupportFragmentManager().beginTransaction().replace(R.id.pdfView, fragment).commit();
+//        Toast.makeText(getApplicationContext(),"Hello world",Toast.LENGTH_SHORT);
     }
 
     @AfterViews
@@ -74,6 +89,16 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
             displayFromAsset(SAMPLE_FILE);
         }
         setTitle(pdfFileName);
+    }
+
+    protected boolean isOnline(){
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        if(networkInfo != null && networkInfo.isConnectedOrConnecting()){
+            return true;
+        }else{
+            return false;
+        }
     }
 
     private void displayFromAsset(String assetFileName) {
