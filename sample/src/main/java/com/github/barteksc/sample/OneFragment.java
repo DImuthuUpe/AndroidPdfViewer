@@ -34,7 +34,7 @@ import java.util.HashMap;
 
 public class OneFragment extends Fragment {
     private String TAG = OneFragment.class.getSimpleName();
-    private static String url = "https://owlbot.info/api/v1/dictionary/cat?format=json";
+    private static String url; // = "https://owlbot.info/api/v1/dictionary/dog?format=json";
 
     ArrayList<Dictionary> dictList;
 
@@ -56,8 +56,6 @@ public class OneFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_one, container, false);
-        dictList = new ArrayList<>();
-
         output = (TextView) rootView.findViewById(R.id.textView);
         output.setMovementMethod(new ScrollingMovementMethod());
         editText = (EditText) rootView.findViewById(R.id.editText);
@@ -69,7 +67,8 @@ public class OneFragment extends Fragment {
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        output.setText(editText.getText());
+                        //output.setText(editText.getText());
+                        url = "https://owlbot.info/api/v1/dictionary/" + editText.getText() + "?format=json";
                         //inputUrl(editText.getText().toString());
                         new MyTask().execute();
                     }
@@ -110,6 +109,7 @@ public class OneFragment extends Fragment {
 
             if(!jsonStr.isEmpty()){
                 try{
+                    dictList = new ArrayList<>();
                     JSONArray jsonAr = new JSONArray(jsonStr);
                     for (int i=0; i<jsonAr.length();i++){
                         JSONObject o = jsonAr.getJSONObject(i);
@@ -150,15 +150,15 @@ public class OneFragment extends Fragment {
             super.onPostExecute(s);
             if (pDialog.isShowing())
                 pDialog.dismiss();
-            
-            String test = null;
+
+            String sstr = "";
             if(!dictList.isEmpty()){
                 for(Dictionary d : dictList){
-                   test = d.getDefenition();
-                    break;
+                   sstr += d.getType()+":"+d.getDefenition()+"\n\nExample"+d.getExample()+"\n\n";
                 }
+                output.setText(sstr);
             }
-            Toast.makeText(getActivity().getApplicationContext(),test,Toast.LENGTH_LONG).show();
+            //Toast.makeText(getActivity().getApplicationContext(),output.getText(),Toast.LENGTH_LONG).show();
         }
     }
 }
