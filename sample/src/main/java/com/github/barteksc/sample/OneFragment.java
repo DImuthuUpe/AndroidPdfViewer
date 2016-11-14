@@ -18,6 +18,9 @@ import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.barteksc.sample.model.Dictionary;
+import com.helger.jcodemodel.JArray;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,17 +32,16 @@ import java.util.HashMap;
  * Created by Nrtdemo-NB on 11/12/2016.
  */
 
-public class OneFragment extends Fragment{
+public class OneFragment extends Fragment {
+    private String TAG = OneFragment.class.getSimpleName();
+    private static String url = "https://owlbot.info/api/v1/dictionary/cat?format=json";
+
+    ArrayList<Dictionary> dictList;
 
     private ProgressDialog pDialog;
-    private String TAG = OneFragment.class.getSimpleName();
-
-    private static String url;
     private EditText editText;
     private TextView output;
     private ListView lv;
-
-    ArrayList<HashMap<String, String>> contactList;
 
     public OneFragment() {
         // Required empty public constructor
@@ -52,31 +54,31 @@ public class OneFragment extends Fragment{
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_one, container, false);
-        contactList = new ArrayList<>();
+        dictList = new ArrayList<>();
 
         output = (TextView) rootView.findViewById(R.id.textView);
         output.setMovementMethod(new ScrollingMovementMethod());
-        editText=(EditText)rootView.findViewById(R.id.editText);
+        editText = (EditText) rootView.findViewById(R.id.editText);
 
         lv = (ListView) rootView.findViewById(R.id.list_item);
 
-        Button submit = (Button)rootView.findViewById(R.id.buttonSubmit);
+        Button submit = (Button) rootView.findViewById(R.id.buttonSubmit);
         submit.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         output.setText(editText.getText());
-                        inputUrl(editText.getText().toString());
-                        new GetContacts().execute();
+                        //inputUrl(editText.getText().toString());
+                        new MyTask().execute();
                     }
                 }
         );
-        Button btn_close = (Button)rootView.findViewById(R.id.btn_close);
+        Button btn_close = (Button) rootView.findViewById(R.id.btn_close);
         btn_close.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-               getFragmentManager().beginTransaction().remove(OneFragment.this).commit();
+                getFragmentManager().beginTransaction().remove(OneFragment.this).commit();
             }
         });
 
@@ -85,15 +87,15 @@ public class OneFragment extends Fragment{
     }
 
     void inputUrl(String s) {
-        url = "https://owlbot.info/api/v1/dictionary/"+ s +"?format=json";
+        url = "https://owlbot.info/api/v1/dictionary/" + s + "?format=json";
     }
 
-    private class GetContacts extends AsyncTask<Void, Void, Void> {
+    private class MyTask extends AsyncTask<Void,Void,Void>{
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            // Showing progress dialog
+            pDialog = new ProgressDialog(getActivity());
             pDialog.setMessage("Please wait...");
             pDialog.setCancelable(false);
             pDialog.show();
@@ -101,106 +103,62 @@ public class OneFragment extends Fragment{
         }
 
         @Override
-        protected Void doInBackground(Void... arg0) {
+        protected Void doInBackground(Void... strings) {
             HttpHandler sh = new HttpHandler();
-
-            // Making a request to url and getting response
             String jsonStr = sh.makeServiceCall(url);
+            Log.e(TAG,"Response from url: " + jsonStr);
 
-            Log.e(TAG, "Response from url: " + jsonStr);
-
-            //Toast.makeText(OneFragment.this,jsonStr,Toast.LENGTH_SHORT).show();
-
-            if (jsonStr != null) {
-                try {
-                    //JSONObject jsonObj = new JSONObject(jsonStr);
-                    JSONArray word = new JSONArray(jsonStr);
-                    // Getting JSON Array node
-                    //JSONArray contacts = jsonObj.getJSONArray("contacts");
-
-                    // looping through All Contacts
-                    for (int i = 0; i < word.length(); i++) {
-                        JSONObject c = word.getJSONObject(i);
-
-                        String type = c.getString("type");
-                        String defenition = c.getString("defenition");
-                        String example = c.getString("example");
-//                        String address = c.getString("address");
-//                        String gender = c.getString("gender");
-
-                        // Phone node is JSON Object
-//                        JSONObject phone = c.getJSONObject("phone");
-//                        String mobile = phone.getString("mobile");
-//                        String home = phone.getString("home");
-//                        String office = phone.getString("office");
-
-                        // tmp hash map for single contact
-                        HashMap<String, String> contact = new HashMap<>();
-                        // adding each child node to HashMap key => value
-                        contact.put("type", type);
-                        contact.put("defenition", defenition);
-                        contact.put("example", example);
-//                        contact.put("mobile", mobile);
-
-                        // adding contact to contact list
-                        contactList.add(contact);
-
-                        //Toast.makeText(getApplicationContext());
+            if(!jsonStr.isEmpty()){
+                try{
+                    JSONArray jsonAr = new JSONArray(jsonStr);
+                    for (int i=0; i<jsonAr.length();i++){
+                        JSONObject o = jsonAr.getJSONObject(i);
+                        Dictionary dict = new Dictionary();
+                        dict.setType(o.getString("type"));
+                        dict.setDefenition(o.getString("defenition"));
+                        dict.setExample(o.getString("example"));
+                        dictList.add(dict);
                     }
-                } catch (final JSONException e) {
+                }catch (final JSONException e){
                     Log.e(TAG, "Json parsing error: " + e.getMessage());
-//                    runOnUiThread(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            Toast.makeText(getApplicationContext(),
-//                                    "Json parsing error: " + e.getMessage(),
-//                                    Toast.LENGTH_LONG)
-//                                    .show();
-//                        }
-//                    });
-
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getActivity().getApplicationContext(),
+                                    "Json parsing error: " + e.getMessage(),Toast.LENGTH_SHORT)
+                            .show();
+                        }
+                    });
                 }
-            } else {
+            }else {
                 Log.e(TAG, "Couldn't get json from server.");
-//                runOnUiThread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        Toast.makeText(getApplicationContext(),
-//                                "Couldn't get json from server. Check LogCat for possible errors!",
-//                                Toast.LENGTH_LONG)
-//                                .show();
-//                    }
-//                });
-
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getActivity().getApplicationContext(),
+                                "Couldn't get json from server. Check LogCat for possible errors!",
+                                Toast.LENGTH_LONG)
+                                .show();
+                    }
+                });
             }
-
             return null;
         }
 
         @Override
-        protected void onProgressUpdate(Void... values) {
-            super.onProgressUpdate(values);
-        }
-
-        @Override
-        protected void onPostExecute(Void result) {
-            super.onPostExecute(result);
-            // Dismiss the progress dialog
+        protected void onPostExecute(Void s) {
+            super.onPostExecute(s);
             if (pDialog.isShowing())
                 pDialog.dismiss();
-            /**
-             * Updating parsed JSON data into ListView
-             * */
-            ListAdapter adapter = new SimpleAdapter(
-                    OneFragment.this, contactList,R.layout.list_item,
-                    new String[]{"type", "defenition","example"},
-                    new int[]{R.id.tvType,R.id.tvDefenition, R.id.tvExample});
-
-//            lv.setAdapter(adapter);
+            
+            String test = null;
+            if(!dictList.isEmpty()){
+                for(Dictionary d : dictList){
+                   test = d.getDefenition();
+                    break;
+                }
+            }
+            Toast.makeText(getActivity().getApplicationContext(),test,Toast.LENGTH_LONG).show();
         }
-
-
     }
-
-
 }
