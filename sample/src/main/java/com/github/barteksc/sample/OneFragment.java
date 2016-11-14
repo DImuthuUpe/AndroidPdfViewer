@@ -68,9 +68,10 @@ public class OneFragment extends Fragment{
                     @Override
                     public void onClick(View view) {
                         output.setText(editText.getText());
+                        inputUrl(editText.getText().toString());
+                        new GetContacts().execute();
                     }
                 }
-                //new GetContacts().execute();
         );
         Button btn_close = (Button)rootView.findViewById(R.id.btn_close);
         btn_close.setOnClickListener(new View.OnClickListener() {
@@ -83,7 +84,7 @@ public class OneFragment extends Fragment{
         return rootView;
     }
 
-    void writeUrl(String s){
+    void inputUrl(String s) {
         url = "https://owlbot.info/api/v1/dictionary/"+ s +"?format=json";
     }
 
@@ -107,6 +108,8 @@ public class OneFragment extends Fragment{
             String jsonStr = sh.makeServiceCall(url);
 
             Log.e(TAG, "Response from url: " + jsonStr);
+
+            //Toast.makeText(OneFragment.this,jsonStr,Toast.LENGTH_SHORT).show();
 
             if (jsonStr != null) {
                 try {
@@ -175,6 +178,11 @@ public class OneFragment extends Fragment{
         }
 
         @Override
+        protected void onProgressUpdate(Void... values) {
+            super.onProgressUpdate(values);
+        }
+
+        @Override
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
             // Dismiss the progress dialog
@@ -183,12 +191,16 @@ public class OneFragment extends Fragment{
             /**
              * Updating parsed JSON data into ListView
              * */
-//            ListAdapter adapter = new SimpleAdapter(
-//                    OneFragment.this, contactList,R.layout.list_item,
-//                    new String[]{"type", "defenition","example"},
-//                    new int[]{R.id.tvType,R.id.tvDefenition, R.id.tvExample});
+            ListAdapter adapter = new SimpleAdapter(
+                    OneFragment.this, contactList,R.layout.list_item,
+                    new String[]{"type", "defenition","example"},
+                    new int[]{R.id.tvType,R.id.tvDefenition, R.id.tvExample});
 
 //            lv.setAdapter(adapter);
         }
+
+
     }
+
+
 }
