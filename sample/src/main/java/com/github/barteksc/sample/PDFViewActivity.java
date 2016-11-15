@@ -15,12 +15,14 @@
  */
 package com.github.barteksc.sample;
 
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.OpenableColumns;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.github.barteksc.pdfviewer.PDFView;
 import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener;
@@ -63,7 +65,13 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
     void pickFile() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("application/pdf");
-        startActivityForResult(intent, REQUEST_CODE);
+        try {
+            startActivityForResult(intent, REQUEST_CODE);
+        }
+        catch (ActivityNotFoundException e) {
+            //alert user that file manager not working
+            Toast.makeText(this, R.string.toast_pick_file_error, Toast.LENGTH_SHORT).show();
+        }
     }
 
     @AfterViews
