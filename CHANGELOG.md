@@ -1,3 +1,8 @@
+## 2.2.0 (2016-11-15)
+* Merge pull request by [skarempudi](https://github.com/skarempudi) which fixes SDK 23 permission problems in sample app
+* Merge pull request by skarempudi for showing info on phones without file manager
+* Add feature from 1.x - canvas is set to drawable from View#getBackground()
+
 ## 2.1.0 (2016-09-16)
 * fixed loading document from subfolder in assets directory
 * fixed scroll handle NPE after document loading error (improvement of 2.0.3 fix)
