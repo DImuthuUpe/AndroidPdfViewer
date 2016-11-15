@@ -66,7 +66,7 @@ import java.util.List;
  * - DocumentPage = A page of the PDF document.
  * - UserPage = A page as defined by the user.
  * By default, they're the same. But the user can change the pages order
- * using {@link #load(String, boolean, String, OnLoadCompleteListener, OnErrorListener, int[])}. In this
+ * using {@link #load(String, InputStream, boolean, String, OnLoadCompleteListener, OnErrorListener, int[])}. In this
  * particular case, a userPage of 5 can refer to a documentPage of 17.
  */
 public class PDFView extends RelativeLayout {
@@ -279,11 +279,11 @@ public class PDFView extends RelativeLayout {
         setWillNotDraw(false);
     }
 
-    private void load(String path, boolean isAsset, String password, OnLoadCompleteListener listener, OnErrorListener onErrorListener) {
-        load(path, isAsset, password, listener, onErrorListener, null);
+    private void load(String path, InputStream inputStream, boolean isAsset, String password, OnLoadCompleteListener listener, OnErrorListener onErrorListener) {
+        load(path, inputStream, isAsset, password, listener, onErrorListener, null);
     }
 
-    private void load(String path, boolean isAsset, String password, OnLoadCompleteListener onLoadCompleteListener, OnErrorListener onErrorListener, int[] userPages) {
+    private void load(String path, InputStream inputStream, boolean isAsset, String password, OnLoadCompleteListener onLoadCompleteListener, OnErrorListener onErrorListener, int[] userPages) {
 
         if (!recycled) {
             throw new IllegalStateException("Don't call load on a PDF View without recycling it first.");
@@ -301,7 +301,7 @@ public class PDFView extends RelativeLayout {
 
         recycled = false;
         // Start decoding document
-        decodingAsyncTask = new DecodingAsyncTask(path, isAsset, password, this, pdfiumCore);
+        decodingAsyncTask = new DecodingAsyncTask(path, inputStream, isAsset, password, this, pdfiumCore);
         decodingAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
@@ -1125,6 +1125,10 @@ public class PDFView extends RelativeLayout {
         }
     }
 
+    public Configurator fromInputStream(String assetName, InputStream inputStream) {
+        return new Configurator(assetName, inputStream);
+    }
+
     /**
      * Use a file as the pdf source
      */
@@ -1149,6 +1153,8 @@ public class PDFView extends RelativeLayout {
         private final String path;
 
         private final boolean isAsset;
+
+        private InputStream inputStream;
 
         private int[] pageNumbers = null;
 
@@ -1179,6 +1185,12 @@ public class PDFView extends RelativeLayout {
         private Configurator(String path, boolean isAsset) {
             this.path = path;
             this.isAsset = isAsset;
+        }
+
+        private Configurator(String path, InputStream inputStream) {
+            this.path = path;
+            this.inputStream = inputStream;
+            this.isAsset = false;
         }
 
         public Configurator pages(int... pageNumbers) {
@@ -1259,9 +1271,9 @@ public class PDFView extends RelativeLayout {
             PDFView.this.setScrollHandle(scrollHandle);
             PDFView.this.dragPinchManager.setSwipeVertical(swipeVertical);
             if (pageNumbers != null) {
-                PDFView.this.load(path, isAsset, password, onLoadCompleteListener, onErrorListener, pageNumbers);
+                PDFView.this.load(path, inputStream, isAsset, password, onLoadCompleteListener, onErrorListener, pageNumbers);
             } else {
-                PDFView.this.load(path, isAsset, password, onLoadCompleteListener, onErrorListener);
+                PDFView.this.load(path, inputStream, isAsset, password, onLoadCompleteListener, onErrorListener);
             }
         }
     }

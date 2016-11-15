@@ -38,6 +38,12 @@ public class FileUtils {
         return outFile;
     }
 
+    public static File fileFromInputStream(InputStream inputStream, Context context, String assetName) throws IOException {
+        File outFile = new File(context.getCacheDir(), assetName + "-pdfview.pdf");
+        copy(inputStream, outFile);
+        return outFile;
+    }
+
     public static void copy(InputStream inputStream, File output) throws IOException {
         OutputStream outputStream = null;
         try {
