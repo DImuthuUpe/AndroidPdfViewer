@@ -33,11 +33,9 @@ import java.util.HashMap;
  */
 
 public class OneFragment extends Fragment {
-    private String TAG = OneFragment.class.getSimpleName();
     private static String url; // = "https://owlbot.info/api/v1/dictionary/dog?format=json";
-
     ArrayList<Dictionary> dictList;
-
+    private String TAG = OneFragment.class.getSimpleName();
     private ProgressDialog pDialog;
     private EditText editText;
     private TextView output;
@@ -154,7 +152,7 @@ public class OneFragment extends Fragment {
             String sstr = "";
             if(!dictList.isEmpty()){
                 for(Dictionary d : dictList){
-                   sstr += d.getType()+":"+d.getDefenition()+"\n\nExample"+d.getExample()+"\n\n";
+                   sstr += d.getType()+" : "+d.getDefenition()+"\nExample : "+d.getExample()+"\n\n";
                 }
                 output.setText(sstr);
             }

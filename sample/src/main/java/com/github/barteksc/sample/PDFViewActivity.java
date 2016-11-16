@@ -15,12 +15,12 @@
  */
 package com.github.barteksc.sample;
 
-<<<<<<< HEAD
+
 
 import android.content.Context;
-=======
+
 import android.content.ActivityNotFoundException;
->>>>>>> refs/remotes/barteksc/master
+
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -110,7 +110,6 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
     void pickFragment() {
         OneFragment fragment = new OneFragment();
         getSupportFragmentManager().beginTransaction().replace(R.id.pdfView, fragment).commit();
-//        Toast.makeText(getApplicationContext(),"Hello world",Toast.LENGTH_SHORT);
     }
 
     @AfterViews
