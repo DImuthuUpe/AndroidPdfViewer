@@ -3,16 +3,20 @@
 # Android PdfViewer
 
 __AndroidPdfViewer 1.x is available on [AndroidPdfViewerV1](https://github.com/barteksc/AndroidPdfViewerV1)
-repo, where can be developed independently.__
+repo, where can be developed independently. Version 1.x uses different engine for drawing document on canvas,
+so if you don't like 2.x version, try 1.x.__
 
 Library for displaying PDF documents on Android, with `animations`, `gestures`, `zoom` and `double tap` support.
 It is based on [PdfiumAndroid](https://github.com/barteksc/PdfiumAndroid) for decoding PDF files. Works on API 11 and higher.
 Licensed under Apache License 2.0.
 
-## What's new in 2.2.0?
-* Merge pull request by [skarempudi](https://github.com/skarempudi) which fixes SDK 23 permission problems in sample app
-* Merge pull request by skarempudi for showing info on phones without file manager
-* Add feature from 1.x - canvas is set to drawable from View#getBackground()
+## What's new in 2.3.0?
+* Add mechanism for providing documents from different sources - more info [here](#document-sources)
+* Update PdfiumAndroid to 1.5.0
+* Thanks to document sources and PdfiumAndroid update, in-memory documents are supported
+* Fix not working OnClickListener on PDFView
+* **com.github.barteksc.exception.FileNotFoundException** is deprecated and all usages was removed.
+All exceptions are delivered to old Configurator#onError() listener.
 
 ## Changes in 2.0 API
 * `Configurator#defaultPage(int)` and `PDFView#jumpTo(int)` now require page index (i.e. starting from 0)
@@ -27,7 +31,7 @@ Licensed under Apache License 2.0.
 
 Add to _build.gradle_:
 
-`compile 'com.github.barteksc:android-pdf-viewer:2.2.0'`
+`compile 'com.github.barteksc:android-pdf-viewer:2.3.0'`
 
 Library is available in jcenter repository, probably it'll be in Maven Central soon.
 
@@ -86,6 +90,21 @@ By using constructor with second argument (`new DefaultScrollHandle(this, true)`
 You can also create custom scroll handles, just implement **ScrollHandle** interface.
 All methods are documented as Javadoc comments on interface [source](https://github.com/barteksc/AndroidPdfViewer/tree/master/android-pdf-viewer/src/main/java/com/github/barteksc/pdfviewer/scroll/ScrollHandle.java).
 
+## Document sources
+Version 1.5.0 introduced _document sources_, which are just providers for PDF documents.
+Every provider implements **DocumentSource** interface.
+Predefined providers are available in **com.github.barteksc.pdfviewer.source** package and can be used as
+samples for creating custom ones.
+
+Predefined providers can be used with shorthand methods:
+```
+pdfView.fromUri(Uri)
+pdfView.fromFile(File)
+pdfView.fromBytes(byte[])
+pdfView.fromStream(InputStream)
+pdfView.fromAsset(String)
+```
+Custom providers may be used with `pdfView.fromSource(DocumentSource)` method.
 
 ## Additional options
 
