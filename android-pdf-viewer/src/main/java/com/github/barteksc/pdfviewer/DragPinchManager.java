@@ -88,6 +88,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
                 ps.hide();
             }
         }
+        pdfView.performClick();
         return true;
     }
 
