@@ -31,7 +31,6 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.widget.RelativeLayout;
 
-import com.github.barteksc.pdfviewer.exception.FileNotFoundException;
 import com.github.barteksc.pdfviewer.listener.OnDrawListener;
 import com.github.barteksc.pdfviewer.listener.OnErrorListener;
 import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener;
@@ -39,6 +38,12 @@ import com.github.barteksc.pdfviewer.listener.OnPageChangeListener;
 import com.github.barteksc.pdfviewer.listener.OnPageScrollListener;
 import com.github.barteksc.pdfviewer.model.PagePart;
 import com.github.barteksc.pdfviewer.scroll.ScrollHandle;
+import com.github.barteksc.pdfviewer.source.AssetSource;
+import com.github.barteksc.pdfviewer.source.ByteArraySource;
+import com.github.barteksc.pdfviewer.source.DocumentSource;
+import com.github.barteksc.pdfviewer.source.FileSource;
+import com.github.barteksc.pdfviewer.source.InputStreamSource;
+import com.github.barteksc.pdfviewer.source.UriSource;
 import com.github.barteksc.pdfviewer.util.ArrayUtils;
 import com.github.barteksc.pdfviewer.util.Constants;
 import com.github.barteksc.pdfviewer.util.MathUtils;
@@ -66,7 +71,7 @@ import java.util.List;
  * - DocumentPage = A page of the PDF document.
  * - UserPage = A page as defined by the user.
  * By default, they're the same. But the user can change the pages order
- * using {@link #load(String, boolean, String, OnLoadCompleteListener, OnErrorListener, int[])}. In this
+ * using {@link #load(DocumentSource, String, OnLoadCompleteListener, OnErrorListener, int[])}. In this
  * particular case, a userPage of 5 can refer to a documentPage of 17.
  */
 public class PDFView extends RelativeLayout {
@@ -279,11 +284,11 @@ public class PDFView extends RelativeLayout {
         setWillNotDraw(false);
     }
 
-    private void load(String path, boolean isAsset, String password, OnLoadCompleteListener listener, OnErrorListener onErrorListener) {
-        load(path, isAsset, password, listener, onErrorListener, null);
+    private void load(DocumentSource docSource, String password, OnLoadCompleteListener listener, OnErrorListener onErrorListener) {
+        load(docSource, password, listener, onErrorListener, null);
     }
 
-    private void load(String path, boolean isAsset, String password, OnLoadCompleteListener onLoadCompleteListener, OnErrorListener onErrorListener, int[] userPages) {
+    private void load(DocumentSource docSource, String password, OnLoadCompleteListener onLoadCompleteListener, OnErrorListener onErrorListener, int[] userPages) {
 
         if (!recycled) {
             throw new IllegalStateException("Don't call load on a PDF View without recycling it first.");
@@ -301,7 +306,7 @@ public class PDFView extends RelativeLayout {
 
         recycled = false;
         // Start decoding document
-        decodingAsyncTask = new DecodingAsyncTask(path, isAsset, password, this, pdfiumCore);
+        decodingAsyncTask = new DecodingAsyncTask(docSource, password, this, pdfiumCore);
         decodingAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
@@ -1108,47 +1113,48 @@ public class PDFView extends RelativeLayout {
      * Use an asset file as the pdf source
      */
     public Configurator fromAsset(String assetName) {
-        InputStream stream = null;
-        try {
-            stream = getContext().getAssets().open(assetName);
-            return new Configurator(assetName, true);
-        } catch (IOException e) {
-            throw new FileNotFoundException(assetName + " does not exist.", e);
-        } finally {
-            try {
-                if (stream != null) {
-                    stream.close();
-                }
-            } catch (IOException e) {
-
-            }
-        }
+        return new Configurator(new AssetSource(assetName));
     }
 
     /**
      * Use a file as the pdf source
      */
     public Configurator fromFile(File file) {
-        if (!file.exists()) {
-            throw new FileNotFoundException(file.getAbsolutePath() + " does not exist.");
-        }
-        return new Configurator(file.getAbsolutePath(), false);
+        return new Configurator(new FileSource(file));
     }
 
     /**
-     * Use Uri as the pdf source, for use with content provider
+     * Use URI as the pdf source, for use with content providers
      */
     public Configurator fromUri(Uri uri) {
-        return new Configurator(uri.toString(), false);
+        return new Configurator(new UriSource(uri));
+    }
+
+    /**
+     * Use bytearray as the pdf source, documents is not saved
+     * @param bytes
+     * @return
+     */
+    public Configurator fromBytes(byte[] bytes) {
+        return new Configurator(new ByteArraySource(bytes));
+    }
+
+    public Configurator fromStream(InputStream stream) {
+        return new Configurator(new InputStreamSource(stream));
+    }
+
+    /**
+     * Use custom source as pdf source
+     */
+    public Configurator fromSource(DocumentSource docSource) {
+        return new Configurator(docSource);
     }
 
     private enum State {DEFAULT, LOADED, SHOWN, ERROR}
 
     public class Configurator {
 
-        private final String path;
-
-        private final boolean isAsset;
+        private final DocumentSource documentSource;
 
         private int[] pageNumbers = null;
 
@@ -1176,9 +1182,8 @@ public class PDFView extends RelativeLayout {
 
         private ScrollHandle scrollHandle = null;
 
-        private Configurator(String path, boolean isAsset) {
-            this.path = path;
-            this.isAsset = isAsset;
+        private Configurator(DocumentSource documentSource) {
+            this.documentSource = documentSource;
         }
 
         public Configurator pages(int... pageNumbers) {
@@ -1259,9 +1264,9 @@ public class PDFView extends RelativeLayout {
             PDFView.this.setScrollHandle(scrollHandle);
             PDFView.this.dragPinchManager.setSwipeVertical(swipeVertical);
             if (pageNumbers != null) {
-                PDFView.this.load(path, isAsset, password, onLoadCompleteListener, onErrorListener, pageNumbers);
+                PDFView.this.load(documentSource, password, onLoadCompleteListener, onErrorListener, pageNumbers);
             } else {
-                PDFView.this.load(path, isAsset, password, onLoadCompleteListener, onErrorListener);
+                PDFView.this.load(documentSource, password, onLoadCompleteListener, onErrorListener);
             }
         }
     }

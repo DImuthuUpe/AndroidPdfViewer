@@ -38,7 +38,7 @@ android {
 }
 
 dependencies {
-    compile 'com.github.barteksc:pdfium-android:1.4.0'
+    compile 'com.github.barteksc:pdfium-android:1.5.0'
 }
 
 apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle'
