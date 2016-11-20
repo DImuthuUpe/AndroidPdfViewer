@@ -52,6 +52,12 @@ pdfView.fromUri(Uri)
 or
 pdfView.fromFile(File)
 or
+pdfView.fromBytes(byte[])
+or
+pdfView.fromStream(InputStream)
+or
+pdfView.fromSource(DocumentSource)
+or
 pdfView.fromAsset(String)
     .pages(0, 2, 1, 3, 3, 3) // all pages are displayed by default
     .enableSwipe(true)
