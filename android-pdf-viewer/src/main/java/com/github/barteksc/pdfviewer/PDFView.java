@@ -51,7 +51,6 @@ import com.shockwave.pdfium.PdfDocument;
 import com.shockwave.pdfium.PdfiumCore;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -261,6 +260,14 @@ public class PDFView extends RelativeLayout {
      * False otherwise
      */
     private boolean annotationRendering = false;
+
+    /**
+     * True if the view should render during scaling - default<br/>
+     * Can not be forced on older API versions (< Build.VERSION_CODES.KITKAT) as the GestureDetector does
+     * not detect scrolling while scaling.<br/>
+     * False otherwise
+     */
+    private boolean renderDuringScale = true;
 
     /**
      * Construct the initial view
@@ -1093,6 +1100,14 @@ public class PDFView extends RelativeLayout {
 
     public boolean isAnnotationRendering() {
         return annotationRendering;
+    }
+
+    public void enableRenderDuringScale(boolean renderDuringScale) {
+        this.renderDuringScale = renderDuringScale;
+    }
+
+    public boolean doRenderDuringScale() {
+        return renderDuringScale;
     }
 
     public PdfDocument.Meta getDocumentMeta() {
