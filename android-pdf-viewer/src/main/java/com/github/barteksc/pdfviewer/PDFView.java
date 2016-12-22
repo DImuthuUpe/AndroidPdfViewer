@@ -27,6 +27,7 @@ import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.HandlerThread;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.widget.RelativeLayout;
@@ -51,7 +52,6 @@ import com.shockwave.pdfium.PdfDocument;
 import com.shockwave.pdfium.PdfiumCore;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -190,9 +190,13 @@ public class PDFView extends RelativeLayout {
     private DecodingAsyncTask decodingAsyncTask;
 
     /**
-     * Async task always playing in the background and proceeding rendering tasks
+     * The thread {@link #renderingHandler} will run on
      */
-    RenderingAsyncTask renderingAsyncTask;
+    private final HandlerThread renderingHandlerThread;
+    /**
+     * Handler always waiting in the background and rendering tasks
+     */
+    RenderingHandler renderingHandler;
 
     private PagesLoader pagesLoader;
 
@@ -267,6 +271,8 @@ public class PDFView extends RelativeLayout {
      */
     public PDFView(Context context, AttributeSet set) {
         super(context, set);
+
+        renderingHandlerThread = new HandlerThread("PDF renderer");
 
         if (isInEditMode()) {
             return;
@@ -445,8 +451,8 @@ public class PDFView extends RelativeLayout {
         animationManager.stopAll();
 
         // Stop tasks
-        if (renderingAsyncTask != null) {
-            renderingAsyncTask.cancel(true);
+        if (renderingHandler != null) {
+            renderingHandler.removeMessages(RenderingHandler.MSG_RENDER_TASK);
         }
         if (decodingAsyncTask != null) {
             decodingAsyncTask.cancel(true);
@@ -649,7 +655,7 @@ public class PDFView extends RelativeLayout {
         }
 
         // Cancel all current tasks
-        renderingAsyncTask.removeAllTasks();
+        renderingHandler.removeMessages(RenderingHandler.MSG_RENDER_TASK);
         cacheManager.makeANewSet();
 
         pagesLoader.loadPages();
@@ -677,8 +683,10 @@ public class PDFView extends RelativeLayout {
 
         pagesLoader = new PagesLoader(this);
 
-        renderingAsyncTask = new RenderingAsyncTask(this, pdfiumCore, pdfDocument);
-        renderingAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        if (!renderingHandlerThread.isAlive()) {
+            renderingHandlerThread.start();
+        }
+        renderingHandler = new RenderingHandler(this, pdfiumCore, pdfDocument);
 
         if (scrollHandle != null) {
             scrollHandle.setupLayout(this);
