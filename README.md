@@ -10,13 +10,10 @@ Library for displaying PDF documents on Android, with `animations`, `gestures`, 
 It is based on [PdfiumAndroid](https://github.com/barteksc/PdfiumAndroid) for decoding PDF files. Works on API 11 and higher.
 Licensed under Apache License 2.0.
 
-## What's new in 2.3.0?
-* Add mechanism for providing documents from different sources - more info [here](#document-sources)
-* Update PdfiumAndroid to 1.5.0
-* Thanks to document sources and PdfiumAndroid update, in-memory documents are supported
-* Fix not working OnClickListener on PDFView
-* **com.github.barteksc.exception.FileNotFoundException** is deprecated and all usages was removed.
-All exceptions are delivered to old Configurator#onError() listener.
+## What's new in 2.4.0?
+* Merge pull request by [hansinator85](https://github.com/hansinator85) which allows to enable/disable rendering during scale
+* Make rendering during scale disabled by default (looks better)
+* Merge pull request by [cesquivias](https://github.com/cesquivias) which replaces RenderingAsyncTask with Handler to simply code and work with testing frameworks
 
 ## Changes in 2.0 API
 * `Configurator#defaultPage(int)` and `PDFView#jumpTo(int)` now require page index (i.e. starting from 0)
@@ -31,7 +28,7 @@ All exceptions are delivered to old Configurator#onError() listener.
 
 Add to _build.gradle_:
 
-`compile 'com.github.barteksc:android-pdf-viewer:2.3.0'`
+`compile 'com.github.barteksc:android-pdf-viewer:2.4.0'`
 
 Library is available in jcenter repository, probably it'll be in Maven Central soon.
 

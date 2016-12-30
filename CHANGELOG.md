@@ -1,3 +1,8 @@
+## 2.4.0 (2016-12-30)
+* Merge pull request by [hansinator85](https://github.com/hansinator85) which allows to enable/disable rendering during scale
+* Make rendering during scale disabled by default (looks better)
+* Merge pull request by [cesquivias](https://github.com/cesquivias) which replaces RenderingAsyncTask with Handler to simply code and work with testing frameworks
+
 ## 2.3.0 (2016-11-19)
 * Add mechanism for providing documents from different sources - more info in README
 * Update PdfiumAndroid to 1.5.0
