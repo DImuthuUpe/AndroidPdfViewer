@@ -19,24 +19,31 @@ import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 
 import com.github.barteksc.pdfviewer.model.PagePart;
 import com.shockwave.pdfium.PdfDocument;
 import com.shockwave.pdfium.PdfiumCore;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-class RenderingAsyncTask extends AsyncTask<Void, PagePart, Void> {
+/**
+ * A {@link Handler} that will process incoming {@link RenderingTask} messages
+ * and alert {@link PDFView#onBitmapRendered(PagePart)} when the portion of the
+ * PDF is ready to render.
+ */
+class RenderingHandler extends Handler {
+    /**
+     * {@link Message#what} kind of message this handler processes.
+     */
+    static final int MSG_RENDER_TASK = 1;
 
     private PdfiumCore pdfiumCore;
     private PdfDocument pdfDocument;
 
-    private final List<RenderingTask> renderingTasks;
     private PDFView pdfView;
 
     private RectF renderBounds = new RectF();
@@ -44,70 +51,30 @@ class RenderingAsyncTask extends AsyncTask<Void, PagePart, Void> {
     private Matrix renderMatrix = new Matrix();
     private final Set<Integer> openedPages = new HashSet<>();
 
-    public RenderingAsyncTask(PDFView pdfView, PdfiumCore pdfiumCore, PdfDocument pdfDocument) {
+    RenderingHandler(Looper looper, PDFView pdfView, PdfiumCore pdfiumCore, PdfDocument pdfDocument) {
+        super(looper);
         this.pdfView = pdfView;
         this.pdfiumCore = pdfiumCore;
         this.pdfDocument = pdfDocument;
-        this.renderingTasks = Collections.synchronizedList(new ArrayList<RenderingTask>());
-
     }
 
-    public void addRenderingTask(int userPage, int page, float width, float height, RectF bounds, boolean thumbnail, int cacheOrder, boolean bestQuality, boolean annotationRendering) {
+    void addRenderingTask(int userPage, int page, float width, float height, RectF bounds, boolean thumbnail, int cacheOrder, boolean bestQuality, boolean annotationRendering) {
         RenderingTask task = new RenderingTask(width, height, bounds, userPage, page, thumbnail, cacheOrder, bestQuality, annotationRendering);
-        renderingTasks.add(task);
-        wakeUp();
+        Message msg = obtainMessage(MSG_RENDER_TASK, task);
+        sendMessage(msg);
     }
 
     @Override
-    protected Void doInBackground(Void... params) {
-        while (!isCancelled()) {
-
-            // Proceed all tasks
-            while (true) {
-                RenderingTask task;
-                synchronized (renderingTasks) {
-                    if (!renderingTasks.isEmpty()) {
-                        task = renderingTasks.get(0);
-                    } else {
-                        break;
-                    }
+    public void handleMessage(Message message) {
+        RenderingTask task = (RenderingTask) message.obj;
+        final PagePart part = proceed(task);
+        if (part != null) {
+            pdfView.post(new Runnable() {
+                @Override
+                public void run() {
+                    pdfView.onBitmapRendered(part);
                 }
-                //it is very rare case, but sometimes null can appear
-                if (task != null) {
-                    PagePart part = proceed(task);
-                    if (part == null) {
-                        break;
-                    } else if (renderingTasks.remove(task)) {
-                        publishProgress(part);
-                    } else {
-                        part.getRenderedBitmap().recycle();
-                    }
-                }
-            }
-
-            // Wait for new task, return if canceled
-            if (!waitForRenderingTasks() || isCancelled()) {
-                return null;
-            }
-
-        }
-        return null;
-
-    }
-
-    @Override
-    protected void onProgressUpdate(PagePart... part) {
-        pdfView.onBitmapRendered(part[0]);
-    }
-
-    private boolean waitForRenderingTasks() {
-        try {
-            synchronized (renderingTasks) {
-                renderingTasks.wait();
-            }
-            return true;
-        } catch (InterruptedException e) {
-            return false;
+            });
         }
     }
 
@@ -121,15 +88,9 @@ class RenderingAsyncTask extends AsyncTask<Void, PagePart, Void> {
         int h = Math.round(renderingTask.height);
         Bitmap render = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         calculateBounds(w, h, renderingTask.bounds);
-
-        if (!isCancelled()) {
-            pdfiumCore.renderPageBitmap(pdfDocument, render, renderingTask.page,
-                    roundedRenderBounds.left, roundedRenderBounds.top,
-                    roundedRenderBounds.width(), roundedRenderBounds.height(), renderingTask.annotationRendering);
-        } else {
-            render.recycle();
-            return null;
-        }
+        pdfiumCore.renderPageBitmap(pdfDocument, render, renderingTask.page,
+                roundedRenderBounds.left, roundedRenderBounds.top,
+                roundedRenderBounds.width(), roundedRenderBounds.height(), renderingTask.annotationRendering);
 
         if (!renderingTask.bestQuality) {
             Bitmap cpy = render.copy(Bitmap.Config.RGB_565, false);
@@ -153,18 +114,6 @@ class RenderingAsyncTask extends AsyncTask<Void, PagePart, Void> {
         renderBounds.round(roundedRenderBounds);
     }
 
-    public void removeAllTasks() {
-        synchronized (renderingTasks) {
-            renderingTasks.clear();
-        }
-    }
-
-    public void wakeUp() {
-        synchronized (renderingTasks) {
-            renderingTasks.notify();
-        }
-    }
-
     private class RenderingTask {
 
         float width, height;
@@ -183,8 +132,7 @@ class RenderingAsyncTask extends AsyncTask<Void, PagePart, Void> {
 
         boolean annotationRendering;
 
-        public RenderingTask(float width, float height, RectF bounds, int userPage, int page, boolean thumbnail, int cacheOrder, boolean bestQuality, boolean annotationRendering) {
-            super();
+        RenderingTask(float width, float height, RectF bounds, int userPage, int page, boolean thumbnail, int cacheOrder, boolean bestQuality, boolean annotationRendering) {
             this.page = page;
             this.width = width;
             this.height = height;
@@ -195,7 +143,5 @@ class RenderingAsyncTask extends AsyncTask<Void, PagePart, Void> {
             this.bestQuality = bestQuality;
             this.annotationRendering = annotationRendering;
         }
-
     }
-
 }

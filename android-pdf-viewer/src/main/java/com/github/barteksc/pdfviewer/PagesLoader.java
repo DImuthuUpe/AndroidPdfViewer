@@ -87,7 +87,7 @@ class PagesLoader {
     private void loadThumbnail(int userPage, int documentPage) {
         if (!pdfView.cacheManager.containsThumbnail(userPage, documentPage,
                 thumbnailWidth, thumbnailHeight, thumbnailRect)) {
-            pdfView.renderingAsyncTask.addRenderingTask(userPage, documentPage,
+            pdfView.renderingHandler.addRenderingTask(userPage, documentPage,
                     thumbnailWidth, thumbnailHeight, thumbnailRect,
                     true, 0, pdfView.isBestQuality(), pdfView.isAnnotationRendering());
         }
@@ -218,7 +218,7 @@ class PagesLoader {
 
         if (renderWidth > 0 && renderHeight > 0) {
             if (!pdfView.cacheManager.upPartIfContained(userPage, documentPage, renderWidth, renderHeight, pageRelativeBounds, cacheOrder)) {
-                pdfView.renderingAsyncTask.addRenderingTask(userPage, documentPage,
+                pdfView.renderingHandler.addRenderingTask(userPage, documentPage,
                         renderWidth, renderHeight, pageRelativeBounds, false, cacheOrder,
                         pdfView.isBestQuality(), pdfView.isAnnotationRendering());
             }

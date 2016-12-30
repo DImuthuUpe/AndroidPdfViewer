@@ -52,6 +52,12 @@ pdfView.fromUri(Uri)
 or
 pdfView.fromFile(File)
 or
+pdfView.fromBytes(byte[])
+or
+pdfView.fromStream(InputStream)
+or
+pdfView.fromSource(DocumentSource)
+or
 pdfView.fromAsset(String)
     .pages(0, 2, 1, 3, 3, 3) // all pages are displayed by default
     .enableSwipe(true)
@@ -91,7 +97,7 @@ You can also create custom scroll handles, just implement **ScrollHandle** inter
 All methods are documented as Javadoc comments on interface [source](https://github.com/barteksc/AndroidPdfViewer/tree/master/android-pdf-viewer/src/main/java/com/github/barteksc/pdfviewer/scroll/ScrollHandle.java).
 
 ## Document sources
-Version 1.5.0 introduced _document sources_, which are just providers for PDF documents.
+Version 2.3.0 introduced _document sources_, which are just providers for PDF documents.
 Every provider implements **DocumentSource** interface.
 Predefined providers are available in **com.github.barteksc.pdfviewer.source** package and can be used as
 samples for creating custom ones.
