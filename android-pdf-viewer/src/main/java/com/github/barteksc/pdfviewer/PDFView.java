@@ -267,6 +267,14 @@ public class PDFView extends RelativeLayout {
     private boolean annotationRendering = false;
 
     /**
+     * True if the view should render during scaling - default<br/>
+     * Can not be forced on older API versions (< Build.VERSION_CODES.KITKAT) as the GestureDetector does
+     * not detect scrolling while scaling.<br/>
+     * False otherwise
+     */
+    private boolean renderDuringScale = true;
+
+    /**
      * Construct the initial view
      */
     public PDFView(Context context, AttributeSet set) {
@@ -1102,6 +1110,14 @@ public class PDFView extends RelativeLayout {
 
     public boolean isAnnotationRendering() {
         return annotationRendering;
+    }
+
+    public void enableRenderDuringScale(boolean renderDuringScale) {
+        this.renderDuringScale = renderDuringScale;
+    }
+
+    public boolean doRenderDuringScale() {
+        return renderDuringScale;
     }
 
     public PdfDocument.Meta getDocumentMeta() {

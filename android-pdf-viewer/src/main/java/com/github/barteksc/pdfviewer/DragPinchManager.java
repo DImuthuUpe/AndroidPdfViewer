@@ -43,6 +43,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     private boolean swipeVertical;
 
     private boolean scrolling = false;
+    private boolean scaling = false;
 
     public DragPinchManager(PDFView pdfView, AnimationManager animationManager) {
         this.pdfView = pdfView;
@@ -131,8 +132,9 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         if (isZooming() || isSwipeEnabled) {
             pdfView.moveRelativeTo(-distanceX, -distanceY);
         }
-        pdfView.loadPageByOffset();
-
+        if (!scaling || pdfView.doRenderDuringScale()) {
+          pdfView.loadPageByOffset();
+        }
         return true;
     }
 
@@ -174,6 +176,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
 
     @Override
     public boolean onScaleBegin(ScaleGestureDetector detector) {
+        scaling = true;
         return true;
     }
 
@@ -181,6 +184,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     public void onScaleEnd(ScaleGestureDetector detector) {
         pdfView.loadPages();
         hideHandle();
+        scaling = false;
     }
 
     @Override
