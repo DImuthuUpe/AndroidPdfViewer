@@ -20,6 +20,7 @@ import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 
 import com.github.barteksc.pdfviewer.model.PagePart;
@@ -50,7 +51,8 @@ class RenderingHandler extends Handler {
     private Matrix renderMatrix = new Matrix();
     private final Set<Integer> openedPages = new HashSet<>();
 
-    RenderingHandler(PDFView pdfView, PdfiumCore pdfiumCore, PdfDocument pdfDocument) {
+    RenderingHandler(Looper looper, PDFView pdfView, PdfiumCore pdfiumCore, PdfDocument pdfDocument) {
+        super(looper);
         this.pdfView = pdfView;
         this.pdfiumCore = pdfiumCore;
         this.pdfDocument = pdfDocument;
@@ -65,9 +67,14 @@ class RenderingHandler extends Handler {
     @Override
     public void handleMessage(Message message) {
         RenderingTask task = (RenderingTask) message.obj;
-        PagePart part = proceed(task);
+        final PagePart part = proceed(task);
         if (part != null) {
-            pdfView.onBitmapRendered(part);
+            pdfView.post(new Runnable() {
+                @Override
+                public void run() {
+                    pdfView.onBitmapRendered(part);
+                }
+            });
         }
     }
 

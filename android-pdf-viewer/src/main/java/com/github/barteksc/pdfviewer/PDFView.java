@@ -686,7 +686,8 @@ public class PDFView extends RelativeLayout {
         if (!renderingHandlerThread.isAlive()) {
             renderingHandlerThread.start();
         }
-        renderingHandler = new RenderingHandler(this, pdfiumCore, pdfDocument);
+        renderingHandler = new RenderingHandler(renderingHandlerThread.getLooper(),
+                this, pdfiumCore, pdfDocument);
 
         if (scrollHandle != null) {
             scrollHandle.setupLayout(this);
