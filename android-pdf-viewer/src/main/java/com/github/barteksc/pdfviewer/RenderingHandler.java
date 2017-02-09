@@ -84,6 +84,9 @@ class RenderingHandler extends Handler {
             pdfiumCore.openPage(pdfDocument, renderingTask.page);
         }
 
+        int pageWidth = pdfiumCore.getPageWidth(pdfDocument, renderingTask.page);
+        int pageHeight = pdfiumCore.getPageHeight(pdfDocument, renderingTask.page);
+
         int w = Math.round(renderingTask.width);
         int h = Math.round(renderingTask.height);
         Bitmap render = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
@@ -101,7 +104,8 @@ class RenderingHandler extends Handler {
         return new PagePart(renderingTask.userPage, renderingTask.page, render, //
                 renderingTask.width, renderingTask.height, //
                 renderingTask.bounds, renderingTask.thumbnail, //
-                renderingTask.cacheOrder);
+                renderingTask.cacheOrder,
+                pageWidth, pageHeight);
     }
 
     private void calculateBounds(int width, int height, RectF pageSliceBounds) {

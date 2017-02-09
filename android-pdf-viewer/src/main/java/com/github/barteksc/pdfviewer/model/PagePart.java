@@ -34,7 +34,9 @@ public class PagePart {
 
     private int cacheOrder;
 
-    public PagePart(int userPage, int page, Bitmap renderedBitmap, float width, float height, RectF pageRelativeBounds, boolean thumbnail, int cacheOrder) {
+    private int pageWidth, pageHeight;
+
+    public PagePart(int userPage, int page, Bitmap renderedBitmap, float width, float height, RectF pageRelativeBounds, boolean thumbnail, int cacheOrder, int pageWidth, int pageHeight) {
         super();
         this.userPage = userPage;
         this.page = page;
@@ -42,6 +44,16 @@ public class PagePart {
         this.pageRelativeBounds = pageRelativeBounds;
         this.thumbnail = thumbnail;
         this.cacheOrder = cacheOrder;
+        this.pageWidth = pageWidth;
+        this.pageHeight = pageHeight;
+    }
+
+    public int getPageWidth() {
+        return pageWidth;
+    }
+
+    public int getPageHeight() {
+        return pageHeight;
     }
 
     public int getCacheOrder() {

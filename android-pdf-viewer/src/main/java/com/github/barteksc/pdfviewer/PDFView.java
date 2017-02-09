@@ -77,10 +77,12 @@ import java.util.List;
 public class PDFView extends RelativeLayout {
 
     private static final String TAG = PDFView.class.getSimpleName();
+    private static final float EPSILON = (float) 1e-6;
 
     public static final float DEFAULT_MAX_SCALE = 3.0f;
     public static final float DEFAULT_MID_SCALE = 1.75f;
     public static final float DEFAULT_MIN_SCALE = 1.0f;
+
 
     private float minZoom = DEFAULT_MIN_SCALE;
     private float midZoom = DEFAULT_MID_SCALE;
@@ -551,7 +553,7 @@ public class PDFView extends RelativeLayout {
 
         Drawable bg = getBackground();
         if (bg == null) {
-            canvas.drawColor(Color.WHITE);
+            canvas.drawColor(Color.LTGRAY);
         } else {
             bg.draw(canvas);
         }
@@ -616,13 +618,34 @@ public class PDFView extends RelativeLayout {
             localTranslationX = toCurrentScale(part.getUserPage() * optimalPageWidth);
         canvas.translate(localTranslationX, localTranslationY);
 
-        Rect srcRect = new Rect(0, 0, renderedBitmap.getWidth(),
-                renderedBitmap.getHeight());
+        Rect srcRect = new Rect(0, 0, renderedBitmap.getWidth(), renderedBitmap.getHeight());
 
-        float offsetX = toCurrentScale(pageRelativeBounds.left * optimalPageWidth);
-        float offsetY = toCurrentScale(pageRelativeBounds.top * optimalPageHeight);
-        float width = toCurrentScale(pageRelativeBounds.width() * optimalPageWidth);
-        float height = toCurrentScale(pageRelativeBounds.height() * optimalPageHeight);
+        int paddingX = 0;
+        int paddingY = 0;
+
+        float unitX = optimalPageWidth;
+        float unitY = optimalPageHeight;
+
+        // to maintain aspect fit into optimalPageWidth and optimalPageHeight, we need to
+        // maintain the scale ratio.
+        if (part.getPageHeight() > 0 && part.getPageWidth() > 0) {
+            float scaleX = optimalPageWidth / part.getPageWidth();
+            float scaleY = optimalPageHeight / part.getPageHeight();
+            if (Math.abs(scaleX - scaleY) < EPSILON) {
+                // if the scale is close enough, then no need to adjust.
+            } else if (scaleX < scaleY) { // page compresses more along x axis.
+                unitY = scaleX * part.getPageHeight();
+                paddingY = (int) ((optimalPageHeight - unitY) / 2);
+            } else { // page compresses more along y axis
+                unitX = scaleY * part.getPageWidth();
+                paddingX = (int) ((optimalPageWidth - unitX) / 2);
+            }
+        }
+
+        float offsetX = toCurrentScale(pageRelativeBounds.left * unitX + paddingX);
+        float offsetY = toCurrentScale(pageRelativeBounds.top * unitY + paddingY);
+        float width = toCurrentScale(pageRelativeBounds.width() * unitX);
+        float height = toCurrentScale(pageRelativeBounds.height() * unitY);
 
         // If we use float values for this rectangle, there will be
         // a possible gap between page parts, especially when
