@@ -90,8 +90,10 @@ class AnimationManager {
             pdfView.post(new Runnable() {
                 @Override
                 public void run() {
-                    animation.cancel();
-                    animation = null;
+                    if (animation != null) {
+                        animation.cancel();
+                        animation = null;
+                    }
                 }
             });
         }
@@ -103,9 +105,11 @@ class AnimationManager {
             pdfView.post(new Runnable() {
                 @Override
                 public void run() {
-                    scroller.forceFinished(true);
-                    flingAnimation.cancel();
-                    flingAnimation = null;
+                    if (flingAnimation != null) {
+                        scroller.forceFinished(true);
+                        flingAnimation.cancel();
+                        flingAnimation = null;
+                    }
                 }
             });
         }
