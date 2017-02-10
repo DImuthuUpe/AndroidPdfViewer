@@ -87,17 +87,31 @@ class AnimationManager {
 
     public void stopAll() {
         if (animation != null) {
-            animation.cancel();
-            animation = null;
+            pdfView.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (animation != null) {
+                        animation.cancel();
+                        animation = null;
+                    }
+                }
+            });
         }
         stopFling();
     }
 
     public void stopFling() {
         if (flingAnimation != null) {
-            scroller.forceFinished(true);
-            flingAnimation.cancel();
-            flingAnimation = null;
+            pdfView.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (flingAnimation != null) {
+                        scroller.forceFinished(true);
+                        flingAnimation.cancel();
+                        flingAnimation = null;
+                    }
+                }
+            });
         }
     }
 

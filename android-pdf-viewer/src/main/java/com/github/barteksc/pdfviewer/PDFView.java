@@ -460,6 +460,7 @@ public class PDFView extends RelativeLayout {
 
         // Stop tasks
         if (renderingHandler != null) {
+            renderingHandler.forceStopProc();
             renderingHandler.removeMessages(RenderingHandler.MSG_RENDER_TASK);
         }
         if (decodingAsyncTask != null) {

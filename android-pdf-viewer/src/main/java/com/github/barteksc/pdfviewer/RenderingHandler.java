@@ -50,6 +50,7 @@ class RenderingHandler extends Handler {
     private Rect roundedRenderBounds = new Rect();
     private Matrix renderMatrix = new Matrix();
     private final Set<Integer> openedPages = new HashSet<>();
+    private boolean forceStopProc;
 
     RenderingHandler(Looper looper, PDFView pdfView, PdfiumCore pdfiumCore, PdfDocument pdfDocument) {
         super(looper);
@@ -78,7 +79,15 @@ class RenderingHandler extends Handler {
         }
     }
 
+    void forceStopProc() {
+        forceStopProc = true;
+    }
+
     private PagePart proceed(RenderingTask renderingTask) {
+        if (forceStopProc) {
+            return null;
+        }
+
         if (!openedPages.contains(renderingTask.page)) {
             openedPages.add(renderingTask.page);
             pdfiumCore.openPage(pdfDocument, renderingTask.page);
@@ -88,14 +97,27 @@ class RenderingHandler extends Handler {
         int h = Math.round(renderingTask.height);
         Bitmap render = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         calculateBounds(w, h, renderingTask.bounds);
+
+        if (forceStopProc) {
+            return null;
+        }
+
         pdfiumCore.renderPageBitmap(pdfDocument, render, renderingTask.page,
                 roundedRenderBounds.left, roundedRenderBounds.top,
                 roundedRenderBounds.width(), roundedRenderBounds.height(), renderingTask.annotationRendering);
+
+        if (forceStopProc) {
+            return null;
+        }
 
         if (!renderingTask.bestQuality) {
             Bitmap cpy = render.copy(Bitmap.Config.RGB_565, false);
             render.recycle();
             render = cpy;
+        }
+
+        if (forceStopProc) {
+            return null;
         }
 
         return new PagePart(renderingTask.userPage, renderingTask.page, render, //
