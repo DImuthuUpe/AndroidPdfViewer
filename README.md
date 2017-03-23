@@ -7,13 +7,17 @@ repo, where can be developed independently. Version 1.x uses different engine fo
 so if you don't like 2.x version, try 1.x.__
 
 Library for displaying PDF documents on Android, with `animations`, `gestures`, `zoom` and `double tap` support.
-It is based on [PdfiumAndroid](https://github.com/barteksc/PdfiumAndroid) for decoding PDF files. Works on API 11 and higher.
+It is based on [PdfiumAndroid](https://github.com/barteksc/PdfiumAndroid) for decoding PDF files. Works on API 11 (Android 3.0) and higher.
 Licensed under Apache License 2.0.
 
-## What's new in 2.4.0?
-* Merge pull request by [hansinator85](https://github.com/hansinator85) which allows to enable/disable rendering during scale
-* Make rendering during scale disabled by default (looks better)
-* Merge pull request by [cesquivias](https://github.com/cesquivias) which replaces RenderingAsyncTask with Handler to simply code and work with testing frameworks
+## What's new in 2.5.0?
+* Update PdfiumAndroid to 1.6.0, which is based on newest Pdfium from Android 7.1.1. It should fix many rendering and fonts problems
+* Add method `pdfView.fitToWidth()`, which called in `OnRenderListener.onInitiallyRendered()` will fit document to width of the screen (inspired by [1stmetro](https://github.com/1stmetro))
+* Add change from pull request by [isanwenyu](https://github.com/isanwenyu) to get rid of rare IllegalArgumentException while rendering
+* Add `OnRenderListener`, that will be called once, right before document is drawn on the screen
+* Add `Configurator.enableAntialiasing()` to improve rendering on low-res screen a little bit (as suggested by [majkimester](majkimester))
+* Modify engine to not block UI when big documents are loaded
+* Change `Constants` interface and inner interfaces to static public classes, to allow modifying core config values
 
 ## Changes in 2.0 API
 * `Configurator#defaultPage(int)` and `PDFView#jumpTo(int)` now require page index (i.e. starting from 0)
@@ -28,7 +32,7 @@ Licensed under Apache License 2.0.
 
 Add to _build.gradle_:
 
-`compile 'com.github.barteksc:android-pdf-viewer:2.4.0'`
+`compile 'com.github.barteksc:android-pdf-viewer:2.5.0'`
 
 Library is available in jcenter repository, probably it'll be in Maven Central soon.
 
@@ -51,30 +55,30 @@ pdfView.fromFile(File)
 or
 pdfView.fromBytes(byte[])
 or
-pdfView.fromStream(InputStream)
+pdfView.fromStream(InputStream) // stream is written to bytearray - native code cannot use Java Streams
 or
 pdfView.fromSource(DocumentSource)
 or
 pdfView.fromAsset(String)
     .pages(0, 2, 1, 3, 3, 3) // all pages are displayed by default
-    .enableSwipe(true)
+    .enableSwipe(true) // allows to block changing pages using swipe
     .swipeHorizontal(false)
     .enableDoubletap(true)
     .defaultPage(0)
-    .onDraw(onDrawListener)
-    .onLoad(onLoadCompleteListener)
+    .onDraw(onDrawListener) // allows to draw something on a provided canvas, above the current page
+    .onLoad(onLoadCompleteListener) // called after document is loaded and starts to be rendered
     .onPageChange(onPageChangeListener)
     .onPageScroll(onPageScrollListener)
     .onError(onErrorListener)
-    .enableAnnotationRendering(false)
+    .onRender(onRenderListener) // called after document is rendered for the first time
+    .enableAnnotationRendering(false) // render annotations (such as comments, colors or forms)
     .password(null)
     .scrollHandle(null)
+    .enableAntialiasing(true) // improve rendering a little bit on low-res screens
     .load();
 ```
 
-* `enableSwipe` is optional, it allows you to block changing pages using swipe
 * `pages` is optional, it allows you to filter and order the pages of the PDF as you need
-* `onDraw` is also optional, and allows you to draw something on a provided canvas, above the current page
 
 ## Scroll handle
 
@@ -137,6 +141,24 @@ There is good article on automatically splitting your application into multiple 
 available [here](http://ph0b.com/android-studio-gradle-and-ndk-integration/).
 Most important section is _Improving multiple APKs creation and versionCode handling with APK Splits_, but whole article is worth reading.
 You only need to do this in your application, no need for forking PdfiumAndroid or so.
+
+### Why I cannot open PDF from URL?
+Downloading files is long running process which must be aware of Activity lifecycle, must support some configuration, 
+data cleanup and caching, so creating such module will probably end up as new library.
+
+### How can I show last opened page after configuration change?
+You have to store current page number and then set it with `pdfView.defaultPage(page)`, refer to sample app
+
+### How can I fit document to screen width (eg. on orientation change)?
+Use this code snippet:
+``` java
+pdfView.onRender(new OnRenderListener() {
+    @Override
+    public void onInitiallyRendered(int pages, float pageWidth, float pageHeight) {
+        pdfView.fitToWidth(); // optionally pass page number
+    }
+});
+```
 
 ## One more thing
 If you have any suggestions on making this lib better, write me, create issue or write some code and send pull request.

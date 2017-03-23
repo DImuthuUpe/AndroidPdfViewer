@@ -33,9 +33,13 @@ class DecodingAsyncTask extends AsyncTask<Void, Void, Throwable> {
     private PdfDocument pdfDocument;
     private String password;
     private DocumentSource docSource;
+    private int firstPageIdx;
+    private int pageWidth;
+    private int pageHeight;
 
-    public DecodingAsyncTask(DocumentSource docSource, String password, PDFView pdfView, PdfiumCore pdfiumCore) {
+    DecodingAsyncTask(DocumentSource docSource, String password, PDFView pdfView, PdfiumCore pdfiumCore, int firstPageIdx) {
         this.docSource = docSource;
+        this.firstPageIdx = firstPageIdx;
         this.cancelled = false;
         this.pdfView = pdfView;
         this.password = password;
@@ -47,6 +51,10 @@ class DecodingAsyncTask extends AsyncTask<Void, Void, Throwable> {
     protected Throwable doInBackground(Void... params) {
         try {
             pdfDocument = docSource.createDocument(context, pdfiumCore, password);
+            // We assume all the pages are the same size
+            pdfiumCore.openPage(pdfDocument, firstPageIdx);
+            pageWidth = pdfiumCore.getPageWidth(pdfDocument, firstPageIdx);
+            pageHeight = pdfiumCore.getPageHeight(pdfDocument, firstPageIdx);
             return null;
         } catch (Throwable t) {
             return t;
@@ -60,7 +68,7 @@ class DecodingAsyncTask extends AsyncTask<Void, Void, Throwable> {
             return;
         }
         if (!cancelled) {
-            pdfView.loadComplete(pdfDocument);
+            pdfView.loadComplete(pdfDocument, pageWidth, pageHeight);
         }
     }
 

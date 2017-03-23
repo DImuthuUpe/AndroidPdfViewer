@@ -1,3 +1,12 @@
+## 2.5.0 (2017-03-23)
+* Update PdfiumAndroid to 1.6.0, which is based on newest Pdfium from Android 7.1.1. It should fix many rendering and fonts problems
+* Add method `pdfView.fitToWidth()`, which called in `OnRenderListener.onInitiallyRendered()` will fit document to width of the screen (inspired by [1stmetro](https://github.com/1stmetro))
+* Add change from pull request by [isanwenyu](https://github.com/isanwenyu) to get rid of rare IllegalArgumentException while rendering
+* Add `OnRenderListener`, that will be called once, right before document is drawn on the screen
+* Add `Configurator.enableAntialiasing()` to improve rendering on low-res screen a little bit (as suggested by [majkimester](majkimester))
+* Modify engine to not block UI when big documents are loaded
+* Change `Constants` interface and inner interfaces to static public classes, to allow modifying core config values
+
 ## 2.4.0 (2016-12-30)
 * Merge pull request by [hansinator85](https://github.com/hansinator85) which allows to enable/disable rendering during scale
 * Make rendering during scale disabled by default (looks better)

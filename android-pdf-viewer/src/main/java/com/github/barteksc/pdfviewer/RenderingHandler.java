@@ -50,6 +50,7 @@ class RenderingHandler extends Handler {
     private Rect roundedRenderBounds = new Rect();
     private Matrix renderMatrix = new Matrix();
     private final Set<Integer> openedPages = new HashSet<>();
+    private boolean running = false;
 
     RenderingHandler(Looper looper, PDFView pdfView, PdfiumCore pdfiumCore, PdfDocument pdfDocument) {
         super(looper);
@@ -69,12 +70,16 @@ class RenderingHandler extends Handler {
         RenderingTask task = (RenderingTask) message.obj;
         final PagePart part = proceed(task);
         if (part != null) {
-            pdfView.post(new Runnable() {
-                @Override
-                public void run() {
-                    pdfView.onBitmapRendered(part);
-                }
-            });
+            if (running) {
+                pdfView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        pdfView.onBitmapRendered(part);
+                    }
+                });
+            } else {
+                part.getRenderedBitmap().recycle();
+            }
         }
     }
 
@@ -86,7 +91,13 @@ class RenderingHandler extends Handler {
 
         int w = Math.round(renderingTask.width);
         int h = Math.round(renderingTask.height);
-        Bitmap render = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        Bitmap render;
+        try {
+            render = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            return null;
+        }
         calculateBounds(w, h, renderingTask.bounds);
         pdfiumCore.renderPageBitmap(pdfDocument, render, renderingTask.page,
                 roundedRenderBounds.left, roundedRenderBounds.top,
@@ -112,6 +123,14 @@ class RenderingHandler extends Handler {
         renderBounds.set(0, 0, width, height);
         renderMatrix.mapRect(renderBounds);
         renderBounds.round(roundedRenderBounds);
+    }
+
+    void stop() {
+        running = false;
+    }
+
+    void start() {
+        running = true;
     }
 
     private class RenderingTask {

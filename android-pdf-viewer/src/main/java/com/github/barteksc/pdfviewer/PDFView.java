@@ -21,6 +21,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
+import android.graphics.PaintFlagsDrawFilter;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -37,6 +38,7 @@ import com.github.barteksc.pdfviewer.listener.OnErrorListener;
 import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener;
 import com.github.barteksc.pdfviewer.listener.OnPageChangeListener;
 import com.github.barteksc.pdfviewer.listener.OnPageScrollListener;
+import com.github.barteksc.pdfviewer.listener.OnRenderListener;
 import com.github.barteksc.pdfviewer.model.PagePart;
 import com.github.barteksc.pdfviewer.scroll.ScrollHandle;
 import com.github.barteksc.pdfviewer.source.AssetSource;
@@ -223,6 +225,11 @@ public class PDFView extends RelativeLayout {
     private OnDrawListener onDrawListener;
 
     /**
+     * Call back object to call when the document is initially rendered
+     */
+    private OnRenderListener onRenderListener;
+
+    /**
      * Paint object for drawing
      */
     private Paint paint;
@@ -275,6 +282,13 @@ public class PDFView extends RelativeLayout {
     private boolean renderDuringScale = false;
 
     /**
+     * Antialiasing and bitmap filtering
+     */
+    private boolean enableAntialiasing = true;
+    private PaintFlagsDrawFilter antialiasFilter =
+            new PaintFlagsDrawFilter(0, Paint.ANTI_ALIAS_FLAG|Paint.FILTER_BITMAP_FLAG);
+
+    /**
      * Construct the initial view
      */
     public PDFView(Context context, AttributeSet set) {
@@ -318,9 +332,14 @@ public class PDFView extends RelativeLayout {
         this.onLoadCompleteListener = onLoadCompleteListener;
         this.onErrorListener = onErrorListener;
 
+        int firstPageIdx = 0;
+        if (originalUserPages != null) {
+            firstPageIdx = originalUserPages[0];
+        }
+
         recycled = false;
         // Start decoding document
-        decodingAsyncTask = new DecodingAsyncTask(docSource, password, this, pdfiumCore);
+        decodingAsyncTask = new DecodingAsyncTask(docSource, password, this, pdfiumCore, firstPageIdx);
         decodingAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
@@ -356,7 +375,6 @@ public class PDFView extends RelativeLayout {
         if (recycled) {
             return;
         }
-        state = State.SHOWN;
 
         // Check the page number and makes the
         // difference between UserPages and DocumentPages
@@ -450,6 +468,14 @@ public class PDFView extends RelativeLayout {
         return this.onPageScrollListener;
     }
 
+    private void setOnRenderListener(OnRenderListener onRenderListener) {
+        this.onRenderListener = onRenderListener;
+    }
+
+    OnRenderListener getOnRenderListener() {
+        return this.onRenderListener;
+    }
+
     private void setOnDrawListener(OnDrawListener onDrawListener) {
         this.onDrawListener = onDrawListener;
     }
@@ -460,6 +486,7 @@ public class PDFView extends RelativeLayout {
 
         // Stop tasks
         if (renderingHandler != null) {
+            renderingHandler.stop();
             renderingHandler.removeMessages(RenderingHandler.MSG_RENDER_TASK);
         }
         if (decodingAsyncTask != null) {
@@ -477,6 +504,7 @@ public class PDFView extends RelativeLayout {
             pdfiumCore.closeDocument(pdfDocument);
         }
 
+        renderingHandler = null;
         originalUserPages = null;
         filteredUserPages = null;
         filteredUserPageIndexes = null;
@@ -548,6 +576,10 @@ public class PDFView extends RelativeLayout {
         // abstraction of the screen position when rendering the parts.
 
         // Draws background
+
+        if (enableAntialiasing) {
+            canvas.setDrawFilter(antialiasFilter);
+        }
 
         Drawable bg = getBackground();
         if (bg == null) {
@@ -658,7 +690,7 @@ public class PDFView extends RelativeLayout {
      * the current page displayed
      */
     public void loadPages() {
-        if (optimalPageWidth == 0 || optimalPageHeight == 0) {
+        if (optimalPageWidth == 0 || optimalPageHeight == 0 || renderingHandler == null) {
             return;
         }
 
@@ -673,20 +705,14 @@ public class PDFView extends RelativeLayout {
     /**
      * Called when the PDF is loaded
      */
-    public void loadComplete(PdfDocument pdfDocument) {
+    void loadComplete(PdfDocument pdfDocument, int pageWidth, int pageHeight) {
         state = State.LOADED;
         this.documentPageCount = pdfiumCore.getPageCount(pdfDocument);
 
-        int firstPageIdx = 0;
-        if (originalUserPages != null) {
-            firstPageIdx = originalUserPages[0];
-        }
-
-        // We assume all the pages are the same size
         this.pdfDocument = pdfDocument;
-        pdfiumCore.openPage(pdfDocument, firstPageIdx);
-        this.pageWidth = pdfiumCore.getPageWidth(pdfDocument, firstPageIdx);
-        this.pageHeight = pdfiumCore.getPageHeight(pdfDocument, firstPageIdx);
+
+        this.pageWidth = pageWidth;
+        this.pageHeight = pageHeight;
         calculateOptimalWidthAndHeight();
 
         pagesLoader = new PagesLoader(this);
@@ -696,20 +722,21 @@ public class PDFView extends RelativeLayout {
         }
         renderingHandler = new RenderingHandler(renderingHandlerThread.getLooper(),
                 this, pdfiumCore, pdfDocument);
+        renderingHandler.start();
 
         if (scrollHandle != null) {
             scrollHandle.setupLayout(this);
             isScrollHandleInit = true;
         }
 
-        // Notify the listener
-        jumpTo(defaultPage, false);
         if (onLoadCompleteListener != null) {
             onLoadCompleteListener.loadComplete(documentPageCount);
         }
+
+        jumpTo(defaultPage, false);
     }
 
-    public void loadError(Throwable t) {
+    void loadError(Throwable t) {
         state = State.ERROR;
         recycle();
         invalidate();
@@ -731,6 +758,14 @@ public class PDFView extends RelativeLayout {
      * @param part The created PagePart.
      */
     public void onBitmapRendered(PagePart part) {
+        // when it is first rendered part
+        if (state == State.LOADED) {
+            state = State.SHOWN;
+            if (onRenderListener != null) {
+                onRenderListener.onInitiallyRendered(getPageCount(), optimalPageWidth, optimalPageHeight);
+            }
+        }
+
         if (part.isThumbnail()) {
             cacheManager.cacheThumbnail(part);
         } else {
@@ -984,6 +1019,25 @@ public class PDFView extends RelativeLayout {
         }
     }
 
+    public void fitToWidth(int page) {
+        if (state != State.SHOWN) {
+            Log.e(TAG, "Cannot fit, document not rendered yet");
+            return;
+        }
+        fitToWidth();
+        jumpTo(page);
+    }
+
+    public void fitToWidth() {
+        if (state != State.SHOWN) {
+            Log.e(TAG, "Cannot fit, document not rendered yet");
+            return;
+        }
+        int centerPos = getPageAtPositionOffset(0);
+        zoomTo(getWidth() / optimalPageWidth);
+        setPositionOffset(centerPos);
+    }
+
     public int getCurrentPage() {
         return currentPage;
     }
@@ -1116,6 +1170,14 @@ public class PDFView extends RelativeLayout {
         this.renderDuringScale = renderDuringScale;
     }
 
+    public boolean isAntialiasing() {
+        return enableAntialiasing;
+    }
+
+    public void enableAntialiasing(boolean enableAntialiasing) {
+        this.enableAntialiasing = enableAntialiasing;
+    }
+
     public boolean doRenderDuringScale() {
         return renderDuringScale;
     }
@@ -1197,6 +1259,8 @@ public class PDFView extends RelativeLayout {
 
         private OnPageScrollListener onPageScrollListener;
 
+        private OnRenderListener onRenderListener;
+
         private int defaultPage = 0;
 
         private boolean swipeHorizontal = false;
@@ -1206,6 +1270,8 @@ public class PDFView extends RelativeLayout {
         private String password = null;
 
         private ScrollHandle scrollHandle = null;
+
+        private boolean antialiasing = true;
 
         private Configurator(DocumentSource documentSource) {
             this.documentSource = documentSource;
@@ -1256,6 +1322,11 @@ public class PDFView extends RelativeLayout {
             return this;
         }
 
+        public Configurator onRender(OnRenderListener onRenderListener) {
+            this.onRenderListener = onRenderListener;
+            return this;
+        }
+
         public Configurator defaultPage(int defaultPage) {
             this.defaultPage = defaultPage;
             return this;
@@ -1276,17 +1347,24 @@ public class PDFView extends RelativeLayout {
             return this;
         }
 
+        public Configurator enableAntialiasing(boolean antialiasing) {
+            this.antialiasing = antialiasing;
+            return this;
+        }
+
         public void load() {
             PDFView.this.recycle();
             PDFView.this.setOnDrawListener(onDrawListener);
             PDFView.this.setOnPageChangeListener(onPageChangeListener);
             PDFView.this.setOnPageScrollListener(onPageScrollListener);
+            PDFView.this.setOnRenderListener(onRenderListener);
             PDFView.this.enableSwipe(enableSwipe);
             PDFView.this.enableDoubletap(enableDoubletap);
             PDFView.this.setDefaultPage(defaultPage);
             PDFView.this.setSwipeVertical(!swipeHorizontal);
             PDFView.this.enableAnnotationRendering(annotationRendering);
             PDFView.this.setScrollHandle(scrollHandle);
+            PDFView.this.enableAntialiasing(antialiasing);
             PDFView.this.dragPinchManager.setSwipeVertical(swipeVertical);
             if (pageNumbers != null) {
                 PDFView.this.load(documentSource, password, onLoadCompleteListener, onErrorListener, pageNumbers);
