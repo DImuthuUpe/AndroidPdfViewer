@@ -674,6 +674,18 @@ public class PDFView extends RelativeLayout {
 
         canvas.drawBitmap(renderedBitmap, srcRect, dstRect, paint);
 
+        if (Constants.SHOW_BORDER) {
+            //draw page markers
+            paint.setColor(Color.parseColor(Constants.BORDER_COLOR));
+            paint.setStrokeWidth(Constants.BORDER_WIDTH);
+            paint.setStyle(Style.STROKE);
+            //down left side
+            canvas.drawLine(0, 0, 0,pageHeight, paint);
+            //across
+            canvas.drawLine(pageWidth, 0, 0, 0, paint);
+            //end of drawing page markers
+        }
+
         if (Constants.DEBUG_MODE) {
             debugPaint.setColor(part.getUserPage() % 2 == 0 ? Color.RED : Color.BLUE);
             canvas.drawRect(dstRect, debugPaint);
@@ -681,7 +693,6 @@ public class PDFView extends RelativeLayout {
 
         // Restore the canvas position
         canvas.translate(-localTranslationX, -localTranslationY);
-
     }
 
     /**
@@ -1019,23 +1030,31 @@ public class PDFView extends RelativeLayout {
         }
     }
 
-    public void fitToWidth(int page) {
+    public void fitToWidth(int page,int pageOrientation) {
         if (state != State.SHOWN) {
             Log.e(TAG, "Cannot fit, document not rendered yet");
             return;
         }
-        fitToWidth();
+        fitToWidth(pageOrientation);
         jumpTo(page);
     }
 
-    public void fitToWidth() {
+    public void fitToWidth(int pageOrientation) {
         if (state != State.SHOWN) {
             Log.e(TAG, "Cannot fit, document not rendered yet");
             return;
         }
-        int centerPos = getPageAtPositionOffset(0);
-        zoomTo(getWidth() / optimalPageWidth);
-        setPositionOffset(centerPos);
+        if(pageOrientation==0) {
+            int centerPos = getPageAtPositionOffset(0);
+            zoomTo(getWidth() / optimalPageWidth);
+            setPositionOffset(centerPos);
+        }
+        else
+        {
+            int centerPos = getPageAtPositionOffset(0);
+            toRealScale((float) getHeight()/optimalPageHeight);
+            setPositionOffset(centerPos);
+        }
     }
 
     public int getCurrentPage() {

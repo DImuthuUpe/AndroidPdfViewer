@@ -1,0 +1,59 @@
+/**
+ * Copyright 2016 Bartosz Schiller
+ * <p/>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.github.barteksc.pdfviewer.util;
+
+public class Constants {
+
+    public static boolean DEBUG_MODE = false;
+    public static boolean SHOW_BORDER = false;
+    public static String BORDER_COLOR = "black";
+    public static int BORDER_WIDTH = 2;
+
+    /** Between 0 and 1, the thumbnails quality (default 0.3). Increasing this value may cause performance decrease */
+    public static float THUMBNAIL_RATIO = 0.3f;
+
+    /**
+     * The size of the rendered parts (default 256)
+     * Tinier : a little bit slower to have the whole page rendered but more reactive.
+     * Bigger : user will have to wait longer to have the first visual results
+     */
+    public static float PART_SIZE = 256;
+
+    /** Number of preloaded rows or columns */
+    public static int PRELOAD_COUNT = 7;
+
+    public static class Cache {
+
+        /** The size of the cache (number of bitmaps kept) */
+        //public static int CACHE_SIZE = 150;
+        //public static int GRID_SIZE = 10;
+        //public static int CACHE_SIZE = (int) Math.pow(GRID_SIZE, 2d);
+        public static int CACHE_SIZE = 175;
+
+       // public static int THUMBNAILS_CACHE_SIZE = 6;
+        public static int THUMBNAILS_CACHE_SIZE = 5;
+
+    }
+
+    public static class Pinch {
+
+        public static float MAXIMUM_ZOOM = 10;
+
+        public static float MINIMUM_ZOOM = 1;
+
+    }
+
+}
