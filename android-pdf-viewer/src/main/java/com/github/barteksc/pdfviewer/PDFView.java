@@ -682,7 +682,7 @@ public class PDFView extends RelativeLayout {
             //down left side
             canvas.drawLine(0, 0, 0,pageHeight, paint);
             //across
-            canvas.drawLine(pageWidth, 0, 0, 0, paint);
+            if(swipeVertical)canvas.drawLine(pageWidth, 0, 0, 0, paint);
             //end of drawing page markers
         }
 
@@ -1044,16 +1044,21 @@ public class PDFView extends RelativeLayout {
             Log.e(TAG, "Cannot fit, document not rendered yet");
             return;
         }
-        if(pageOrientation==0) {
-            int centerPos = getPageAtPositionOffset(0);
-            zoomTo(getWidth() / optimalPageWidth);
-            setPositionOffset(centerPos);
+        
+        if (!BookMode) {
+            if (pageOrientation == 0) {
+                int centerPos = getPageAtPositionOffset(0);
+                zoomTo(getWidth() / optimalPageWidth);
+                setPositionOffset(centerPos);
+            } else {
+                int centerPos = getPageAtPositionOffset(0);
+                toRealScale((float) getHeight() / optimalPageHeight);
+                setPositionOffset(centerPos);
+            }
         }
         else
         {
-            int centerPos = getPageAtPositionOffset(0);
-            toRealScale((float) getHeight()/optimalPageHeight);
-            setPositionOffset(centerPos);
+        //book mode does not require rescaling, otherwise elongated text as becomes stretched, so this option turns off scaling for bookmode.
         }
     }
 
