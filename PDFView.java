@@ -1045,7 +1045,6 @@ public class PDFView extends RelativeLayout {
         }
 
         if (!BookMode) {
-            System.out.print("Not Book mode");
             if (pageOrientation == 0) {
                 int centerPos = getPageAtPositionOffset(0);
                 zoomTo(getWidth() / optimalPageWidth);
