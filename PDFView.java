@@ -681,7 +681,7 @@ public class PDFView extends RelativeLayout {
             //down left side
             canvas.drawLine(0, 0, 0, pageHeight, paint);
             //across
-            canvas.drawLine(pageWidth, 0, 0, 0, paint);
+            if(swipeVertical)canvas.drawLine(pageWidth, 0, 0, 0, paint);
             //end of drawing page markers
         }
 
