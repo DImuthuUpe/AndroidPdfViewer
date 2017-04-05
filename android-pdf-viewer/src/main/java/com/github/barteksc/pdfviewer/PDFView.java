@@ -680,7 +680,7 @@ public class PDFView extends RelativeLayout {
             paint.setStrokeWidth(Constants.BORDER_WIDTH);
             paint.setStyle(Style.STROKE);
             //down left side
-            canvas.drawLine(0, 0, 0,pageHeight, paint);
+            if(!swipeVertical)canvas.drawLine(0, 0, 0, pageHeight, paint);
             //across
             if(swipeVertical)canvas.drawLine(pageWidth, 0, 0, 0, paint);
             //end of drawing page markers
