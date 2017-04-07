@@ -674,8 +674,8 @@ public class PDFView extends RelativeLayout {
 
         canvas.drawBitmap(renderedBitmap, srcRect, dstRect, paint);
 
-        if (Constants.SHOW_BORDER) {
-            //draw page markers
+        if (Constants.SHOW_BORDER && documentPageCount>1) {
+            //draw page markers if more than one page, and only show correct border for orientation
             paint.setColor(Color.parseColor(Constants.BORDER_COLOR));
             paint.setStrokeWidth(Constants.BORDER_WIDTH);
             paint.setStyle(Style.STROKE);
