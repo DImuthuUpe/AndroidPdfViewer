@@ -154,7 +154,7 @@ You have to store current page number and then set it with `pdfView.defaultPage(
 ### How can I fit document to screen width (eg. on orientation change)?
 Use this code snippet:
 ``` java
-pdfView.onRender(new OnRenderListener() {
+Configurator.onRender(new OnRenderListener() {
     @Override
     public void onInitiallyRendered(int pages, float pageWidth, float pageHeight) {
         pdfView.fitToWidth(); // optionally pass page number
