@@ -19,6 +19,8 @@ Licensed under Apache License 2.0.
 * Modify engine to not block UI when big documents are loaded
 * Change `Constants` interface and inner interfaces to static public classes, to allow modifying core config values
 
+Version 2.5.1 temporarily downgrades PdfiumAndroid until #253 will be fixed
+
 ## Changes in 2.0 API
 * `Configurator#defaultPage(int)` and `PDFView#jumpTo(int)` now require page index (i.e. starting from 0)
 * `OnPageChangeListener#onPageChanged(int, int)` is called with page index (i.e. starting from 0)

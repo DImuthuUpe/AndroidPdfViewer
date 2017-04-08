@@ -1,3 +1,6 @@
+## 2.5.1 (2017-04-08)
+* Temporarily downgrade PdfiumAndroid until #253 will be fixed
+
 ## 2.5.0 (2017-03-23)
 * Update PdfiumAndroid to 1.6.0, which is based on newest Pdfium from Android 7.1.1. It should fix many rendering and fonts problems
 * Add method `pdfView.fitToWidth()`, which called in `OnRenderListener.onInitiallyRendered()` will fit document to width of the screen (inspired by [1stmetro](https://github.com/1stmetro))
