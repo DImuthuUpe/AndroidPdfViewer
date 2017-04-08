@@ -34,7 +34,7 @@ Version 2.5.1 temporarily downgrades PdfiumAndroid until #253 will be fixed
 
 Add to _build.gradle_:
 
-`compile 'com.github.barteksc:android-pdf-viewer:2.5.0'`
+`compile 'com.github.barteksc:android-pdf-viewer:2.5.1'`
 
 Library is available in jcenter repository, probably it'll be in Maven Central soon.
 
