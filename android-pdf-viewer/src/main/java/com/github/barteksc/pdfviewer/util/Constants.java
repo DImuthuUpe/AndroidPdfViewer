@@ -18,7 +18,10 @@ package com.github.barteksc.pdfviewer.util;
 public class Constants {
 
     public static boolean DEBUG_MODE = false;
-
+    
+    public static boolean SHOW_BORDER = false;
+    public static int BORDER_COLOR = 16777215;
+    public static int BORDER_WIDTH = 2;
     /** Between 0 and 1, the thumbnails quality (default 0.3). Increasing this value may cause performance decrease */
     public static float THUMBNAIL_RATIO = 0.3f;
 
