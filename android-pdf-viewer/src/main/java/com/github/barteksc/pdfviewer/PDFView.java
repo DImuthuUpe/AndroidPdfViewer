@@ -583,7 +583,7 @@ public class PDFView extends RelativeLayout {
 
         Drawable bg = getBackground();
         if (bg == null) {
-            canvas.drawColor(Color.WHITE);
+            canvas.drawColor(Color.CYAN);
         } else {
             bg.draw(canvas);
         }
