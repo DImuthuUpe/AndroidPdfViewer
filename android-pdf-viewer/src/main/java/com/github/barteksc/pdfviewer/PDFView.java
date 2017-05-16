@@ -305,6 +305,10 @@ public class PDFView extends RelativeLayout {
         dragPinchManager = new DragPinchManager(this, animationManager);
 
         paint = new Paint();
+//                    paint.setColor(part.getUserPage() % 2 == 0 ? Color.BLACK : Color.WHITE);
+
+                    paint.setColor(Color.WHITE);
+
         debugPaint = new Paint();
         debugPaint.setStyle(Style.STROKE);
 
