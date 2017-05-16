@@ -676,6 +676,9 @@ public class PDFView extends RelativeLayout {
             return;
         }
 
+        paint.setColor(part.getUserPage() % 2 == 0 ? Color.RED : Color.BLUE);
+
+
         canvas.drawBitmap(renderedBitmap, srcRect, dstRect, paint);
 
         if (Constants.DEBUG_MODE) {
