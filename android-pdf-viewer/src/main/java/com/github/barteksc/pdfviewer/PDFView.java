@@ -31,6 +31,7 @@ import android.os.AsyncTask;
 import android.os.HandlerThread;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.widget.OverScroller;
 import android.widget.RelativeLayout;
 
 import com.github.barteksc.pdfviewer.listener.OnDrawListener;
@@ -286,7 +287,7 @@ public class PDFView extends RelativeLayout {
      */
     private boolean enableAntialiasing = true;
     private PaintFlagsDrawFilter antialiasFilter =
-            new PaintFlagsDrawFilter(0, Paint.ANTI_ALIAS_FLAG|Paint.FILTER_BITMAP_FLAG);
+            new PaintFlagsDrawFilter(0, Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
 
     /**
      * Construct the initial view
@@ -519,6 +520,25 @@ public class PDFView extends RelativeLayout {
 
     public boolean isRecycled() {
         return recycled;
+    }
+
+    /**
+     * Handle fling animation
+     */
+    @Override
+    public void computeScroll() {
+        super.computeScroll();
+
+        OverScroller scroller = animationManager.getScroller();
+        if (scroller.computeScrollOffset()) {
+            moveTo(scroller.getCurrX(), scroller.getCurrY());
+            loadPageByOffset();
+        } else { // fling finished
+            loadPages();
+            if (getScrollHandle() != null) {
+                getScrollHandle().hideDelayed();
+            }
+        }
     }
 
     @Override
@@ -1219,6 +1239,7 @@ public class PDFView extends RelativeLayout {
 
     /**
      * Use bytearray as the pdf source, documents is not saved
+     *
      * @param bytes
      * @return
      */

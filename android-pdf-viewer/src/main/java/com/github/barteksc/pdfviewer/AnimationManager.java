@@ -21,7 +21,7 @@ import android.animation.ValueAnimator;
 import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.graphics.PointF;
 import android.view.animation.DecelerateInterpolator;
-import android.widget.Scroller;
+import android.widget.OverScroller;
 
 
 /**
@@ -36,13 +36,11 @@ class AnimationManager {
 
     private ValueAnimator animation;
 
-    private Scroller scroller;
-
-    private ValueAnimator flingAnimation;
+    private OverScroller scroller;
 
     public AnimationManager(PDFView pdfView) {
         this.pdfView = pdfView;
-        scroller = new Scroller(pdfView.getContext(), null, true);
+        scroller = new OverScroller(pdfView.getContext());
     }
 
     public void startXAnimation(float xFrom, float xTo) {
@@ -76,13 +74,7 @@ class AnimationManager {
 
     public void startFlingAnimation(int startX, int startY, int velocityX, int velocityY, int minX, int maxX, int minY, int maxY) {
         stopAll();
-        flingAnimation = ValueAnimator.ofFloat(0, 1);
-        FlingAnimation flingAnim = new FlingAnimation();
-        flingAnimation.addUpdateListener(flingAnim);
-        flingAnimation.addListener(flingAnim);
         scroller.fling(startX, startY, velocityX, velocityY, minX, maxX, minY, maxY);
-        flingAnimation.setDuration(scroller.getDuration());
-        flingAnimation.start();
     }
 
     public void stopAll() {
@@ -94,11 +86,11 @@ class AnimationManager {
     }
 
     public void stopFling() {
-        if (flingAnimation != null) {
-            scroller.forceFinished(true);
-            flingAnimation.cancel();
-            flingAnimation = null;
-        }
+        scroller.forceFinished(true);
+    }
+
+    public OverScroller getScroller() {
+        return scroller;
     }
 
     class XAnimation implements AnimatorUpdateListener {
@@ -155,38 +147,6 @@ class AnimationManager {
         public void onAnimationStart(Animator animation) {
         }
 
-    }
-
-    class FlingAnimation implements AnimatorUpdateListener, AnimatorListener {
-        @Override
-        public void onAnimationUpdate(ValueAnimator animation) {
-            if (!scroller.isFinished()) {
-                scroller.computeScrollOffset();
-                pdfView.moveTo(scroller.getCurrX(), scroller.getCurrY());
-                pdfView.loadPageByOffset();
-            }
-        }
-
-        @Override
-        public void onAnimationStart(Animator animation) {
-
-        }
-
-        @Override
-        public void onAnimationEnd(Animator animation) {
-            pdfView.loadPages();
-            hideHandle();
-        }
-
-        @Override
-        public void onAnimationCancel(Animator animation) {
-
-        }
-
-        @Override
-        public void onAnimationRepeat(Animator animation) {
-
-        }
     }
 
     private void hideHandle() {

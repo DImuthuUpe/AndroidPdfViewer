@@ -133,7 +133,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
             pdfView.moveRelativeTo(-distanceX, -distanceY);
         }
         if (!scaling || pdfView.doRenderDuringScale()) {
-          pdfView.loadPageByOffset();
+            pdfView.loadPageByOffset();
         }
         return true;
     }
@@ -152,11 +152,19 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
         int xOffset = (int) pdfView.getCurrentXOffset();
         int yOffset = (int) pdfView.getCurrentYOffset();
-        animationManager.startFlingAnimation(xOffset,
-                yOffset, (int) (velocityX),
-                (int) (velocityY),
-                xOffset * (swipeVertical ? 2 : pdfView.getPageCount()), 0,
-                yOffset * (swipeVertical ? pdfView.getPageCount() : 2), 0);
+
+        float minX = pdfView.toCurrentScale(pdfView.getOptimalPageWidth());
+        float minY = pdfView.toCurrentScale(pdfView.getOptimalPageHeight());
+        if (pdfView.isSwipeVertical()) {
+            minX = -(minX - pdfView.getWidth());
+            minY = -(minY * pdfView.getPageCount() - pdfView.getHeight());
+        } else {
+            minX = -(minX * pdfView.getPageCount() - pdfView.getWidth());
+            minY = -(minY - pdfView.getHeight());
+        }
+
+        animationManager.startFlingAnimation(xOffset, yOffset, (int) (velocityX), (int) (velocityY),
+                (int) minX, 0, (int) minY, 0);
 
         return true;
     }

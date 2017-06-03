@@ -1,3 +1,7 @@
+## 2.6.0 (2017-06-04)
+* Fix fling on single-page documents
+* Greatly improve overall fling experience
+
 ## 2.5.1 (2017-04-08)
 * Temporarily downgrade PdfiumAndroid until #253 will be fixed
 

@@ -10,16 +10,9 @@ Library for displaying PDF documents on Android, with `animations`, `gestures`, 
 It is based on [PdfiumAndroid](https://github.com/barteksc/PdfiumAndroid) for decoding PDF files. Works on API 11 (Android 3.0) and higher.
 Licensed under Apache License 2.0.
 
-## What's new in 2.5.0?
-* Update PdfiumAndroid to 1.6.0, which is based on newest Pdfium from Android 7.1.1. It should fix many rendering and fonts problems
-* Add method `pdfView.fitToWidth()`, which called in `OnRenderListener.onInitiallyRendered()` will fit document to width of the screen (inspired by [1stmetro](https://github.com/1stmetro))
-* Add change from pull request by [isanwenyu](https://github.com/isanwenyu) to get rid of rare IllegalArgumentException while rendering
-* Add `OnRenderListener`, that will be called once, right before document is drawn on the screen
-* Add `Configurator.enableAntialiasing()` to improve rendering on low-res screen a little bit (as suggested by [majkimester](majkimester))
-* Modify engine to not block UI when big documents are loaded
-* Change `Constants` interface and inner interfaces to static public classes, to allow modifying core config values
-
-Version 2.5.1 temporarily downgrades PdfiumAndroid until #253 will be fixed
+## What's new in 2.6.0?
+* Fix fling on single-page documents
+* Greatly improve overall fling experience
 
 ## Changes in 2.0 API
 * `Configurator#defaultPage(int)` and `PDFView#jumpTo(int)` now require page index (i.e. starting from 0)
@@ -34,7 +27,7 @@ Version 2.5.1 temporarily downgrades PdfiumAndroid until #253 will be fixed
 
 Add to _build.gradle_:
 
-`compile 'com.github.barteksc:android-pdf-viewer:2.5.1'`
+`compile 'com.github.barteksc:android-pdf-viewer:2.6.0'`
 
 Library is available in jcenter repository, probably it'll be in Maven Central soon.
 
