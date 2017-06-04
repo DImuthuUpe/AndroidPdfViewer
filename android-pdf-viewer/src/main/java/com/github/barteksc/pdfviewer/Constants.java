@@ -18,12 +18,11 @@ package com.github.barteksc.pdfviewer.util;
 public class Constants {
 
     public static boolean DEBUG_MODE = false;
-    
     public static boolean SHOW_BORDER = false;
-    public static int BORDER_COLOR = 16777215;
+    public static String BORDER_COLOR = "black";
     public static int BORDER_WIDTH = 2;
-    
-   /** Between 0 and 1, the thumbnails quality (default 0.3). Increasing this value may cause performance decrease */
+
+    /** Between 0 and 1, the thumbnails quality (default 0.3). Increasing this value may cause performance decrease */
     public static float THUMBNAIL_RATIO = 0.3f;
 
     /**
@@ -39,9 +38,14 @@ public class Constants {
     public static class Cache {
 
         /** The size of the cache (number of bitmaps kept) */
-        public static int CACHE_SIZE = 150;
+        //public static int CACHE_SIZE = 150;
+        //public static int GRID_SIZE = 10;
+        //public static int CACHE_SIZE = (int) Math.pow(GRID_SIZE, 2d);
+        public static int CACHE_SIZE = 175;
 
-        public static int THUMBNAILS_CACHE_SIZE = 6;
+       // public static int THUMBNAILS_CACHE_SIZE = 6;
+        public static int THUMBNAILS_CACHE_SIZE = 5;
+
     }
 
     public static class Pinch {
