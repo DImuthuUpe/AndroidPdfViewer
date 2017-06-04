@@ -1,5 +1,3 @@
-
-
 # Android PdfViewer
 
 __AndroidPdfViewer 1.x is available on [AndroidPdfViewerV1](https://github.com/barteksc/AndroidPdfViewerV1)
