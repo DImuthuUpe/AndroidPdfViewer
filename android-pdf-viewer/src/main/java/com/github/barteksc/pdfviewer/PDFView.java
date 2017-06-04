@@ -31,6 +31,7 @@ import android.os.AsyncTask;
 import android.os.HandlerThread;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.widget.OverScroller;
 import android.widget.RelativeLayout;
 
 import com.github.barteksc.pdfviewer.listener.OnDrawListener;
@@ -286,7 +287,7 @@ public class PDFView extends RelativeLayout {
      */
     private boolean enableAntialiasing = true;
     private PaintFlagsDrawFilter antialiasFilter =
-            new PaintFlagsDrawFilter(0, Paint.ANTI_ALIAS_FLAG|Paint.FILTER_BITMAP_FLAG);
+            new PaintFlagsDrawFilter(0, Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
 
     /**
      * Construct the initial view
@@ -521,6 +522,25 @@ public class PDFView extends RelativeLayout {
         return recycled;
     }
 
+    /**
+     * Handle fling animation
+     */
+    @Override
+    public void computeScroll() {
+        super.computeScroll();
+
+        OverScroller scroller = animationManager.getScroller();
+        if (scroller.computeScrollOffset()) {
+            moveTo(scroller.getCurrX(), scroller.getCurrY());
+            loadPageByOffset();
+        } else { // fling finished
+            loadPages();
+            if (getScrollHandle() != null) {
+                getScrollHandle().hideDelayed();
+            }
+        }
+    }
+
     @Override
     protected void onDetachedFromWindow() {
         recycle();
@@ -674,17 +694,19 @@ public class PDFView extends RelativeLayout {
 
         canvas.drawBitmap(renderedBitmap, srcRect, dstRect, paint);
 
+        // Metro show markers, Borders //
         if (Constants.SHOW_BORDER && documentPageCount>1) {
-            //draw page markers if more than one page, and only show correct border for orientation
-            paint.setColor(Color.parseColor(Constants.BORDER_COLOR));
+            paint.setColor(Constants.BORDER_COLOR);
             paint.setStrokeWidth(Constants.BORDER_WIDTH);
             paint.setStyle(Style.STROKE);
+            //Draw marker depending on orientation of pdf.
             //down left side
-            if(!swipeVertical)canvas.drawLine(0, 0, 0, pageHeight, paint);
+            if(!swipeVertical)canvas.drawLine(0, 20, 0, pageHeight, paint);
             //across
             if(swipeVertical)canvas.drawLine(pageWidth, 0, 0, 0, paint);
             //end of drawing page markers
         }
+        //Metro show markers, borders//
 
         if (Constants.DEBUG_MODE) {
             debugPaint.setColor(part.getUserPage() % 2 == 0 ? Color.RED : Color.BLUE);
@@ -693,6 +715,7 @@ public class PDFView extends RelativeLayout {
 
         // Restore the canvas position
         canvas.translate(-localTranslationX, -localTranslationY);
+
     }
 
     /**
@@ -1030,22 +1053,23 @@ public class PDFView extends RelativeLayout {
         }
     }
 
-    public void fitToWidth(int page,int pageOrientation) {
+    // *************** Metro code update on fit to width depending on orientation and book mode
+    public void fitToWidth(int page, int pageOrientation,boolean BookMode) {
         if (state != State.SHOWN) {
             Log.e(TAG, "Cannot fit, document not rendered yet");
             return;
         }
-        fitToWidth(pageOrientation);
+        fitToWidth(pageOrientation,BookMode);
         jumpTo(page);
     }
 
-    public void fitToWidth(int pageOrientation) {
+    public void fitToWidth(int pageOrientation, boolean BookMode) {
         if (state != State.SHOWN) {
             Log.e(TAG, "Cannot fit, document not rendered yet");
             return;
         }
-        
-        if (!BookMode) {
+
+     if (!BookMode) {
             if (pageOrientation == 0) {
                 int centerPos = getPageAtPositionOffset(0);
                 zoomTo(getWidth() / optimalPageWidth);
@@ -1058,13 +1082,15 @@ public class PDFView extends RelativeLayout {
         }
         else
         {
-        //book mode does not require rescaling, otherwise elongated text as becomes stretched, so this option turns off scaling for bookmode.
+            //book mode does not require rescaling, otherwise elongated text as becomes stretched, so this option turns off scaling for bookmode.
         }
+        return;
     }
 
     public int getCurrentPage() {
         return currentPage;
     }
+    // *************** Metro code update on fit to width depending on orientation and book mode
 
     public float getCurrentXOffset() {
         return currentXOffset;
@@ -1243,6 +1269,7 @@ public class PDFView extends RelativeLayout {
 
     /**
      * Use bytearray as the pdf source, documents is not saved
+     *
      * @param bytes
      * @return
      */
