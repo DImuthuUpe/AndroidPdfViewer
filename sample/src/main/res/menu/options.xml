@@ -2,6 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/pickImage"
+        android:icon="@drawable/ic_action_insert_grey_700_48dp"
+        android:title="Pick Image"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/pickFile"
         android:icon="@drawable/ic_open_in_browser_grey_700_48dp"
         android:title="@string/pick_file"

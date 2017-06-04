@@ -15,10 +15,18 @@
  */
 package com.github.barteksc.sample;
 
+
+
+import android.content.Context;
+
 import android.content.ActivityNotFoundException;
+
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.provider.OpenableColumns;
 import android.support.annotation.NonNull;
@@ -41,6 +49,7 @@ import org.androidannotations.annotations.OnActivityResult;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.ViewById;
+
 
 import java.util.List;
 
@@ -66,6 +75,7 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
     Integer pageNumber = 0;
 
     String pdfFileName;
+
 
     @OptionsItem(R.id.pickFile)
     void pickFile() {
@@ -96,6 +106,12 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
         }
     }
 
+    @OptionsItem(R.id.pickImage)
+    void pickFragment() {
+        OneFragment fragment = new OneFragment();
+        getSupportFragmentManager().beginTransaction().replace(R.id.pdfView, fragment).commit();
+    }
+
     @AfterViews
     void afterViews() {
         if (uri != null) {
@@ -104,6 +120,16 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
             displayFromAsset(SAMPLE_FILE);
         }
         setTitle(pdfFileName);
+    }
+
+    protected boolean isOnline(){
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        if(networkInfo != null && networkInfo.isConnectedOrConnecting()){
+            return true;
+        }else{
+            return false;
+        }
     }
 
     private void displayFromAsset(String assetFileName) {
