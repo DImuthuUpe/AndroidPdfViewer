@@ -1,3 +1,6 @@
+## 2.6.1 (2017-06-08)
+* Fix disappearing scroll handle
+
 ## 2.6.0 (2017-06-04)
 * Fix fling on single-page documents
 * Greatly improve overall fling experience

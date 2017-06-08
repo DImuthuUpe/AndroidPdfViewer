@@ -38,6 +38,8 @@ class AnimationManager {
 
     private OverScroller scroller;
 
+    private boolean flinging = false;
+
     public AnimationManager(PDFView pdfView) {
         this.pdfView = pdfView;
         scroller = new OverScroller(pdfView.getContext());
@@ -74,7 +76,19 @@ class AnimationManager {
 
     public void startFlingAnimation(int startX, int startY, int velocityX, int velocityY, int minX, int maxX, int minY, int maxY) {
         stopAll();
+        flinging = true;
         scroller.fling(startX, startY, velocityX, velocityY, minX, maxX, minY, maxY);
+    }
+
+    void computeFling() {
+        if (scroller.computeScrollOffset()) {
+            pdfView.moveTo(scroller.getCurrX(), scroller.getCurrY());
+            pdfView.loadPageByOffset();
+        } else if(flinging) { // fling finished
+            flinging = false;
+            pdfView.loadPages();
+            hideHandle();
+        }
     }
 
     public void stopAll() {
@@ -86,11 +100,8 @@ class AnimationManager {
     }
 
     public void stopFling() {
+        flinging = false;
         scroller.forceFinished(true);
-    }
-
-    public OverScroller getScroller() {
-        return scroller;
     }
 
     class XAnimation implements AnimatorUpdateListener {

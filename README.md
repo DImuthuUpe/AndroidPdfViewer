@@ -14,6 +14,8 @@ Licensed under Apache License 2.0.
 * Fix fling on single-page documents
 * Greatly improve overall fling experience
 
+Version 2.6.1. fixes disappearing scroll handle
+
 ## Changes in 2.0 API
 * `Configurator#defaultPage(int)` and `PDFView#jumpTo(int)` now require page index (i.e. starting from 0)
 * `OnPageChangeListener#onPageChanged(int, int)` is called with page index (i.e. starting from 0)
@@ -27,7 +29,7 @@ Licensed under Apache License 2.0.
 
 Add to _build.gradle_:
 
-`compile 'com.github.barteksc:android-pdf-viewer:2.6.0'`
+`compile 'com.github.barteksc:android-pdf-viewer:2.6.1'`
 
 Library is available in jcenter repository, probably it'll be in Maven Central soon.
 

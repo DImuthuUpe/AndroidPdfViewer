@@ -31,7 +31,6 @@ import android.os.AsyncTask;
 import android.os.HandlerThread;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.widget.OverScroller;
 import android.widget.RelativeLayout;
 
 import com.github.barteksc.pdfviewer.listener.OnDrawListener;
@@ -528,17 +527,7 @@ public class PDFView extends RelativeLayout {
     @Override
     public void computeScroll() {
         super.computeScroll();
-
-        OverScroller scroller = animationManager.getScroller();
-        if (scroller.computeScrollOffset()) {
-            moveTo(scroller.getCurrX(), scroller.getCurrY());
-            loadPageByOffset();
-        } else { // fling finished
-            loadPages();
-            if (getScrollHandle() != null) {
-                getScrollHandle().hideDelayed();
-            }
-        }
+        animationManager.computeFling();
     }
 
     @Override
