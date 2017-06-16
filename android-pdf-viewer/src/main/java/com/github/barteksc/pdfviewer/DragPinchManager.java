@@ -153,14 +153,13 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         int xOffset = (int) pdfView.getCurrentXOffset();
         int yOffset = (int) pdfView.getCurrentYOffset();
 
-        float minX = pdfView.toCurrentScale(pdfView.getOptimalPageWidth());
-        float minY = pdfView.toCurrentScale(pdfView.getOptimalPageHeight());
+        float minX, minY;
         if (pdfView.isSwipeVertical()) {
-            minX = -(minX - pdfView.getWidth());
-            minY = -(minY * pdfView.getPageCount() - pdfView.getHeight());
+            minX = -(pdfView.toCurrentScale(pdfView.getOptimalPageWidth()) - pdfView.getWidth());
+            minY = -(pdfView.calculateDocLength() - pdfView.getHeight());
         } else {
-            minX = -(minX * pdfView.getPageCount() - pdfView.getWidth());
-            minY = -(minY - pdfView.getHeight());
+            minX = -(pdfView.calculateDocLength() - pdfView.getWidth());
+            minY = -(pdfView.toCurrentScale(pdfView.getOptimalPageHeight()) - pdfView.getHeight());
         }
 
         animationManager.startFlingAnimation(xOffset, yOffset, (int) (velocityX), (int) (velocityY),

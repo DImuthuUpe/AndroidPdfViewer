@@ -1,3 +1,11 @@
+## 2.7.0-beta (2017-06-16)
+* Update PdfiumAndroid to 1.6.1, which fixed font rendering (issue #253)
+* Add `.spacing(int)` method to add spacing (in dp) between document pages
+* Fix drawing with `.onDraw(onDrawListener)`
+* Add `.onDrawAll(onDrawListener)` method to draw on all pages
+* Add small rendering improvements
+* Fix rendering when duplicated pages are passed to `.pages(..)`
+
 ## 2.6.1 (2017-06-08)
 * Fix disappearing scroll handle
 

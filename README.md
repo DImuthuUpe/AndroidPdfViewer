@@ -10,11 +10,15 @@ Library for displaying PDF documents on Android, with `animations`, `gestures`, 
 It is based on [PdfiumAndroid](https://github.com/barteksc/PdfiumAndroid) for decoding PDF files. Works on API 11 (Android 3.0) and higher.
 Licensed under Apache License 2.0.
 
-## What's new in 2.6.0?
-* Fix fling on single-page documents
-* Greatly improve overall fling experience
+## What's new in 2.7.0-beta?
+* Update PdfiumAndroid to 1.6.1, which fixed font rendering (issue #253)
+* Add `.spacing(int)` method to add spacing (in dp) between document pages
+* Fix drawing with `.onDraw(onDrawListener)`
+* Add `.onDrawAll(onDrawListener)` method to draw on all pages
+* Add small rendering improvements
+* Fix rendering when duplicated pages are passed to `.pages(..)`
 
-Version 2.6.1. fixes disappearing scroll handle
+This is beta release because of big number of small changes and something could go wrong (but I didn't notice)
 
 ## Changes in 2.0 API
 * `Configurator#defaultPage(int)` and `PDFView#jumpTo(int)` now require page index (i.e. starting from 0)
@@ -29,7 +33,7 @@ Version 2.6.1. fixes disappearing scroll handle
 
 Add to _build.gradle_:
 
-`compile 'com.github.barteksc:android-pdf-viewer:2.6.1'`
+`compile 'com.github.barteksc:android-pdf-viewer:2.7.0-beta'` or `2.6.1` for more stable version
 
 Library is available in jcenter repository, probably it'll be in Maven Central soon.
 
@@ -62,7 +66,10 @@ pdfView.fromAsset(String)
     .swipeHorizontal(false)
     .enableDoubletap(true)
     .defaultPage(0)
-    .onDraw(onDrawListener) // allows to draw something on a provided canvas, above the current page
+    // allows to draw something on the current page, usually visible in the middle of the screen
+    .onDraw(onDrawListener)
+    // allows to draw something on all pages, separately for every page. Called only for visible pages
+    .onDrawAll(onDrawListener)
     .onLoad(onLoadCompleteListener) // called after document is loaded and starts to be rendered
     .onPageChange(onPageChangeListener)
     .onPageScroll(onPageScrollListener)
@@ -72,6 +79,8 @@ pdfView.fromAsset(String)
     .password(null)
     .scrollHandle(null)
     .enableAntialiasing(true) // improve rendering a little bit on low-res screens
+    // spacing between pages in dp. To define spacing color, set view background
+    .spacing(0) 
     .load();
 ```
 

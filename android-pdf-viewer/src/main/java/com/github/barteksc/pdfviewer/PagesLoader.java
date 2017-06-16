@@ -29,6 +29,7 @@ class PagesLoader {
     private float partRenderHeight;
     private int thumbnailWidth;
     private int thumbnailHeight;
+    private float scaledSpacingPx;
     private final RectF thumbnailRect = new RectF(0, 0, 1, 1);
 
     private class Holder {
@@ -37,7 +38,7 @@ class PagesLoader {
         int col;
     }
 
-    public PagesLoader(PDFView pdfView) {
+    PagesLoader(PDFView pdfView) {
         this.pdfView = pdfView;
     }
 
@@ -53,11 +54,11 @@ class PagesLoader {
 
     private int documentPage(int userPage) {
         int documentPage = userPage;
-        if (pdfView.getFilteredUserPages() != null) {
-            if (userPage < 0 || userPage >= pdfView.getFilteredUserPages().length) {
+        if (pdfView.getOriginalUserPages() != null) {
+            if (userPage < 0 || userPage >= pdfView.getOriginalUserPages().length) {
                 return -1;
             } else {
-                documentPage = pdfView.getFilteredUserPages()[userPage];
+                documentPage = pdfView.getOriginalUserPages()[userPage];
             }
         }
 
@@ -68,18 +69,32 @@ class PagesLoader {
         return documentPage;
     }
 
-    private Holder getPageAndCoordsByOffset(float offset) {
+    /**
+     * @param offset
+     * @param endOffset, if true, then rounding up, else rounding down
+     * @return
+     */
+    private Holder getPageAndCoordsByOffset(float offset, boolean endOffset) {
         Holder holder = new Holder();
         float fixOffset = -MathUtils.max(offset, 0);
+        float row, col;
 
         if (pdfView.isSwipeVertical()) {
-            holder.page = MathUtils.floor(fixOffset / scaledHeight);
-            holder.row = MathUtils.floor(Math.abs(fixOffset - scaledHeight * holder.page) / rowHeight);
-            holder.col = MathUtils.floor(xOffset / colWidth);
+            holder.page = MathUtils.floor(fixOffset / (scaledHeight + scaledSpacingPx));
+            row = Math.abs(fixOffset - (scaledHeight + scaledSpacingPx) * holder.page) / rowHeight;
+            col = xOffset / colWidth;
         } else {
-            holder.page = MathUtils.floor(fixOffset / scaledWidth);
-            holder.col = MathUtils.floor(Math.abs(fixOffset - scaledWidth * holder.page) / colWidth);
-            holder.row = MathUtils.floor(yOffset / rowHeight);
+            holder.page = MathUtils.floor(fixOffset / (scaledWidth + scaledSpacingPx));
+            col = Math.abs(fixOffset - (scaledWidth + scaledSpacingPx) * holder.page) / colWidth;
+            row = yOffset / rowHeight;
+        }
+
+        if (endOffset) {
+            holder.row = MathUtils.ceil(row);
+            holder.col = MathUtils.ceil(col);
+        } else {
+            holder.row = MathUtils.floor(row);
+            holder.col = MathUtils.floor(col);
         }
         return holder;
     }
@@ -97,18 +112,18 @@ class PagesLoader {
      * @param number if < 0 then row (column) is above view, else row (column) is visible or below view
      * @return
      */
-    private int loadRelative(int number, int nbOfPartsLoadable, boolean outsideView) {
+    private int loadRelative(int number, int nbOfPartsLoadable, boolean belowView) {
         int loaded = 0;
         float newOffset;
         if (pdfView.isSwipeVertical()) {
             float rowsHeight = rowHeight * number + 1;
-            newOffset = pdfView.getCurrentYOffset() - (outsideView ? pdfView.getHeight() : 0) - rowsHeight;
+            newOffset = pdfView.getCurrentYOffset() - (belowView ? pdfView.getHeight() : 0) - rowsHeight;
         } else {
             float colsWidth = colWidth * number;
-            newOffset = pdfView.getCurrentXOffset() - (outsideView ? pdfView.getWidth() : 0) - colsWidth;
+            newOffset = pdfView.getCurrentXOffset() - (belowView ? pdfView.getWidth() : 0) - colsWidth;
         }
 
-        Holder holder = getPageAndCoordsByOffset(newOffset);
+        Holder holder = getPageAndCoordsByOffset(newOffset, false);
         int documentPage = documentPage(holder.page);
         if (documentPage < 0) {
             return 0;
@@ -150,8 +165,8 @@ class PagesLoader {
         int parts = 0;
         Holder firstHolder, lastHolder;
         if (pdfView.isSwipeVertical()) {
-            firstHolder = getPageAndCoordsByOffset(pdfView.getCurrentYOffset());
-            lastHolder = getPageAndCoordsByOffset(pdfView.getCurrentYOffset() - pdfView.getHeight() + 1);
+            firstHolder = getPageAndCoordsByOffset(pdfView.getCurrentYOffset(), false);
+            lastHolder = getPageAndCoordsByOffset(pdfView.getCurrentYOffset() - pdfView.getHeight() + 1, true);
             int visibleRows = 0;
             if (firstHolder.page == lastHolder.page) {
                 visibleRows = lastHolder.row - firstHolder.row + 1;
@@ -167,8 +182,8 @@ class PagesLoader {
                 parts += loadRelative(i, CACHE_SIZE - parts, false);
             }
         } else {
-            firstHolder = getPageAndCoordsByOffset(pdfView.getCurrentXOffset());
-            lastHolder = getPageAndCoordsByOffset(pdfView.getCurrentXOffset() - pdfView.getWidth() + 1);
+            firstHolder = getPageAndCoordsByOffset(pdfView.getCurrentXOffset(), false);
+            lastHolder = getPageAndCoordsByOffset(pdfView.getCurrentXOffset() - pdfView.getWidth() + 1, true);
             int visibleCols = 0;
             if (firstHolder.page == lastHolder.page) {
                 visibleCols = lastHolder.col - firstHolder.col + 1;
@@ -244,6 +259,8 @@ class PagesLoader {
         partRenderWidth = Constants.PART_SIZE / pageRelativePartWidth;
         partRenderHeight = Constants.PART_SIZE / pageRelativePartHeight;
         cacheOrder = 1;
+        scaledSpacingPx = pdfView.toCurrentScale(pdfView.getSpacingPx());
+        scaledSpacingPx -= scaledSpacingPx / pdfView.getPageCount();
         int loaded = loadVisible();
         if (pdfView.getScrollDir().equals(PDFView.ScrollDir.END)) { // if scrolling to end, preload next view
             for (int i = 0; i < Constants.PRELOAD_COUNT && loaded < CACHE_SIZE; i++) {
