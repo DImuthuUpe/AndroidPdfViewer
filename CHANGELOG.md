@@ -1,5 +1,5 @@
 ## 2.7.0-beta.1 (2017-07-05)
-* Updates PdfiumAndroid to 1.7.0 which reduces memory usage about twice and improves performance by using RGB 565 format (when not using `pdfView.setBestQuality(true)`)
+* Updates PdfiumAndroid to 1.7.0 which reduces memory usage about twice and improves performance by using RGB 565 format (when not using `pdfView.useBestQuality(true)`)
 
 ## 2.7.0-beta (2017-06-16)
 * Update PdfiumAndroid to 1.6.1, which fixed font rendering (issue #253)
