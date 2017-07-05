@@ -35,7 +35,7 @@ public class Constants {
     public static class Cache {
 
         /** The size of the cache (number of bitmaps kept) */
-        public static int CACHE_SIZE = 150;
+        public static int CACHE_SIZE = 120;
 
         public static int THUMBNAILS_CACHE_SIZE = 6;
     }

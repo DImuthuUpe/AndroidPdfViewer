@@ -93,7 +93,7 @@ class RenderingHandler extends Handler {
         int h = Math.round(renderingTask.height);
         Bitmap render;
         try {
-            render = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+            render = Bitmap.createBitmap(w, h, renderingTask.bestQuality ? Bitmap.Config.ARGB_8888 : Bitmap.Config.RGB_565);
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
             return null;
@@ -103,15 +103,9 @@ class RenderingHandler extends Handler {
                 roundedRenderBounds.left, roundedRenderBounds.top,
                 roundedRenderBounds.width(), roundedRenderBounds.height(), renderingTask.annotationRendering);
 
-        if (!renderingTask.bestQuality) {
-            Bitmap cpy = render.copy(Bitmap.Config.RGB_565, false);
-            render.recycle();
-            render = cpy;
-        }
-
-        return new PagePart(renderingTask.userPage, renderingTask.page, render, //
-                renderingTask.width, renderingTask.height, //
-                renderingTask.bounds, renderingTask.thumbnail, //
+        return new PagePart(renderingTask.userPage, renderingTask.page, render,
+                renderingTask.width, renderingTask.height,
+                renderingTask.bounds, renderingTask.thumbnail,
                 renderingTask.cacheOrder);
     }
 

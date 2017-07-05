@@ -18,6 +18,8 @@ Licensed under Apache License 2.0.
 * Add small rendering improvements
 * Fix rendering when duplicated pages are passed to `.pages(..)`
 
+2.7.0-beta.1 updates PdfiumAndroid to 1.7.0 which reduces memory usage about twice and improves performance by using RGB 565 format (when not using `pdfView.setBestQuality(true)`)
+
 This is beta release because of big number of small changes and something could go wrong (but I didn't notice)
 
 ## Changes in 2.0 API
@@ -33,7 +35,7 @@ This is beta release because of big number of small changes and something could 
 
 Add to _build.gradle_:
 
-`compile 'com.github.barteksc:android-pdf-viewer:2.7.0-beta'` or `2.6.1` for more stable version
+`compile 'com.github.barteksc:android-pdf-viewer:2.7.0-beta.1'` or `2.6.1` for more stable version
 
 Library is available in jcenter repository, probably it'll be in Maven Central soon.
 
