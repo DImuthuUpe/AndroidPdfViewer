@@ -32,10 +32,22 @@ This is beta release because of big number of small changes and something could 
 * removed minimap and mask configuration
 
 ## Installation
+## Step 1. Add the JitPack repository to your build file
+Add it in your root build.gradle at the end of repositories:
+	
+	allprojects {
+		repositories {
+			...
+			maven { url 'https://jitpack.io' }
+		}
+	}
 
-Add to _build.gradle_:
+## Step 2. Add the dependency
+	dependencies {
+	        compile 'com.github.shxdos:AndroidPdfViewer:2.7.0-beta.2'
+	}
 
-`compile 'com.github.barteksc:android-pdf-viewer:2.7.0-beta.1'` or `2.6.1` for more stable version
+
 
 Library is available in jcenter repository, probably it'll be in Maven Central soon.
 
