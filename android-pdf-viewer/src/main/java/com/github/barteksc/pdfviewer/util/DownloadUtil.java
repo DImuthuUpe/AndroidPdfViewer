@@ -1,6 +1,5 @@
 package com.github.barteksc.pdfviewer.util;
 
-import android.os.Environment;
 import android.support.annotation.NonNull;
 
 import java.io.File;
@@ -54,7 +53,10 @@ public class DownloadUtil {
                 try {
                     is = response.body().byteStream();
                     long total = response.body().contentLength();
-                    File file = new File(savePath, getNameFromUrl(url));
+
+                    int index = url.lastIndexOf("/");
+                    String fileName = url.substring(index);
+                    final File file = new File(saveDir, fileName);
                     fos = new FileOutputStream(file);
                     long sum = 0;
                     while ((len = is.read(buf)) != -1) {
@@ -93,7 +95,7 @@ public class DownloadUtil {
      */
     private String isExistDir(String saveDir) throws IOException {
         // 下载位置
-        File downloadFile = new File(Environment.getExternalStorageDirectory(), saveDir);
+        File downloadFile = new File( saveDir);
         if (!downloadFile.mkdirs()) {
             downloadFile.createNewFile();
         }

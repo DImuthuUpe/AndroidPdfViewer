@@ -49,6 +49,7 @@ import com.github.barteksc.pdfviewer.source.DocumentSource;
 import com.github.barteksc.pdfviewer.source.FileSource;
 import com.github.barteksc.pdfviewer.source.InputStreamSource;
 import com.github.barteksc.pdfviewer.source.UriSource;
+import com.github.barteksc.pdfviewer.source.UrlSource;
 import com.github.barteksc.pdfviewer.util.ArrayUtils;
 import com.github.barteksc.pdfviewer.util.Constants;
 import com.github.barteksc.pdfviewer.util.DownloadUtil;
@@ -1291,7 +1292,14 @@ public class PDFView extends RelativeLayout {
     public Configurator fromFile(File file) {
         return new Configurator(new FileSource(file));
     }
-
+    /**
+     * Use a url as the pdf source
+     */
+    public Configurator fromUrl(String url) {
+        Configurator source= new Configurator(new UrlSource(url));
+        source.fileUrl(url);
+        return source;
+    }
     /**
      * Use URI as the pdf source, for use with content providers
      */
@@ -1369,7 +1377,7 @@ public class PDFView extends RelativeLayout {
             this.pageNumbers = pageNumbers;
             return this;
         }
-        public Configurator fileUrl(String fileUrl){
+        private Configurator fileUrl(String fileUrl){
             this.fileUrl=fileUrl;
             return this;
         }
@@ -1489,11 +1497,15 @@ public class PDFView extends RelativeLayout {
                 if(onFileDownloadCompleteListener!=null){
                     onFileDownloadCompleteListener.onDownloadComplete(file);
                 }
+                PDFView.this.fromFile(file);
+                load();
             }else{
-                DownloadUtil.get().download(fileUrl, "download", new DownloadUtil.OnDownloadListener() {
+                DownloadUtil.get().download(fileUrl, SDPath, new DownloadUtil.OnDownloadListener() {
                     @Override
                     public void onDownloadSuccess(File file) {
-                        onFileDownloadCompleteListener.onDownloadComplete(file);
+                        if(onFileDownloadCompleteListener!=null){
+                            onFileDownloadCompleteListener.onDownloadComplete(file);
+                        }
                         PDFView.this.fromFile(file);
                         load();
                     }

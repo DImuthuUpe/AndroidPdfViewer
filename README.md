@@ -54,6 +54,16 @@ All available options with default values:
 ``` java
 pdfView.fromUri(Uri)
 or
+  pdfView.fromUrl("http://www.anweitong.com/upload/document/standard/national_standards/138793918364316200.pdf")
+                        .enableSwipe(true) // allows to block changing pages using swipe
+                        .defaultPage(0)
+                        .onLoad(this) // called after document is loaded and starts to be rendered
+                        .onPageChange(this)
+                        .swipeHorizontal(false)
+                        .enableAntialiasing(true)
+                        .onFileDownload(this)
+                        .loadFromUrl();
+or
 pdfView.fromFile(File)
 or
 pdfView.fromBytes(byte[])
