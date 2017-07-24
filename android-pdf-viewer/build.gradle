@@ -39,6 +39,7 @@ android {
 
 dependencies {
     compile 'com.github.barteksc:pdfium-android:1.7.0'
+    compile 'com.squareup.okhttp3:okhttp:3.8.1'
 }
 
 apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle'

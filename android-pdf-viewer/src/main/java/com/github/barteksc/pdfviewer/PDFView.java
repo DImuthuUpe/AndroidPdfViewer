@@ -28,6 +28,7 @@ import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.os.HandlerThread;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -35,6 +36,7 @@ import android.widget.RelativeLayout;
 
 import com.github.barteksc.pdfviewer.listener.OnDrawListener;
 import com.github.barteksc.pdfviewer.listener.OnErrorListener;
+import com.github.barteksc.pdfviewer.listener.OnFileDownloadCompleteListener;
 import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener;
 import com.github.barteksc.pdfviewer.listener.OnPageChangeListener;
 import com.github.barteksc.pdfviewer.listener.OnPageScrollListener;
@@ -47,8 +49,10 @@ import com.github.barteksc.pdfviewer.source.DocumentSource;
 import com.github.barteksc.pdfviewer.source.FileSource;
 import com.github.barteksc.pdfviewer.source.InputStreamSource;
 import com.github.barteksc.pdfviewer.source.UriSource;
+import com.github.barteksc.pdfviewer.source.UrlSource;
 import com.github.barteksc.pdfviewer.util.ArrayUtils;
 import com.github.barteksc.pdfviewer.util.Constants;
+import com.github.barteksc.pdfviewer.util.DownloadUtil;
 import com.github.barteksc.pdfviewer.util.MathUtils;
 import com.github.barteksc.pdfviewer.util.Util;
 import com.shockwave.pdfium.PdfDocument;
@@ -1288,7 +1292,14 @@ public class PDFView extends RelativeLayout {
     public Configurator fromFile(File file) {
         return new Configurator(new FileSource(file));
     }
-
+    /**
+     * Use a url as the pdf source
+     */
+    public Configurator fromUrl(String url) {
+        Configurator source= new Configurator(new UrlSource(url));
+        source.fileUrl(url);
+        return source;
+    }
     /**
      * Use URI as the pdf source, for use with content providers
      */
@@ -1322,7 +1333,7 @@ public class PDFView extends RelativeLayout {
     public class Configurator {
 
         private final DocumentSource documentSource;
-
+        private String fileUrl;
         private int[] pageNumbers = null;
 
         private boolean enableSwipe = true;
@@ -1334,6 +1345,7 @@ public class PDFView extends RelativeLayout {
         private OnDrawListener onDrawAllListener;
 
         private OnLoadCompleteListener onLoadCompleteListener;
+        private OnFileDownloadCompleteListener onFileDownloadCompleteListener;
 
         private OnErrorListener onErrorListener;
 
@@ -1363,6 +1375,10 @@ public class PDFView extends RelativeLayout {
 
         public Configurator pages(int... pageNumbers) {
             this.pageNumbers = pageNumbers;
+            return this;
+        }
+        private Configurator fileUrl(String fileUrl){
+            this.fileUrl=fileUrl;
             return this;
         }
 
@@ -1395,7 +1411,10 @@ public class PDFView extends RelativeLayout {
             this.onLoadCompleteListener = onLoadCompleteListener;
             return this;
         }
-
+        public Configurator onFileDownload(OnFileDownloadCompleteListener onFileDownloadCompleteListener) {
+            this.onFileDownloadCompleteListener = onFileDownloadCompleteListener;
+            return this;
+        }
         public Configurator onPageScroll(OnPageScrollListener onPageScrollListener) {
             this.onPageScrollListener = onPageScrollListener;
             return this;
@@ -1466,6 +1485,41 @@ public class PDFView extends RelativeLayout {
                 PDFView.this.load(documentSource, password, onLoadCompleteListener, onErrorListener, pageNumbers);
             } else {
                 PDFView.this.load(documentSource, password, onLoadCompleteListener, onErrorListener);
+            }
+        }
+        public void loadFromUrl(){
+            final String SDPath = Environment.getExternalStorageDirectory().getAbsolutePath()+"/PDFViewCache/";
+            int index = fileUrl.lastIndexOf("/");
+            String fileName = fileUrl.substring(index);
+            final File file = new File(SDPath, fileName);
+            if(file.exists()){
+                //文件存在
+                if(onFileDownloadCompleteListener!=null){
+                    onFileDownloadCompleteListener.onDownloadComplete(file);
+                }
+                PDFView.this.fromFile(file);
+                load();
+            }else{
+                DownloadUtil.get().download(fileUrl, SDPath, new DownloadUtil.OnDownloadListener() {
+                    @Override
+                    public void onDownloadSuccess(File file) {
+                        if(onFileDownloadCompleteListener!=null){
+                            onFileDownloadCompleteListener.onDownloadComplete(file);
+                        }
+                        PDFView.this.fromFile(file);
+                        load();
+                    }
+
+                    @Override
+                    public void onDownloading(int progress) {
+
+                    }
+
+                    @Override
+                    public void onDownloadFailed() {
+
+                    }
+                });
             }
         }
     }
