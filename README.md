@@ -49,7 +49,6 @@ Add it in your root build.gradle at the end of repositories:
 
 
 
-Library is available in jcenter repository, probably it'll be in Maven Central soon.
 
 ## Include PDFView in your layout
 
