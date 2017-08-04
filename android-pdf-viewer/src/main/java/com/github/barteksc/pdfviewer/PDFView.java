@@ -1005,7 +1005,7 @@ public class PDFView extends RelativeLayout {
     }
 
     void loadPageByOffset() {
-    	if(0==getPageCount()){
+    	if(0 == getPageCount()){
             return ;
         }
         float offset, optimal, screenCenter;
