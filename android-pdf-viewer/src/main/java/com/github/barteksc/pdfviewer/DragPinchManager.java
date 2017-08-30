@@ -22,6 +22,7 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 
 import com.github.barteksc.pdfviewer.scroll.ScrollHandle;
+import com.github.barteksc.pdfviewer.listener.OnTapListener;
 
 import static com.github.barteksc.pdfviewer.util.Constants.Pinch.MAXIMUM_ZOOM;
 import static com.github.barteksc.pdfviewer.util.Constants.Pinch.MINIMUM_ZOOM;
@@ -81,12 +82,15 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
 
     @Override
     public boolean onSingleTapConfirmed(MotionEvent e) {
-        ScrollHandle ps = pdfView.getScrollHandle();
-        if (ps != null && !pdfView.documentFitsView()) {
-            if (!ps.shown()) {
-                ps.show();
-            } else {
-                ps.hide();
+        OnTapListener onTapListener = pdfView.getOnTapListener();
+        if (onTapListener == null || !onTapListener.onTap(e)) {
+            ScrollHandle ps = pdfView.getScrollHandle();
+            if (ps != null && !pdfView.documentFitsView()) {
+                if (!ps.shown()) {
+                    ps.show();
+                } else {
+                    ps.hide();
+                }
             }
         }
         pdfView.performClick();

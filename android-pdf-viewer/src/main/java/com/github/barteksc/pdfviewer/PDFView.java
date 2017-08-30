@@ -39,6 +39,7 @@ import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener;
 import com.github.barteksc.pdfviewer.listener.OnPageChangeListener;
 import com.github.barteksc.pdfviewer.listener.OnPageScrollListener;
 import com.github.barteksc.pdfviewer.listener.OnRenderListener;
+import com.github.barteksc.pdfviewer.listener.OnTapListener;
 import com.github.barteksc.pdfviewer.model.PagePart;
 import com.github.barteksc.pdfviewer.scroll.ScrollHandle;
 import com.github.barteksc.pdfviewer.source.AssetSource;
@@ -231,6 +232,11 @@ public class PDFView extends RelativeLayout {
      * Call back object to call when the document is initially rendered
      */
     private OnRenderListener onRenderListener;
+
+    /**
+     * Call back object to call when the user does a tap gesture
+     */
+    private OnTapListener onTapListener;
 
     /**
      * Paint object for drawing
@@ -503,6 +509,14 @@ public class PDFView extends RelativeLayout {
 
     OnRenderListener getOnRenderListener() {
         return this.onRenderListener;
+    }
+
+    private void setOnTapListener(OnTapListener onTapListener) {
+        this.onTapListener = onTapListener;
+    }
+
+    OnTapListener getOnTapListener() {
+        return this.onTapListener;
     }
 
     private void setOnDrawListener(OnDrawListener onDrawListener) {
@@ -1343,6 +1357,8 @@ public class PDFView extends RelativeLayout {
 
         private OnRenderListener onRenderListener;
 
+        private OnTapListener onTapListener;
+
         private int defaultPage = 0;
 
         private boolean swipeHorizontal = false;
@@ -1416,6 +1432,11 @@ public class PDFView extends RelativeLayout {
             return this;
         }
 
+        public Configurator onTap(OnTapListener onTapListener) {
+            this.onTapListener = onTapListener;
+            return this;
+        }
+
         public Configurator defaultPage(int defaultPage) {
             this.defaultPage = defaultPage;
             return this;
@@ -1453,6 +1474,7 @@ public class PDFView extends RelativeLayout {
             PDFView.this.setOnPageChangeListener(onPageChangeListener);
             PDFView.this.setOnPageScrollListener(onPageScrollListener);
             PDFView.this.setOnRenderListener(onRenderListener);
+            PDFView.this.setOnTapListener(onTapListener);
             PDFView.this.enableSwipe(enableSwipe);
             PDFView.this.enableDoubletap(enableDoubletap);
             PDFView.this.setDefaultPage(defaultPage);
