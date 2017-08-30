@@ -10,17 +10,9 @@ Library for displaying PDF documents on Android, with `animations`, `gestures`, 
 It is based on [PdfiumAndroid](https://github.com/barteksc/PdfiumAndroid) for decoding PDF files. Works on API 11 (Android 3.0) and higher.
 Licensed under Apache License 2.0.
 
-## What's new in 2.7.0-beta?
-* Update PdfiumAndroid to 1.6.1, which fixed font rendering (issue #253)
-* Add `.spacing(int)` method to add spacing (in dp) between document pages
-* Fix drawing with `.onDraw(onDrawListener)`
-* Add `.onDrawAll(onDrawListener)` method to draw on all pages
-* Add small rendering improvements
-* Fix rendering when duplicated pages are passed to `.pages(..)`
-
-2.7.0-beta.1 updates PdfiumAndroid to 1.7.0 which reduces memory usage about twice and improves performance by using RGB 565 format (when not using `pdfView.useBestQuality(true)`)
-
-This is beta release because of big number of small changes and something could go wrong (but I didn't notice)
+## What's new in 2.7.0?
+* Merge pull request by [owurman](https://github.com/owurman) with added OnTapListener
+* Merge bugfix by [lzwandnju](https://github.com/lzwandnju) to prevent `ArithmeticException: divide by zero`
 
 ## Changes in 2.0 API
 * `Configurator#defaultPage(int)` and `PDFView#jumpTo(int)` now require page index (i.e. starting from 0)
@@ -35,7 +27,7 @@ This is beta release because of big number of small changes and something could 
 
 Add to _build.gradle_:
 
-`compile 'com.github.barteksc:android-pdf-viewer:2.7.0-beta.1'` or `2.6.1` for more stable version
+`compile 'com.github.barteksc:android-pdf-viewer:2.7.0'`
 
 Library is available in jcenter repository, probably it'll be in Maven Central soon.
 
@@ -77,6 +69,8 @@ pdfView.fromAsset(String)
     .onPageScroll(onPageScrollListener)
     .onError(onErrorListener)
     .onRender(onRenderListener) // called after document is rendered for the first time
+    // called on single tap, return true if handled, false to toggle scroll handle visibility
+    .onTap(onTapListener)
     .enableAnnotationRendering(false) // render annotations (such as comments, colors or forms)
     .password(null)
     .scrollHandle(null)

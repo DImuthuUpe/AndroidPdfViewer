@@ -1,3 +1,7 @@
+## 2.7.0 (2017-08-30)
+* Merge pull request by [owurman](https://github.com/owurman) with added OnTapListener
+* Merge bugfix by [lzwandnju](https://github.com/lzwandnju) to prevent `ArithmeticException: divide by zero`
+
 ## 2.7.0-beta.1 (2017-07-05)
 * Updates PdfiumAndroid to 1.7.0 which reduces memory usage about twice and improves performance by using RGB 565 format (when not using `pdfView.useBestQuality(true)`)
 
