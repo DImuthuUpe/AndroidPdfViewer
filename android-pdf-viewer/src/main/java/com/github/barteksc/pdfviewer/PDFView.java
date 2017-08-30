@@ -1019,9 +1019,10 @@ public class PDFView extends RelativeLayout {
     }
 
     void loadPageByOffset() {
-    	if(0 == getPageCount()){
-            return ;
+        if (0 == getPageCount()) {
+            return;
         }
+
         float offset, optimal, screenCenter;
         float spacingPerPage = spacingPx - (spacingPx / getPageCount());
         if (swipeVertical) {
