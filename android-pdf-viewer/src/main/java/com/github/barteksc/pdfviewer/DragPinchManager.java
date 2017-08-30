@@ -83,7 +83,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     @Override
     public boolean onSingleTapConfirmed(MotionEvent e) {
         OnTapListener onTapListener = pdfView.getOnTapListener();
-        if (onTapListener != null && !onTapListener.onTap(e)) {
+        if (onTapListener == null || !onTapListener.onTap(e)) {
             ScrollHandle ps = pdfView.getScrollHandle();
             if (ps != null && !pdfView.documentFitsView()) {
                 if (!ps.shown()) {
