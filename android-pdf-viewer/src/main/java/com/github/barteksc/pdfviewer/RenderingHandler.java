@@ -86,7 +86,12 @@ class RenderingHandler extends Handler {
     private PagePart proceed(RenderingTask renderingTask) {
         if (!openedPages.contains(renderingTask.page)) {
             openedPages.add(renderingTask.page);
-            pdfiumCore.openPage(pdfDocument, renderingTask.page);
+            try {
+                pdfiumCore.openPage(pdfDocument, renderingTask.page);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
         }
 
         int w = Math.round(renderingTask.width);
