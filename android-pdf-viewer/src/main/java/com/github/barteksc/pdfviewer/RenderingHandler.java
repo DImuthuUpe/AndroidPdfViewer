@@ -22,13 +22,12 @@ import android.graphics.RectF;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.SparseBooleanArray;
 
+import com.github.barteksc.pdfviewer.exception.PageRenderingException;
 import com.github.barteksc.pdfviewer.model.PagePart;
 import com.shockwave.pdfium.PdfDocument;
 import com.shockwave.pdfium.PdfiumCore;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * A {@link Handler} that will process incoming {@link RenderingTask} messages
@@ -41,6 +40,8 @@ class RenderingHandler extends Handler {
      */
     static final int MSG_RENDER_TASK = 1;
 
+    private static final String TAG = RenderingHandler.class.getName();
+
     private PdfiumCore pdfiumCore;
     private PdfDocument pdfDocument;
 
@@ -49,7 +50,7 @@ class RenderingHandler extends Handler {
     private RectF renderBounds = new RectF();
     private Rect roundedRenderBounds = new Rect();
     private Matrix renderMatrix = new Matrix();
-    private final Set<Integer> openedPages = new HashSet<>();
+    private final SparseBooleanArray openedPages = new SparseBooleanArray();
     private boolean running = false;
 
     RenderingHandler(Looper looper, PDFView pdfView, PdfiumCore pdfiumCore, PdfDocument pdfDocument) {
@@ -68,25 +69,39 @@ class RenderingHandler extends Handler {
     @Override
     public void handleMessage(Message message) {
         RenderingTask task = (RenderingTask) message.obj;
-        final PagePart part = proceed(task);
-        if (part != null) {
-            if (running) {
-                pdfView.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        pdfView.onBitmapRendered(part);
-                    }
-                });
-            } else {
-                part.getRenderedBitmap().recycle();
+        try {
+            final PagePart part = proceed(task);
+            if (part != null) {
+                if (running) {
+                    pdfView.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            pdfView.onBitmapRendered(part);
+                        }
+                    });
+                } else {
+                    part.getRenderedBitmap().recycle();
+                }
             }
+        } catch (final PageRenderingException ex) {
+            pdfView.post(new Runnable() {
+                @Override
+                public void run() {
+                    pdfView.onPageError(ex);
+                }
+            });
         }
     }
 
-    private PagePart proceed(RenderingTask renderingTask) {
-        if (!openedPages.contains(renderingTask.page)) {
-            openedPages.add(renderingTask.page);
-            pdfiumCore.openPage(pdfDocument, renderingTask.page);
+    private PagePart proceed(RenderingTask renderingTask) throws PageRenderingException {
+        if (openedPages.indexOfKey(renderingTask.page) < 0) {
+            try {
+                pdfiumCore.openPage(pdfDocument, renderingTask.page);
+                openedPages.put(renderingTask.page, true);
+            } catch (Exception e) {
+                openedPages.put(renderingTask.page, false);
+                throw new PageRenderingException(renderingTask.page, e);
+            }
         }
 
         int w = Math.round(renderingTask.width);
@@ -99,10 +114,14 @@ class RenderingHandler extends Handler {
             return null;
         }
         calculateBounds(w, h, renderingTask.bounds);
-        pdfiumCore.renderPageBitmap(pdfDocument, render, renderingTask.page,
-                roundedRenderBounds.left, roundedRenderBounds.top,
-                roundedRenderBounds.width(), roundedRenderBounds.height(), renderingTask.annotationRendering);
+        if (openedPages.get(renderingTask.page)) {
 
+            pdfiumCore.renderPageBitmap(pdfDocument, render, renderingTask.page,
+                    roundedRenderBounds.left, roundedRenderBounds.top,
+                    roundedRenderBounds.width(), roundedRenderBounds.height(), renderingTask.annotationRendering);
+        } else {
+            render.eraseColor(pdfView.getInvalidPageColor());
+        }
         return new PagePart(renderingTask.userPage, renderingTask.page, render,
                 renderingTask.width, renderingTask.height,
                 renderingTask.bounds, renderingTask.thumbnail,

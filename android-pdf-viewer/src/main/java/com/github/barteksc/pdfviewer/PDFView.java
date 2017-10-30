@@ -33,10 +33,12 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.widget.RelativeLayout;
 
+import com.github.barteksc.pdfviewer.exception.PageRenderingException;
 import com.github.barteksc.pdfviewer.listener.OnDrawListener;
 import com.github.barteksc.pdfviewer.listener.OnErrorListener;
 import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener;
 import com.github.barteksc.pdfviewer.listener.OnPageChangeListener;
+import com.github.barteksc.pdfviewer.listener.OnPageErrorListener;
 import com.github.barteksc.pdfviewer.listener.OnPageScrollListener;
 import com.github.barteksc.pdfviewer.listener.OnRenderListener;
 import com.github.barteksc.pdfviewer.listener.OnTapListener;
@@ -239,6 +241,11 @@ public class PDFView extends RelativeLayout {
     private OnTapListener onTapListener;
 
     /**
+     * Call back object to call when the page load error occurs
+     */
+    private OnPageErrorListener onPageErrorListener;
+
+    /**
      * Paint object for drawing
      */
     private Paint paint;
@@ -247,6 +254,11 @@ public class PDFView extends RelativeLayout {
      * Paint object for drawing debug stuff
      */
     private Paint debugPaint;
+
+    /**
+     * Paint used for invalid pages
+     */
+    private int invalidPageColor = Color.WHITE;
 
     private int defaultPage = 0;
 
@@ -527,6 +539,18 @@ public class PDFView extends RelativeLayout {
         this.onDrawAllListener = onDrawAllListener;
     }
 
+    private void setOnPageErrorListener(OnPageErrorListener onPageErrorListener) {
+        this.onPageErrorListener = onPageErrorListener;
+    }
+
+    void onPageError(PageRenderingException ex) {
+        if (onPageErrorListener != null) {
+            onPageErrorListener.onPageError(ex.getPage(), ex.getCause());
+        } else {
+            Log.e(TAG, "Cannot open page " + ex.getPage(), ex.getCause());
+        }
+    }
+
     public void recycle() {
 
         animationManager.stopAll();
@@ -596,6 +620,42 @@ public class PDFView extends RelativeLayout {
             moveTo(-calculatePageOffset(currentPage), currentYOffset);
         }
         loadPageByOffset();
+    }
+
+    @Override
+    public boolean canScrollHorizontally(int direction) {
+        if (swipeVertical) {
+            if (direction < 0 && currentXOffset < 0) {
+                return true;
+            } else if (direction > 0 && currentXOffset + toCurrentScale(optimalPageWidth) > getWidth()) {
+                return true;
+            }
+        } else {
+            if (direction < 0 && currentXOffset < 0) {
+                return true;
+            } else if (direction > 0 && currentXOffset + calculateDocLength() > getWidth()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean canScrollVertically(int direction) {
+        if (swipeVertical) {
+            if (direction < 0 && currentYOffset < 0) {
+                return true;
+            } else if (direction > 0 && currentYOffset + calculateDocLength() > getHeight()) {
+                return true;
+            }
+        } else {
+            if (direction < 0 && currentYOffset < 0) {
+                return true;
+            } else if (direction > 0 && currentYOffset + toCurrentScale(optimalPageHeight) > getHeight()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -1275,6 +1335,14 @@ public class PDFView extends RelativeLayout {
         this.spacingPx = Util.getDP(getContext(), spacing);
     }
 
+    private void setInvalidPageColor(int invalidPageColor) {
+        this.invalidPageColor = invalidPageColor;
+    }
+
+    public int getInvalidPageColor() {
+        return invalidPageColor;
+    }
+
     public boolean doRenderDuringScale() {
         return renderDuringScale;
     }
@@ -1363,6 +1431,8 @@ public class PDFView extends RelativeLayout {
 
         private OnTapListener onTapListener;
 
+        private OnPageErrorListener onPageErrorListener;
+
         private int defaultPage = 0;
 
         private boolean swipeHorizontal = false;
@@ -1376,6 +1446,8 @@ public class PDFView extends RelativeLayout {
         private boolean antialiasing = true;
 
         private int spacing = 0;
+
+        private int invalidPageColor = Color.WHITE;
 
         private Configurator(DocumentSource documentSource) {
             this.documentSource = documentSource;
@@ -1426,6 +1498,11 @@ public class PDFView extends RelativeLayout {
             return this;
         }
 
+        public Configurator onPageError(OnPageErrorListener onPageErrorListener) {
+            this.onPageErrorListener = onPageErrorListener;
+            return this;
+        }
+
         public Configurator onPageChange(OnPageChangeListener onPageChangeListener) {
             this.onPageChangeListener = onPageChangeListener;
             return this;
@@ -1471,6 +1548,11 @@ public class PDFView extends RelativeLayout {
             return this;
         }
 
+        public Configurator invalidPageColor(int invalidPageColor) {
+            this.invalidPageColor = invalidPageColor;
+            return this;
+        }
+
         public void load() {
             PDFView.this.recycle();
             PDFView.this.setOnDrawListener(onDrawListener);
@@ -1479,6 +1561,7 @@ public class PDFView extends RelativeLayout {
             PDFView.this.setOnPageScrollListener(onPageScrollListener);
             PDFView.this.setOnRenderListener(onRenderListener);
             PDFView.this.setOnTapListener(onTapListener);
+            PDFView.this.setOnPageErrorListener(onPageErrorListener);
             PDFView.this.enableSwipe(enableSwipe);
             PDFView.this.enableDoubletap(enableDoubletap);
             PDFView.this.setDefaultPage(defaultPage);
@@ -1487,12 +1570,19 @@ public class PDFView extends RelativeLayout {
             PDFView.this.setScrollHandle(scrollHandle);
             PDFView.this.enableAntialiasing(antialiasing);
             PDFView.this.setSpacing(spacing);
+            PDFView.this.setInvalidPageColor(invalidPageColor);
             PDFView.this.dragPinchManager.setSwipeVertical(swipeVertical);
-            if (pageNumbers != null) {
-                PDFView.this.load(documentSource, password, onLoadCompleteListener, onErrorListener, pageNumbers);
-            } else {
-                PDFView.this.load(documentSource, password, onLoadCompleteListener, onErrorListener);
-            }
+
+            PDFView.this.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (pageNumbers != null) {
+                        PDFView.this.load(documentSource, password, onLoadCompleteListener, onErrorListener, pageNumbers);
+                    } else {
+                        PDFView.this.load(documentSource, password, onLoadCompleteListener, onErrorListener);
+                    }
+                }
+            });
         }
     }
 }

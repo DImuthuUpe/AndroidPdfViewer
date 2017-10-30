@@ -1,3 +1,9 @@
+## 2.8.0 (2017-10-31)
+* Add handling of invalid pages, inspired by pull request #433. Exception on page opening crashed application until now,
+currently `OnPageErrorListener` set with `.onPageError()` is called. Invalid page color can be set using `.invalidPageColor()`
+* Implement `canScrollVertically()` and `canScrollHorizontally()` methods to work e.g. with `SwipeRefreshLayout`
+* Fix bug when `Configurator#load()` method was called before view has been measured, which resulted in empty canvas
+
 ## 2.7.0 (2017-08-30)
 * Merge pull request by [owurman](https://github.com/owurman) with added OnTapListener
 * Merge bugfix by [lzwandnju](https://github.com/lzwandnju) to prevent `ArithmeticException: divide by zero`

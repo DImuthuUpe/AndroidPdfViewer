@@ -10,9 +10,11 @@ Library for displaying PDF documents on Android, with `animations`, `gestures`, 
 It is based on [PdfiumAndroid](https://github.com/barteksc/PdfiumAndroid) for decoding PDF files. Works on API 11 (Android 3.0) and higher.
 Licensed under Apache License 2.0.
 
-## What's new in 2.7.0?
-* Merge pull request by [owurman](https://github.com/owurman) with added OnTapListener
-* Merge bugfix by [lzwandnju](https://github.com/lzwandnju) to prevent `ArithmeticException: divide by zero`
+## What's new in 2.8.0?
+* Add handling of invalid pages, inspired by pull request #433. Exception on page opening crashed application until now,
+currently `OnPageErrorListener` set with `Configurator#onPageError()` is called. Invalid page color (`Color` class) can be set using `Configurator#invalidPageColor()`
+* Implement `canScrollVertically()` and `canScrollHorizontally()` methods to work e.g. with `SwipeRefreshLayout`
+* Fix bug when `Configurator#load()` method was called before view has been measured, which resulted in empty canvas
 
 ## Changes in 2.0 API
 * `Configurator#defaultPage(int)` and `PDFView#jumpTo(int)` now require page index (i.e. starting from 0)
@@ -27,7 +29,7 @@ Licensed under Apache License 2.0.
 
 Add to _build.gradle_:
 
-`compile 'com.github.barteksc:android-pdf-viewer:2.7.0'`
+`compile 'com.github.barteksc:android-pdf-viewer:2.8.0'`
 
 Library is available in jcenter repository, probably it'll be in Maven Central soon.
 
@@ -68,6 +70,7 @@ pdfView.fromAsset(String)
     .onPageChange(onPageChangeListener)
     .onPageScroll(onPageScrollListener)
     .onError(onErrorListener)
+    .onPageError(onPageErrorListener)
     .onRender(onRenderListener) // called after document is rendered for the first time
     // called on single tap, return true if handled, false to toggle scroll handle visibility
     .onTap(onTapListener)
@@ -76,7 +79,8 @@ pdfView.fromAsset(String)
     .scrollHandle(null)
     .enableAntialiasing(true) // improve rendering a little bit on low-res screens
     // spacing between pages in dp. To define spacing color, set view background
-    .spacing(0) 
+    .spacing(0)
+    .invalidPageColor(Color.WHITE) // color of page that is invalid and cannot be loaded
     .load();
 ```
 
