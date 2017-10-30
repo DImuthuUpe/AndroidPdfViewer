@@ -11,7 +11,7 @@ It is based on [PdfiumAndroid](https://github.com/barteksc/PdfiumAndroid) for de
 Licensed under Apache License 2.0.
 
 ## What's new in 2.8.0?
-* Add handling of invalid pages, inspired by pull request #433. Exception on page opening crashed application until now,
+* Add handling of invalid pages, inspired by pull request [#433](https://github.com/barteksc/AndroidPdfViewer/pull/433). Exception on page opening crashed application until now,
 currently `OnPageErrorListener` set with `Configurator#onPageError()` is called. Invalid page color (`Color` class) can be set using `Configurator#invalidPageColor()`
 * Implement `canScrollVertically()` and `canScrollHorizontally()` methods to work e.g. with `SwipeRefreshLayout`
 * Fix bug when `Configurator#load()` method was called before view has been measured, which resulted in empty canvas
