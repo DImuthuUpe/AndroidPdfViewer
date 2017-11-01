@@ -336,6 +336,10 @@ public class PDFView extends RelativeLayout {
         dragPinchManager = new DragPinchManager(this, animationManager);
 
         paint = new Paint();
+//                    paint.setColor(part.getUserPage() % 2 == 0 ? Color.BLACK : Color.WHITE);
+
+                    paint.setColor(Color.WHITE);
+
         debugPaint = new Paint();
         debugPaint.setStyle(Style.STROKE);
 
@@ -700,7 +704,7 @@ public class PDFView extends RelativeLayout {
 
         Drawable bg = getBackground();
         if (bg == null) {
-            canvas.drawColor(Color.WHITE);
+            canvas.drawColor(Color.CYAN);
         } else {
             bg.draw(canvas);
         }
@@ -809,6 +813,9 @@ public class PDFView extends RelativeLayout {
             canvas.translate(-localTranslationX, -localTranslationY);
             return;
         }
+
+        paint.setColor(part.getUserPage() % 2 == 0 ? Color.RED : Color.BLUE);
+
 
         canvas.drawBitmap(renderedBitmap, srcRect, dstRect, paint);
 
