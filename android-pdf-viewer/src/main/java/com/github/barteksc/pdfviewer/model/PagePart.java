@@ -20,13 +20,9 @@ import android.graphics.RectF;
 
 public class PagePart {
 
-    private int userPage;
-
     private int page;
 
     private Bitmap renderedBitmap;
-
-    private float width, height;
 
     private RectF pageRelativeBounds;
 
@@ -34,9 +30,8 @@ public class PagePart {
 
     private int cacheOrder;
 
-    public PagePart(int userPage, int page, Bitmap renderedBitmap, float width, float height, RectF pageRelativeBounds, boolean thumbnail, int cacheOrder) {
+    public PagePart(int page, Bitmap renderedBitmap, RectF pageRelativeBounds, boolean thumbnail, int cacheOrder) {
         super();
-        this.userPage = userPage;
         this.page = page;
         this.renderedBitmap = renderedBitmap;
         this.pageRelativeBounds = pageRelativeBounds;
@@ -52,24 +47,12 @@ public class PagePart {
         return page;
     }
 
-    public int getUserPage() {
-        return userPage;
-    }
-
     public Bitmap getRenderedBitmap() {
         return renderedBitmap;
     }
 
     public RectF getPageRelativeBounds() {
         return pageRelativeBounds;
-    }
-
-    public float getWidth() {
-        return width;
-    }
-
-    public float getHeight() {
-        return height;
     }
 
     public boolean isThumbnail() {
@@ -88,9 +71,6 @@ public class PagePart {
 
         PagePart part = (PagePart) obj;
         return part.getPage() == page
-                && part.getUserPage() == userPage
-                && part.getWidth() == width
-                && part.getHeight() == height
                 && part.getPageRelativeBounds().left == pageRelativeBounds.left
                 && part.getPageRelativeBounds().right == pageRelativeBounds.right
                 && part.getPageRelativeBounds().top == pageRelativeBounds.top

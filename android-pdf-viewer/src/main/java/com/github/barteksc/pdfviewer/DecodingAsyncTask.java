@@ -15,12 +15,12 @@
  */
 package com.github.barteksc.pdfviewer;
 
-import android.content.Context;
 import android.os.AsyncTask;
 
 import com.github.barteksc.pdfviewer.source.DocumentSource;
 import com.shockwave.pdfium.PdfDocument;
 import com.shockwave.pdfium.PdfiumCore;
+import com.shockwave.pdfium.util.Size;
 
 class DecodingAsyncTask extends AsyncTask<Void, Void, Throwable> {
 
@@ -28,37 +28,35 @@ class DecodingAsyncTask extends AsyncTask<Void, Void, Throwable> {
 
     private PDFView pdfView;
 
-    private Context context;
     private PdfiumCore pdfiumCore;
-    private PdfDocument pdfDocument;
     private String password;
     private DocumentSource docSource;
-    private int firstPageIdx;
-    private int pageWidth;
-    private int pageHeight;
+    private int[] userPages;
+    private PdfFile pdfFile;
 
-    DecodingAsyncTask(DocumentSource docSource, String password, PDFView pdfView, PdfiumCore pdfiumCore, int firstPageIdx) {
+    DecodingAsyncTask(DocumentSource docSource, String password, int[] userPages, PDFView pdfView, PdfiumCore pdfiumCore) {
         this.docSource = docSource;
-        this.firstPageIdx = firstPageIdx;
+        this.userPages = userPages;
         this.cancelled = false;
         this.pdfView = pdfView;
         this.password = password;
         this.pdfiumCore = pdfiumCore;
-        context = pdfView.getContext();
     }
 
     @Override
     protected Throwable doInBackground(Void... params) {
         try {
-            pdfDocument = docSource.createDocument(context, pdfiumCore, password);
-            // We assume all the pages are the same size
-            pdfiumCore.openPage(pdfDocument, firstPageIdx);
-            pageWidth = pdfiumCore.getPageWidth(pdfDocument, firstPageIdx);
-            pageHeight = pdfiumCore.getPageHeight(pdfDocument, firstPageIdx);
+            PdfDocument pdfDocument = docSource.createDocument(pdfView.getContext(), pdfiumCore, password);
+            pdfFile = new PdfFile(pdfiumCore, pdfDocument, pdfView.getPageFitPolicy(), getViewSize(),
+                    userPages, pdfView.isSwipeVertical(), pdfView.getSpacingPx());
             return null;
         } catch (Throwable t) {
             return t;
         }
+    }
+
+    private Size getViewSize() {
+        return new Size(pdfView.getWidth(), pdfView.getHeight());
     }
 
     @Override
@@ -68,7 +66,7 @@ class DecodingAsyncTask extends AsyncTask<Void, Void, Throwable> {
             return;
         }
         if (!cancelled) {
-            pdfView.loadComplete(pdfDocument, pageWidth, pageHeight);
+            pdfView.loadComplete(pdfFile);
         }
     }
 

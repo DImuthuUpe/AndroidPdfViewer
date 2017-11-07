@@ -84,7 +84,7 @@ class AnimationManager {
         if (scroller.computeScrollOffset()) {
             pdfView.moveTo(scroller.getCurrX(), scroller.getCurrY());
             pdfView.loadPageByOffset();
-        } else if(flinging) { // fling finished
+        } else if (flinging) { // fling finished
             flinging = false;
             pdfView.loadPages();
             hideHandle();

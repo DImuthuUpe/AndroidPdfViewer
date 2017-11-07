@@ -21,6 +21,7 @@ import android.support.annotation.Nullable;
 import com.github.barteksc.pdfviewer.model.PagePart;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -38,11 +39,11 @@ class CacheManager {
 
     private final Object passiveActiveLock = new Object();
 
-    private final PagePartComparator comparator = new PagePartComparator();
+    private final PagePartComparator orderComparator = new PagePartComparator();
 
     public CacheManager() {
-        activeCache = new PriorityQueue<>(CACHE_SIZE, comparator);
-        passiveCache = new PriorityQueue<>(CACHE_SIZE, comparator);
+        activeCache = new PriorityQueue<>(CACHE_SIZE, orderComparator);
+        passiveCache = new PriorityQueue<>(CACHE_SIZE, orderComparator);
         thumbnails = new ArrayList<>();
     }
 
@@ -81,18 +82,18 @@ class CacheManager {
     public void cacheThumbnail(PagePart part) {
         synchronized (thumbnails) {
             // If cache too big, remove and recycle
-            if (thumbnails.size() >= THUMBNAILS_CACHE_SIZE) {
+            while (thumbnails.size() >= THUMBNAILS_CACHE_SIZE) {
                 thumbnails.remove(0).getRenderedBitmap().recycle();
             }
 
             // Then add thumbnail
-            thumbnails.add(part);
+            addWithoutDuplicates(thumbnails, part);
         }
 
     }
 
-    public boolean upPartIfContained(int userPage, int page, float width, float height, RectF pageRelativeBounds, int toOrder) {
-        PagePart fakePart = new PagePart(userPage, page, null, width, height, pageRelativeBounds, false, 0);
+    public boolean upPartIfContained(int page, RectF pageRelativeBounds, int toOrder) {
+        PagePart fakePart = new PagePart(page, null, pageRelativeBounds, false, 0);
 
         PagePart found;
         synchronized (passiveActiveLock) {
@@ -110,8 +111,8 @@ class CacheManager {
     /**
      * Return true if already contains the described PagePart
      */
-    public boolean containsThumbnail(int userPage, int page, float width, float height, RectF pageRelativeBounds) {
-        PagePart fakePart = new PagePart(userPage, page, null, width, height, pageRelativeBounds, true, 0);
+    public boolean containsThumbnail(int page, RectF pageRelativeBounds) {
+        PagePart fakePart = new PagePart(page, null, pageRelativeBounds, true, 0);
         synchronized (thumbnails) {
             for (PagePart part : thumbnails) {
                 if (part.equals(fakePart)) {
@@ -120,6 +121,19 @@ class CacheManager {
             }
             return false;
         }
+    }
+
+    /**
+     * Add part if it doesn't exist, recycle bitmap otherwise
+     */
+    private void addWithoutDuplicates(Collection<PagePart> collection, PagePart newPart) {
+        for (PagePart part : collection) {
+            if (part.equals(newPart)) {
+                newPart.getRenderedBitmap().recycle();
+                return;
+            }
+        }
+        collection.add(newPart);
     }
 
     @Nullable

@@ -16,18 +16,17 @@
 package com.github.barteksc.pdfviewer;
 
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.util.SparseBooleanArray;
+import android.util.Log;
 
 import com.github.barteksc.pdfviewer.exception.PageRenderingException;
 import com.github.barteksc.pdfviewer.model.PagePart;
-import com.shockwave.pdfium.PdfDocument;
-import com.shockwave.pdfium.PdfiumCore;
 
 /**
  * A {@link Handler} that will process incoming {@link RenderingTask} messages
@@ -42,26 +41,20 @@ class RenderingHandler extends Handler {
 
     private static final String TAG = RenderingHandler.class.getName();
 
-    private PdfiumCore pdfiumCore;
-    private PdfDocument pdfDocument;
-
     private PDFView pdfView;
 
     private RectF renderBounds = new RectF();
     private Rect roundedRenderBounds = new Rect();
     private Matrix renderMatrix = new Matrix();
-    private final SparseBooleanArray openedPages = new SparseBooleanArray();
     private boolean running = false;
 
-    RenderingHandler(Looper looper, PDFView pdfView, PdfiumCore pdfiumCore, PdfDocument pdfDocument) {
+    RenderingHandler(Looper looper, PDFView pdfView) {
         super(looper);
         this.pdfView = pdfView;
-        this.pdfiumCore = pdfiumCore;
-        this.pdfDocument = pdfDocument;
     }
 
-    void addRenderingTask(int userPage, int page, float width, float height, RectF bounds, boolean thumbnail, int cacheOrder, boolean bestQuality, boolean annotationRendering) {
-        RenderingTask task = new RenderingTask(width, height, bounds, userPage, page, thumbnail, cacheOrder, bestQuality, annotationRendering);
+    void addRenderingTask(int page, float width, float height, RectF bounds, boolean thumbnail, int cacheOrder, boolean bestQuality, boolean annotationRendering) {
+        RenderingTask task = new RenderingTask(width, height, bounds, page, thumbnail, cacheOrder, bestQuality, annotationRendering);
         Message msg = obtainMessage(MSG_RENDER_TASK, task);
         sendMessage(msg);
     }
@@ -94,36 +87,30 @@ class RenderingHandler extends Handler {
     }
 
     private PagePart proceed(RenderingTask renderingTask) throws PageRenderingException {
-        if (openedPages.indexOfKey(renderingTask.page) < 0) {
-            try {
-                pdfiumCore.openPage(pdfDocument, renderingTask.page);
-                openedPages.put(renderingTask.page, true);
-            } catch (Exception e) {
-                openedPages.put(renderingTask.page, false);
-                throw new PageRenderingException(renderingTask.page, e);
-            }
-        }
+        PdfFile pdfFile = pdfView.pdfFile;
+        pdfFile.openPage(renderingTask.page);
 
         int w = Math.round(renderingTask.width);
         int h = Math.round(renderingTask.height);
+
+        if (w == 0 || h == 0) {
+            return null;
+        }
+
         Bitmap render;
         try {
             render = Bitmap.createBitmap(w, h, renderingTask.bestQuality ? Bitmap.Config.ARGB_8888 : Bitmap.Config.RGB_565);
         } catch (IllegalArgumentException e) {
-            e.printStackTrace();
+            Log.e(TAG, "Cannot create bitmap", e);
             return null;
         }
         calculateBounds(w, h, renderingTask.bounds);
-        if (openedPages.get(renderingTask.page)) {
 
-            pdfiumCore.renderPageBitmap(pdfDocument, render, renderingTask.page,
-                    roundedRenderBounds.left, roundedRenderBounds.top,
-                    roundedRenderBounds.width(), roundedRenderBounds.height(), renderingTask.annotationRendering);
-        } else {
-            render.eraseColor(pdfView.getInvalidPageColor());
+        boolean success = pdfFile.renderPageBitmap(render, renderingTask.page, roundedRenderBounds, renderingTask.annotationRendering);
+        if (!success) {
+            render.eraseColor(Color.GRAY);
         }
-        return new PagePart(renderingTask.userPage, renderingTask.page, render,
-                renderingTask.width, renderingTask.height,
+        return new PagePart(renderingTask.page, render,
                 renderingTask.bounds, renderingTask.thumbnail,
                 renderingTask.cacheOrder);
     }
@@ -154,8 +141,6 @@ class RenderingHandler extends Handler {
 
         int page;
 
-        int userPage;
-
         boolean thumbnail;
 
         int cacheOrder;
@@ -164,12 +149,11 @@ class RenderingHandler extends Handler {
 
         boolean annotationRendering;
 
-        RenderingTask(float width, float height, RectF bounds, int userPage, int page, boolean thumbnail, int cacheOrder, boolean bestQuality, boolean annotationRendering) {
+        RenderingTask(float width, float height, RectF bounds, int page, boolean thumbnail, int cacheOrder, boolean bestQuality, boolean annotationRendering) {
             this.page = page;
             this.width = width;
             this.height = height;
             this.bounds = bounds;
-            this.userPage = userPage;
             this.thumbnail = thumbnail;
             this.cacheOrder = cacheOrder;
             this.bestQuality = bestQuality;
