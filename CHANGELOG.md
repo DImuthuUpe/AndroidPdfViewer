@@ -1,3 +1,6 @@
+## 2.8.1 (2017-11-11)
+* Fix bug with rendering `PDFView` in Android Studio Layout Editor
+
 ## 2.8.0 (2017-10-31)
 * Add handling of invalid pages, inspired by pull request #433. Exception on page opening crashed application until now,
 currently `OnPageErrorListener` set with `.onPageError()` is called. Invalid page color can be set using `.invalidPageColor()`

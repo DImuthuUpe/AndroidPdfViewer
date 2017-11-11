@@ -16,6 +16,8 @@ currently `OnPageErrorListener` set with `Configurator#onPageError()` is called.
 * Implement `canScrollVertically()` and `canScrollHorizontally()` methods to work e.g. with `SwipeRefreshLayout`
 * Fix bug when `Configurator#load()` method was called before view has been measured, which resulted in empty canvas
 
+2.8.1 fixes bug with rendering `PDFView` in Android Studio Layout Editor
+
 ## Changes in 2.0 API
 * `Configurator#defaultPage(int)` and `PDFView#jumpTo(int)` now require page index (i.e. starting from 0)
 * `OnPageChangeListener#onPageChanged(int, int)` is called with page index (i.e. starting from 0)
@@ -29,7 +31,7 @@ currently `OnPageErrorListener` set with `Configurator#onPageError()` is called.
 
 Add to _build.gradle_:
 
-`compile 'com.github.barteksc:android-pdf-viewer:2.8.0'`
+`compile 'com.github.barteksc:android-pdf-viewer:2.8.1'`
 
 Library is available in jcenter repository, probably it'll be in Maven Central soon.
 
