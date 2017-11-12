@@ -1,3 +1,9 @@
+## 3.0.0-beta.1 (2017-11-12)
+* Add support for documents with different page sizes
+* Add support for links
+* Add support for defining page fit policy (fit width, height or both)
+* Update sample.pdf to contain different page sizes
+
 ## 2.8.1 (2017-11-11)
 * Fix bug with rendering `PDFView` in Android Studio Layout Editor
 
