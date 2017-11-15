@@ -88,10 +88,10 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         SizeF pageSize = pdfFile.getScaledPageSize(page, pdfView.getZoom());
         int pageX, pageY;
         if (pdfView.isSwipeVertical()) {
-            pageX = (int) getSecondaryOffset(pageSize);
+            pageX = (int) pdfFile.getSecondaryPageOffset(page, pdfView.getZoom());
             pageY = (int) pdfFile.getPageOffset(page, pdfView.getZoom());
         } else {
-            pageY = (int) getSecondaryOffset(pageSize);
+            pageY = (int) pdfFile.getSecondaryPageOffset(page, pdfView.getZoom());
             pageX = (int) pdfFile.getPageOffset(page, pdfView.getZoom());
         }
         for (PdfDocument.Link link : pdfFile.getPageLinks(page)) {
@@ -103,16 +103,6 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
             }
         }
         return false;
-    }
-
-    private float getSecondaryOffset(SizeF pageSize) {
-        if (pdfView.isSwipeVertical()) {
-            float maxWidth = pdfView.pdfFile.getMaxPageWidth();
-            return (pdfView.toCurrentScale(maxWidth) - pageSize.getWidth()) / 2; //x
-        } else {
-            float maxHeight = pdfView.pdfFile.getMaxPageHeight();
-            return (pdfView.toCurrentScale(maxHeight) - pageSize.getHeight()) / 2; //y
-        }
     }
 
     @Override

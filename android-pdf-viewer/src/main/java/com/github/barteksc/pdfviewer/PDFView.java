@@ -1014,7 +1014,7 @@ public class PDFView extends RelativeLayout {
         return enableSwipe;
     }
 
-    public void setSwipeVertical(boolean swipeVertical) {
+    private void setSwipeVertical(boolean swipeVertical) {
         this.swipeVertical = swipeVertical;
     }
 

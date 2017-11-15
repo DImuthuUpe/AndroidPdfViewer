@@ -93,7 +93,7 @@ class RenderingHandler extends Handler {
         int w = Math.round(renderingTask.width);
         int h = Math.round(renderingTask.height);
 
-        if (w == 0 || h == 0) {
+        if (w == 0 || h == 0 || pdfFile.pageHasError(renderingTask.page)) {
             return null;
         }
 
@@ -106,10 +106,8 @@ class RenderingHandler extends Handler {
         }
         calculateBounds(w, h, renderingTask.bounds);
 
-        boolean success = pdfFile.renderPageBitmap(render, renderingTask.page, roundedRenderBounds, renderingTask.annotationRendering);
-        if (!success) {
-            render.eraseColor(Color.GRAY);
-        }
+        pdfFile.renderPageBitmap(render, renderingTask.page, roundedRenderBounds, renderingTask.annotationRendering);
+
         return new PagePart(renderingTask.page, render,
                 renderingTask.bounds, renderingTask.thumbnail,
                 renderingTask.cacheOrder);

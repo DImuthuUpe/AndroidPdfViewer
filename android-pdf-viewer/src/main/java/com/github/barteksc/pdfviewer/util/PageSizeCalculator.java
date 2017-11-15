@@ -63,9 +63,9 @@ public class PageSizeCalculator {
     private void calculateMaxPages() {
         switch (fitPolicy) {
             case HEIGHT:
-                optimalMaxWidthPageSize = fitHeight(originalMaxWidthPageSize, viewSize.getHeight());
                 optimalMaxHeightPageSize = fitHeight(originalMaxHeightPageSize, viewSize.getHeight());
                 heightRatio = optimalMaxHeightPageSize.getHeight() / originalMaxHeightPageSize.getHeight();
+                optimalMaxWidthPageSize = fitHeight(originalMaxWidthPageSize, originalMaxWidthPageSize.getHeight() * heightRatio);
                 break;
             case BOTH:
                 SizeF localOptimalMaxWidth = fitBoth(originalMaxWidthPageSize, viewSize.getWidth(), viewSize.getHeight());
@@ -77,9 +77,9 @@ public class PageSizeCalculator {
                 widthRatio = optimalMaxWidthPageSize.getWidth() / originalMaxWidthPageSize.getWidth();
                 break;
             default:
-                optimalMaxHeightPageSize = fitWidth(originalMaxHeightPageSize, viewSize.getWidth());
                 optimalMaxWidthPageSize = fitWidth(originalMaxWidthPageSize, viewSize.getWidth());
                 widthRatio = optimalMaxWidthPageSize.getWidth() / originalMaxWidthPageSize.getWidth();
+                optimalMaxHeightPageSize = fitWidth(originalMaxHeightPageSize, originalMaxHeightPageSize.getWidth() * widthRatio);
                 break;
         }
     }

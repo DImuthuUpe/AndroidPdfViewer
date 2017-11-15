@@ -1,3 +1,8 @@
+## 3.0.0-beta.2 (2017-11-15)
+* Fix rendering with maximum zoom
+* Improve fit policies
+* Update PdfiumAndroid to 1.8.1
+
 ## 3.0.0-beta.1 (2017-11-12)
 * Add support for documents with different page sizes
 * Add support for links

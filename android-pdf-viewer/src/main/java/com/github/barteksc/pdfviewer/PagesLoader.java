@@ -69,20 +69,24 @@ class PagesLoader {
         grid.cols = MathUtils.ceil(1f / partWidth);
     }
 
-    private Holder getPageAndCoordsByOffset(Holder holder, GridSize grid, float offset, boolean endOffset) {
-        float fixOffset = -MathUtils.max(offset, 0);
-        holder.page = pdfView.pdfFile.getPageAtOffset(fixOffset, pdfView.getZoom());
+    private Holder getPageAndCoordsByOffset(Holder holder, GridSize grid, float localXOffset,
+                                            float localYOffset, boolean endOffset) {
+        float fixedXOffset = -MathUtils.max(localXOffset, 0);
+        float fixedYOffset = -MathUtils.max(localYOffset, 0);
+        float offset = pdfView.isSwipeVertical() ? fixedYOffset : fixedXOffset;
+        holder.page = pdfView.pdfFile.getPageAtOffset(offset, pdfView.getZoom());
         getPageColsRows(grid, holder.page);
         SizeF scaledPageSize = pdfView.pdfFile.getScaledPageSize(holder.page, pdfView.getZoom());
         float rowHeight = scaledPageSize.getHeight() / grid.rows;
         float colWidth = scaledPageSize.getWidth() / grid.cols;
         float row, col;
+        float secondaryOffset = pdfView.pdfFile.getSecondaryPageOffset(holder.page, pdfView.getZoom());
         if (pdfView.isSwipeVertical()) {
-            row = Math.abs(fixOffset - pdfView.pdfFile.getPageOffset(holder.page, pdfView.getZoom())) / rowHeight;
-            col = xOffset / colWidth;
+            row = Math.abs(fixedYOffset - pdfView.pdfFile.getPageOffset(holder.page, pdfView.getZoom())) / rowHeight;
+            col = MathUtils.min(fixedXOffset - secondaryOffset, 0) / colWidth;
         } else {
-            col = Math.abs(fixOffset - pdfView.pdfFile.getPageOffset(holder.page, pdfView.getZoom())) / colWidth;
-            row = yOffset / rowHeight;
+            col = Math.abs(fixedXOffset - pdfView.pdfFile.getPageOffset(holder.page, pdfView.getZoom())) / colWidth;
+            row = MathUtils.min(fixedYOffset - secondaryOffset, 0) / rowHeight;
         }
 
         if (endOffset) {
@@ -104,17 +108,14 @@ class PagesLoader {
 
     private void loadVisible() {
         int parts = 0;
-        float firstOffset, lastOffset;
-        if (pdfView.isSwipeVertical()) {
-            firstOffset = -yOffset;
-            lastOffset = -yOffset - pdfView.getHeight();
-        } else {
-            firstOffset = -xOffset;
-            lastOffset = -xOffset - pdfView.getWidth();
-        }
         float scaledPreloadOffset = preloadOffset * pdfView.getZoom();
-        getPageAndCoordsByOffset(firstHolder, firstGrid, firstOffset + scaledPreloadOffset, false);
-        getPageAndCoordsByOffset(lastHolder, lastGrid, lastOffset - scaledPreloadOffset + 1, true);
+        float firstXOffset = -xOffset + scaledPreloadOffset;
+        float lastXOffset = -xOffset - pdfView.getWidth() - scaledPreloadOffset;
+        float firstYOffset = -yOffset + scaledPreloadOffset;
+        float lastYOffset = -yOffset - pdfView.getHeight() - scaledPreloadOffset;
+
+        getPageAndCoordsByOffset(firstHolder, firstGrid, firstXOffset, firstYOffset, false);
+        getPageAndCoordsByOffset(lastHolder, lastGrid, lastXOffset, lastYOffset, true);
 
         for (int i = firstHolder.page; i <= lastHolder.page; i++) {
             loadThumbnail(i);
@@ -127,6 +128,8 @@ class PagesLoader {
                 parts += loadPageEnd(firstHolder, firstGrid, CACHE_SIZE - parts);
             } else if (page == lastHolder.page && pagesCount > 1) {
                 parts += loadPageStart(lastHolder, lastGrid, CACHE_SIZE - parts);
+            } else if(pagesCount == 1) {
+                parts += loadPageCenter(firstHolder, lastHolder, firstGrid, CACHE_SIZE - parts);
             } else {
                 getPageColsRows(middleGrid, page);
                 parts += loadWholePage(page, middleGrid, CACHE_SIZE - parts);
@@ -143,6 +146,16 @@ class PagesLoader {
     private int loadWholePage(int page, GridSize grid, int nbOfPartsLoadable) {
         calculatePartSize(grid);
         return loadPage(page, 0, grid.rows - 1, 0, grid.cols - 1, nbOfPartsLoadable);
+    }
+
+    /**
+     * When only part of one page is visible
+     *
+     * @return loaded parts count
+     */
+    private int loadPageCenter(Holder firstHolder, Holder lastHolder, GridSize grid, int nbOfPartsLoadable) {
+        calculatePartSize(grid);
+        return loadPage(firstHolder.page, firstHolder.row, lastHolder.row, firstHolder.col, lastHolder.col, nbOfPartsLoadable);
     }
 
     /**

@@ -175,12 +175,25 @@ class PdfFile {
         return documentLength * zoom;
     }
 
+    /** Get primary page offset, that is Y for vertical scroll and X for horizontal scroll */
     public float getPageOffset(int pageIndex, float zoom) {
         int docPage = documentPage(pageIndex);
         if (docPage < 0) {
             return 0;
         }
         return pageOffsets.get(pageIndex) * zoom;
+    }
+
+    /** Get secondary page offset, that is X for vertical scroll and Y for horizontal scroll */
+    public float getSecondaryPageOffset(int pageIndex, float zoom) {
+        SizeF pageSize = getPageSize(pageIndex);
+        if (isVertical) {
+            float maxWidth = getMaxPageWidth();
+            return zoom * (maxWidth - pageSize.getWidth()) / 2; //x
+        } else {
+            float maxHeight = getMaxPageHeight();
+            return zoom * (maxHeight - pageSize.getHeight()) / 2; //y
+        }
     }
 
     public int getPageAtOffset(float offset, float zoom) {
@@ -216,18 +229,15 @@ class PdfFile {
         }
     }
 
-    public boolean isVertical() {
-        return isVertical;
+    public boolean pageHasError(int pageIndex) {
+        int docPage = documentPage(pageIndex);
+        return !openedPages.get(docPage, false);
     }
 
-    public boolean renderPageBitmap(Bitmap bitmap, int pageIndex, Rect bounds, boolean annotationRendering) {
+    public void renderPageBitmap(Bitmap bitmap, int pageIndex, Rect bounds, boolean annotationRendering) {
         int docPage = documentPage(pageIndex);
-        if (!openedPages.get(docPage, false)) {
-            return false;
-        }
         pdfiumCore.renderPageBitmap(pdfDocument, bitmap, docPage,
                 bounds.left, bounds.top, bounds.width(), bounds.height(), annotationRendering);
-        return true;
     }
 
     public PdfDocument.Meta getMetaData() {

@@ -16,17 +16,20 @@ Licensed under Apache License 2.0.
 * Add support for defining page fit policy (fit width, height or both)
 * Update sample.pdf to contain different page sizes
 
+3.0.0-beta.2 fixes rendering with maximum zoom, improves fit policies and updates PdfiumAndroid to 1.8.1
+
 ## Changes in 3.0 API
 * Replaced `Contants.PRELOAD_COUNT` with `PRELOAD_OFFSET`
 * Removed `PDFView#fitToWidth()` (variant without arguments)
 * Removed `Configurator#invalidPageColor(int)` method as invalid pages are not rendered
 * Removed page size parameters from `OnRenderListener#onInitiallyRendered(int)` method, as document may have different page sizes
+* Removed `PDFView#setSwipeVertical()` method
 
 ## Installation
 
 Add to _build.gradle_:
 
-`compile 'com.github.barteksc:android-pdf-viewer:3.0.0-beta.1'`
+`compile 'com.github.barteksc:android-pdf-viewer:3.0.0-beta.2'`
 
 or if you want to use more stable version:
  
