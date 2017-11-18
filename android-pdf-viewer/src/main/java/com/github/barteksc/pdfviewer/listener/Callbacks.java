@@ -83,12 +83,8 @@ public class Callbacks {
         this.onErrorListener = onErrorListener;
     }
 
-    public boolean callOnError(Throwable error) {
-        if (onErrorListener != null) {
-            onErrorListener.onError(error);
-            return true;
-        }
-        return false;
+    public OnErrorListener getOnError() {
+        return onErrorListener;
     }
 
     public void setOnPageError(OnPageErrorListener onPageErrorListener) {

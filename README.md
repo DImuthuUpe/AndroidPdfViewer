@@ -18,6 +18,8 @@ Licensed under Apache License 2.0.
 
 3.0.0-beta.2 fixes rendering with maximum zoom, improves fit policies and updates PdfiumAndroid to 1.8.1
 
+3.0.0-beta.3 fixes bug preventing `OnErrorListener` from being called
+
 ## Changes in 3.0 API
 * Replaced `Contants.PRELOAD_COUNT` with `PRELOAD_OFFSET`
 * Removed `PDFView#fitToWidth()` (variant without arguments)
@@ -29,7 +31,7 @@ Licensed under Apache License 2.0.
 
 Add to _build.gradle_:
 
-`compile 'com.github.barteksc:android-pdf-viewer:3.0.0-beta.2'`
+`compile 'com.github.barteksc:android-pdf-viewer:3.0.0-beta.3'`
 
 or if you want to use more stable version:
  

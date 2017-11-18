@@ -692,9 +692,13 @@ public class PDFView extends RelativeLayout {
 
     void loadError(Throwable t) {
         state = State.ERROR;
+        // store reference, because callbacks will be cleared in recycle() method
+        OnErrorListener onErrorListener = callbacks.getOnError();
         recycle();
         invalidate();
-        if (!callbacks.callOnError(t)) {
+        if (onErrorListener != null) {
+            onErrorListener.onError(t);
+        } else {
             Log.e("PDFView", "load pdf error", t);
         }
     }

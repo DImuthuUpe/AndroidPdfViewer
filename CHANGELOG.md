@@ -1,3 +1,6 @@
+## 3.0.0-beta.3 (2017-11-18)
+* Fix bug preventing `OnErrorListener` from being called
+
 ## 3.0.0-beta.2 (2017-11-15)
 * Fix rendering with maximum zoom
 * Improve fit policies
