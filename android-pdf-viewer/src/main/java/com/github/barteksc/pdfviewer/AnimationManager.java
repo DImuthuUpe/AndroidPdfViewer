@@ -17,6 +17,7 @@ package com.github.barteksc.pdfviewer;
 
 import android.animation.Animator;
 import android.animation.Animator.AnimatorListener;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.graphics.PointF;
@@ -48,8 +49,10 @@ class AnimationManager {
     public void startXAnimation(float xFrom, float xTo) {
         stopAll();
         animation = ValueAnimator.ofFloat(xFrom, xTo);
+        XAnimation xAnimation = new XAnimation();
         animation.setInterpolator(new DecelerateInterpolator());
-        animation.addUpdateListener(new XAnimation());
+        animation.addUpdateListener(xAnimation);
+        animation.addListener(xAnimation);
         animation.setDuration(400);
         animation.start();
     }
@@ -57,8 +60,10 @@ class AnimationManager {
     public void startYAnimation(float yFrom, float yTo) {
         stopAll();
         animation = ValueAnimator.ofFloat(yFrom, yTo);
+        YAnimation yAnimation = new YAnimation();
         animation.setInterpolator(new DecelerateInterpolator());
-        animation.addUpdateListener(new YAnimation());
+        animation.addUpdateListener(yAnimation);
+        animation.addListener(yAnimation);
         animation.setDuration(400);
         animation.start();
     }
@@ -104,24 +109,44 @@ class AnimationManager {
         scroller.forceFinished(true);
     }
 
-    class XAnimation implements AnimatorUpdateListener {
+    class XAnimation extends AnimatorListenerAdapter implements AnimatorUpdateListener {
 
         @Override
         public void onAnimationUpdate(ValueAnimator animation) {
             float offset = (Float) animation.getAnimatedValue();
             pdfView.moveTo(offset, pdfView.getCurrentYOffset());
+            pdfView.loadPageByOffset();
         }
 
+        @Override
+        public void onAnimationCancel(Animator animation) {
+            pdfView.loadPages();
+        }
+
+        @Override
+        public void onAnimationEnd(Animator animation) {
+            pdfView.loadPages();
+        }
     }
 
-    class YAnimation implements AnimatorUpdateListener {
+    class YAnimation extends AnimatorListenerAdapter implements AnimatorUpdateListener {
 
         @Override
         public void onAnimationUpdate(ValueAnimator animation) {
             float offset = (Float) animation.getAnimatedValue();
             pdfView.moveTo(pdfView.getCurrentXOffset(), offset);
+            pdfView.loadPageByOffset();
         }
 
+        @Override
+        public void onAnimationCancel(Animator animation) {
+            pdfView.loadPages();
+        }
+
+        @Override
+        public void onAnimationEnd(Animator animation) {
+            pdfView.loadPages();
+        }
     }
 
     class ZoomAnimation implements AnimatorUpdateListener, AnimatorListener {

@@ -444,6 +444,10 @@ public class PDFView extends RelativeLayout {
 
     @Override
     public boolean canScrollHorizontally(int direction) {
+        if (pdfFile == null) {
+            return true;
+        }
+
         if (swipeVertical) {
             if (direction < 0 && currentXOffset < 0) {
                 return true;
@@ -462,6 +466,10 @@ public class PDFView extends RelativeLayout {
 
     @Override
     public boolean canScrollVertically(int direction) {
+        if (pdfFile == null) {
+            return true;
+        }
+
         if (swipeVertical) {
             if (direction < 0 && currentYOffset < 0) {
                 return true;

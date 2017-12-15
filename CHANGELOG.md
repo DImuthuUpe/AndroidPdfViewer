@@ -1,3 +1,7 @@
+## 3.0.0-beta.4 (2017-12-15)
+* Fix not loaded pages when using animated `PDFView#jumpTo()`
+* Fix NPE in `canScrollVertically()` and `canScrollHorizontally()`
+
 ## 3.0.0-beta.3 (2017-11-18)
 * Fix bug preventing `OnErrorListener` from being called
 
