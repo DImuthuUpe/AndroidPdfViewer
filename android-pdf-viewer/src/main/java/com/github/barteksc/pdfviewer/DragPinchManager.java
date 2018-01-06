@@ -97,12 +97,35 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         for (PdfDocument.Link link : pdfFile.getPageLinks(page)) {
             RectF mapped = pdfFile.mapRectToDevice(page, pageX, pageY, (int) pageSize.getWidth(),
                     (int) pageSize.getHeight(), link.getBounds());
+            fixCoords(mapped);
             if (mapped.contains(mappedX, mappedY)) {
                 pdfView.callbacks.callLinkHandler(new LinkTapEvent(x, y, mappedX, mappedY, mapped, link));
                 return true;
             }
         }
         return false;
+    }
+
+    /** Fix different coordinate axis */
+    private void fixCoords(RectF rect) {
+        if (rect.top > rect.bottom) {
+            swapTopBottom(rect);
+        }
+        if (rect.left > rect.right) {
+            swapLeftRight(rect);
+        }
+    }
+
+    private void swapTopBottom(RectF rect) {
+        float tmp = rect.top;
+        rect.top = rect.bottom;
+        rect.bottom = tmp;
+    }
+
+    private void swapLeftRight(RectF rect) {
+        float tmp = rect.left;
+        rect.left = rect.right;
+        rect.right = tmp;
     }
 
     @Override

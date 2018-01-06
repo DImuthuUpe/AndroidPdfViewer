@@ -129,8 +129,7 @@ class PdfFile {
     }
 
     public SizeF getScaledPageSize(int pageIndex, float zoom) {
-        int docPage = documentPage(pageIndex);
-        SizeF size = getPageSize(docPage);
+        SizeF size = getPageSize(pageIndex);
         return new SizeF(size.getWidth() * zoom, size.getHeight() * zoom);
     }
 
