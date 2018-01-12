@@ -23,6 +23,7 @@ import android.util.SparseBooleanArray;
 import com.github.barteksc.pdfviewer.exception.PageRenderingException;
 import com.github.barteksc.pdfviewer.util.FitPolicy;
 import com.github.barteksc.pdfviewer.util.PageSizeCalculator;
+import com.github.barteksc.pdfviewer.util.PageViewType;
 import com.shockwave.pdfium.PdfDocument;
 import com.shockwave.pdfium.PdfiumCore;
 import com.shockwave.pdfium.util.Size;
@@ -58,6 +59,7 @@ class PdfFile {
     /** Calculated document length (width or height, depending on swipe mode) */
     private float documentLength = 0;
     private final FitPolicy pageFitPolicy;
+    private final PageViewType pageViewType;
     /**
      * The pages the user want to display in order
      * (ex: 0, 2, 2, 8, 8, 1, 1, 1)
@@ -65,13 +67,14 @@ class PdfFile {
     private int[] originalUserPages;
 
     PdfFile(PdfiumCore pdfiumCore, PdfDocument pdfDocument, FitPolicy pageFitPolicy, Size viewSize, int[] originalUserPages,
-            boolean isVertical, int spacing) {
+            boolean isVertical, int spacing, PageViewType viewType) {
         this.pdfiumCore = pdfiumCore;
         this.pdfDocument = pdfDocument;
         this.pageFitPolicy = pageFitPolicy;
         this.originalUserPages = originalUserPages;
         this.isVertical = isVertical;
         this.spacingPx = spacing;
+        this.pageViewType = viewType;
         setup(viewSize);
     }
 
@@ -113,7 +116,7 @@ class PdfFile {
         }
 
         prepareDocLen();
-        preparePagesOffset();
+        preparePagesOffset(viewSize);
     }
 
     public int getPagesCount() {
@@ -160,11 +163,27 @@ class PdfFile {
         documentLength = length + spacing;
     }
 
-    private void preparePagesOffset() {
+    private void preparePagesOffset(Size viewSize) {
         pageOffsets.clear();
+
+        if (pageViewType == PageViewType.SINGLE && getPagesCount() > 0)
+        {
+            if (pageFitPolicy == FitPolicy.WIDTH || pageFitPolicy == FitPolicy.BOTH)
+                spacingPx = 0;
+            else {
+                SizeF pageSize = getPageSize(0);
+                int offset = (int)(viewSize.getWidth() - pageSize.getWidth()) / 2;
+                spacingPx = offset+1;
+                prepareDocLen();
+                documentLength += spacingPx*2;
+            }
+        }
+
         float offset = 0;
         for (int i = 0; i < getPagesCount(); i++) {
             float spacing = i * spacingPx;
+            if (pageViewType == PageViewType.SINGLE)
+                spacing = (i+1) * spacingPx;
             pageOffsets.add(offset + spacing);
             SizeF size = pageSizes.get(i);
             offset += isVertical ? size.getHeight() : size.getWidth();
@@ -206,6 +225,11 @@ class PdfFile {
         }
 
         return --currentPage >= 0 ? currentPage : 0;
+    }
+
+    public int getSpacingPx()
+    {
+        return spacingPx;
     }
 
     public boolean openPage(int pageIndex) throws PageRenderingException {

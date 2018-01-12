@@ -24,6 +24,7 @@ import android.view.View;
 
 import com.github.barteksc.pdfviewer.model.LinkTapEvent;
 import com.github.barteksc.pdfviewer.scroll.ScrollHandle;
+import com.github.barteksc.pdfviewer.util.PageViewType;
 import com.shockwave.pdfium.PdfDocument;
 import com.shockwave.pdfium.util.SizeF;
 
@@ -155,6 +156,8 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     }
 
     private void onScrollEnd(MotionEvent event) {
+        if (pdfView.getPageViewType() == PageViewType.SINGLE && !pdfView.isZooming())
+          pdfView.jumpTo(pdfView.getCurrentPage(), true);
         pdfView.loadPages();
         hideHandle();
     }

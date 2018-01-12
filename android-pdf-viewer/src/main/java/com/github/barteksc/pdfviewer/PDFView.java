@@ -56,6 +56,7 @@ import com.github.barteksc.pdfviewer.source.UriSource;
 import com.github.barteksc.pdfviewer.util.Constants;
 import com.github.barteksc.pdfviewer.util.FitPolicy;
 import com.github.barteksc.pdfviewer.util.MathUtils;
+import com.github.barteksc.pdfviewer.util.PageViewType;
 import com.github.barteksc.pdfviewer.util.Util;
 import com.shockwave.pdfium.PdfDocument;
 import com.shockwave.pdfium.PdfiumCore;
@@ -167,6 +168,9 @@ public class PDFView extends RelativeLayout {
     /** Policy for fitting pages to screen */
     private FitPolicy pageFitPolicy = FitPolicy.WIDTH;
 
+    /** How the page should move when swiping. Continuously or one at a time */
+    private PageViewType pageViewType = PageViewType.CONTINUOUS;
+
     private int defaultPage = 0;
 
     /** True if should scroll through pages vertically instead of horizontally */
@@ -269,6 +273,8 @@ public class PDFView extends RelativeLayout {
 
         page = pdfFile.determineValidPageNumberFrom(page);
         float offset = -pdfFile.getPageOffset(page, zoom);
+        if (getPageViewType() == PageViewType.SINGLE)
+            offset = page == 0 ? 0 : -pdfFile.getPageOffset(page, zoom) + spacingPx;
         if (swipeVertical) {
             if (withAnimation) {
                 animationManager.startYAnimation(currentYOffset, offset);
@@ -695,6 +701,9 @@ public class PDFView extends RelativeLayout {
 
         callbacks.callOnLoadComplete(pdfFile.getPagesCount());
 
+        if (getPageViewType() == PageViewType.SINGLE)
+            spacingPx = pdfFile.getSpacingPx();
+
         jumpTo(defaultPage, false);
     }
 
@@ -1066,6 +1075,14 @@ public class PDFView extends RelativeLayout {
         return pageFitPolicy;
     }
 
+    private void setPageViewType(PageViewType pageViewType) {
+        this.pageViewType = pageViewType;
+    }
+
+    public PageViewType getPageViewType() {
+        return pageViewType;
+    }
+
     public boolean doRenderDuringScale() {
         return renderDuringScale;
     }
@@ -1171,6 +1188,8 @@ public class PDFView extends RelativeLayout {
         private int spacing = 0;
 
         private FitPolicy pageFitPolicy = FitPolicy.WIDTH;
+
+        private PageViewType pageViewType = PageViewType.CONTINUOUS;
 
         private Configurator(DocumentSource documentSource) {
             this.documentSource = documentSource;
@@ -1281,6 +1300,11 @@ public class PDFView extends RelativeLayout {
             return this;
         }
 
+        public Configurator pageViewType(PageViewType pageViewType) {
+            this.pageViewType = pageViewType;
+            return this;
+        }
+
         public void load() {
             PDFView.this.recycle();
             PDFView.this.callbacks.setOnLoadComplete(onLoadCompleteListener);
@@ -1302,6 +1326,7 @@ public class PDFView extends RelativeLayout {
             PDFView.this.enableAntialiasing(antialiasing);
             PDFView.this.setSpacing(spacing);
             PDFView.this.setPageFitPolicy(pageFitPolicy);
+            PDFView.this.setPageViewType(pageViewType);
 
             PDFView.this.post(new Runnable() {
                 @Override

@@ -24,6 +24,8 @@ import android.graphics.PointF;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.OverScroller;
 
+import com.github.barteksc.pdfviewer.util.PageViewType;
+
 
 /**
  * This manager is used by the PDFView to launch animations.
@@ -171,6 +173,8 @@ class AnimationManager {
 
         @Override
         public void onAnimationEnd(Animator animation) {
+            if (pdfView.getPageViewType() == PageViewType.SINGLE && pdfView.getZoom() == pdfView.getMinZoom())
+                pdfView.jumpTo(pdfView.getCurrentPage(), true);
             pdfView.loadPages();
             hideHandle();
         }

@@ -35,6 +35,7 @@ import com.github.barteksc.pdfviewer.listener.OnPageChangeListener;
 import com.github.barteksc.pdfviewer.listener.OnPageErrorListener;
 import com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle;
 import com.github.barteksc.pdfviewer.util.FitPolicy;
+import com.github.barteksc.pdfviewer.util.PageViewType;
 import com.shockwave.pdfium.PdfDocument;
 
 import org.androidannotations.annotations.AfterViews;
@@ -46,6 +47,8 @@ import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.ViewById;
 
 import java.util.List;
+
+import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.options)
@@ -102,7 +105,7 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
 
     @AfterViews
     void afterViews() {
-        pdfView.setBackgroundColor(Color.LTGRAY);
+        pdfView.setBackgroundColor(Color.BLACK);
         if (uri != null) {
             displayFromUri(uri);
         } else {
@@ -114,7 +117,7 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
     private void displayFromAsset(String assetFileName) {
         pdfFileName = assetFileName;
 
-        pdfView.fromAsset(SAMPLE_FILE)
+        /*pdfView.fromAsset(SAMPLE_FILE)
                 .defaultPage(pageNumber)
                 .onPageChange(this)
                 .enableAnnotationRendering(true)
@@ -123,7 +126,23 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
                 .spacing(10) // in dp
                 .onPageError(this)
                 .pageFitPolicy(FitPolicy.BOTH)
-                .load();
+                .load();*/
+
+        PDFView.Configurator configurator = pdfView.fromAsset(SAMPLE_FILE);
+        configurator.defaultPage(pageNumber);
+        configurator.onPageChange(this);
+        configurator.enableAnnotationRendering(true);
+        configurator.onLoad(this);
+        //configurator.scrollHandle(new DefaultScrollHandle(this));
+        //configurator.spacing(300);
+        configurator.onPageError(this);
+        configurator.swipeHorizontal(true);
+        configurator.pageViewType(PageViewType.SINGLE);
+        if (getResources().getConfiguration().orientation == ORIENTATION_LANDSCAPE)
+            configurator.pageFitPolicy(FitPolicy.HEIGHT);
+        else
+            configurator.pageFitPolicy(FitPolicy.WIDTH);
+        configurator.load();
     }
 
     private void displayFromUri(Uri uri) {
