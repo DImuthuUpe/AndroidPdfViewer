@@ -22,6 +22,11 @@ Licensed under Apache License 2.0.
 
 3.0.0-beta.4 fixes not loaded pages when using animated `PDFView#jumpTo()` and NPE in `canScrollVertically()` and `canScrollHorizontally()`
 
+3.0.0-beta.5 fixes:
+* Issue with `Configurator#pages()` from #486
+* `IllegalStateException` from #464
+* Not detecting links reported in #447
+
 ## Changes in 3.0 API
 * Replaced `Contants.PRELOAD_COUNT` with `PRELOAD_OFFSET`
 * Removed `PDFView#fitToWidth()` (variant without arguments)
@@ -33,13 +38,20 @@ Licensed under Apache License 2.0.
 
 Add to _build.gradle_:
 
-`compile 'com.github.barteksc:android-pdf-viewer:3.0.0-beta.4'`
+`compile 'com.github.barteksc:android-pdf-viewer:3.0.0-beta.5'`
 
 or if you want to use more stable version:
  
 `compile 'com.github.barteksc:android-pdf-viewer:2.8.2'`
 
 Library is available in jcenter repository, probably it'll be in Maven Central soon.
+
+## ProGuard
+If you are using ProGuard, add following rule to proguard config file:
+
+```proguard
+-keep class com.shockwave.**
+```
 
 ## Include PDFView in your layout
 

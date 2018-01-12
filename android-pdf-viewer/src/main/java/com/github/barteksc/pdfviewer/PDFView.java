@@ -219,8 +219,14 @@ public class PDFView extends RelativeLayout {
     /** Spacing between pages, in px */
     private int spacingPx = 0;
 
-    /** pages numbers used when calling onDrawAllListener */
+    /** Pages numbers used when calling onDrawAllListener */
     private List<Integer> onDrawPagesNums = new ArrayList<>(10);
+
+    /** Holds info whether view has been added to layout and has width and height */
+    private boolean hasSize = false;
+
+    /** Holds last used Configurator that should be loaded when view has size */
+    private Configurator waitingDocumentConfigurator;
 
     /** Construct the initial view */
     public PDFView(Context context, AttributeSet set) {
@@ -378,6 +384,7 @@ public class PDFView extends RelativeLayout {
     }
 
     public void recycle() {
+        waitingDocumentConfigurator = null;
 
         animationManager.stopAll();
         dragPinchManager.disable();
@@ -435,6 +442,10 @@ public class PDFView extends RelativeLayout {
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        hasSize = true;
+        if (waitingDocumentConfigurator != null) {
+            waitingDocumentConfigurator.load();
+        }
         if (isInEditMode() || state != State.SHOWN) {
             return;
         }
@@ -1306,6 +1317,10 @@ public class PDFView extends RelativeLayout {
         }
 
         public void load() {
+            if (!hasSize) {
+                waitingDocumentConfigurator = this;
+                return;
+            }
             PDFView.this.recycle();
             PDFView.this.callbacks.setOnLoadComplete(onLoadCompleteListener);
             PDFView.this.callbacks.setOnError(onErrorListener);
@@ -1328,16 +1343,11 @@ public class PDFView extends RelativeLayout {
             PDFView.this.setPageFitPolicy(pageFitPolicy);
             PDFView.this.setPageViewType(pageViewType);
 
-            PDFView.this.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (pageNumbers != null) {
-                        PDFView.this.load(documentSource, password, pageNumbers);
-                    } else {
-                        PDFView.this.load(documentSource, password);
-                    }
-                }
-            });
+            if (pageNumbers != null) {
+                PDFView.this.load(documentSource, password, pageNumbers);
+            } else {
+                PDFView.this.load(documentSource, password);
+            }
         }
     }
 }

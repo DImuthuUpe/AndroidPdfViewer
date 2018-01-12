@@ -1,3 +1,8 @@
+## 3.0.0-beta.5 (2018-01-06)
+* Fix issue with `Configurator#pages()` from #486
+* Fix `IllegalStateException` from #464
+* Fix not detecting links reported in #447
+
 ## 3.0.0-beta.4 (2017-12-15)
 * Fix not loaded pages when using animated `PDFView#jumpTo()`
 * Fix NPE in `canScrollVertically()` and `canScrollHorizontally()`
