@@ -13,11 +13,11 @@ repositories {
 }
 
 apply plugin: 'com.android.application'
-apply plugin: 'android-apt'
+//apply plugin: 'android-apt'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion "25.0.3"
+    //buildToolsVersion "25.0.3"
 
     defaultConfig {
         minSdkVersion 11
@@ -31,6 +31,7 @@ android {
 dependencies {
     compile project(':android-pdf-viewer')
     compile 'com.android.support:appcompat-v7:25.3.1'
-    provided 'org.androidannotations:androidannotations:4.0.0'
+    annotationProcessor 'org.androidannotations:androidannotations:4.0.0'
+    //provided 'org.androidannotations:androidannotations:4.0.0'
     compile 'org.androidannotations:androidannotations-api:4.0.0'
 }
