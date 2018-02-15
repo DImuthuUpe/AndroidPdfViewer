@@ -53,6 +53,7 @@ class PdfFile {
     private SizeF maxWidthPageSize = new SizeF(0, 0);
     private boolean isVertical = true;
     private int spacingPx = 0;
+    private int sideMargin = 0;
     /** Calculated offsets for pages */
     private List<Float> pageOffsets = new ArrayList<>();
     /** Calculated document length (width or height, depending on swipe mode) */
@@ -65,13 +66,14 @@ class PdfFile {
     private int[] originalUserPages;
 
     PdfFile(PdfiumCore pdfiumCore, PdfDocument pdfDocument, FitPolicy pageFitPolicy, Size viewSize, int[] originalUserPages,
-            boolean isVertical, int spacing) {
+            boolean isVertical, int spacing, int sideMargin) {
         this.pdfiumCore = pdfiumCore;
         this.pdfDocument = pdfDocument;
         this.pageFitPolicy = pageFitPolicy;
         this.originalUserPages = originalUserPages;
         this.isVertical = isVertical;
         this.spacingPx = spacing;
+        this.sideMargin = sideMargin;
         setup(viewSize);
     }
 
@@ -104,7 +106,7 @@ class PdfFile {
     public void recalculatePageSizes(Size viewSize) {
         pageSizes.clear();
         PageSizeCalculator calculator = new PageSizeCalculator(pageFitPolicy, originalMaxWidthPageSize,
-                originalMaxHeightPageSize, viewSize);
+                originalMaxHeightPageSize, viewSize, sideMargin);
         maxWidthPageSize = calculator.getOptimalMaxWidthPageSize();
         maxHeightPageSize = calculator.getOptimalMaxHeightPageSize();
 
