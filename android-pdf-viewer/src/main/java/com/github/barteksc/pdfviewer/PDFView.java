@@ -215,6 +215,9 @@ public class PDFView extends RelativeLayout {
     /** Spacing between pages, in px */
     private int spacingPx = 0;
 
+    /** Spacing Left and Right in px */
+    private int sideMarginPx = 0;
+
     /** Pages numbers used when calling onDrawAllListener */
     private List<Integer> onDrawPagesNums = new ArrayList<>(10);
 
@@ -616,8 +619,8 @@ public class PDFView extends RelativeLayout {
         }
 
         // Move to the target page
-        float localTranslationX = 0;
-        float localTranslationY = 0;
+        float localTranslationX;
+        float localTranslationY;
         SizeF size = pdfFile.getPageSize(part.getPage());
 
         if (swipeVertical) {
@@ -664,7 +667,6 @@ public class PDFView extends RelativeLayout {
 
         // Restore the canvas position
         canvas.translate(-localTranslationX, -localTranslationY);
-
     }
 
     /**
@@ -1069,6 +1071,14 @@ public class PDFView extends RelativeLayout {
         this.spacingPx = Util.getDP(getContext(), spacing);
     }
 
+	int getSideMarginPx() {
+		return sideMarginPx;
+	}
+
+    private void setSideMargin(int sideMargin) {
+        this.sideMarginPx = Util.getDP(getContext(), sideMargin);
+    }
+
     private void setPageFitPolicy(FitPolicy pageFitPolicy) {
         this.pageFitPolicy = pageFitPolicy;
     }
@@ -1181,6 +1191,8 @@ public class PDFView extends RelativeLayout {
 
         private int spacing = 0;
 
+        private int sideMargin = 0;
+
         private FitPolicy pageFitPolicy = FitPolicy.WIDTH;
 
         private Configurator(DocumentSource documentSource) {
@@ -1287,6 +1299,11 @@ public class PDFView extends RelativeLayout {
             return this;
         }
 
+        public Configurator sideMargin(int sideMargin) {
+            this.sideMargin = sideMargin;
+            return this;
+        }
+
         public Configurator pageFitPolicy(FitPolicy pageFitPolicy) {
             this.pageFitPolicy = pageFitPolicy;
             return this;
@@ -1316,6 +1333,7 @@ public class PDFView extends RelativeLayout {
             PDFView.this.setScrollHandle(scrollHandle);
             PDFView.this.enableAntialiasing(antialiasing);
             PDFView.this.setSpacing(spacing);
+            PDFView.this.setSideMargin(sideMargin);
             PDFView.this.setPageFitPolicy(pageFitPolicy);
 
             if (pageNumbers != null) {
