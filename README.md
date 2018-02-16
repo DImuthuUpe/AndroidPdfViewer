@@ -100,6 +100,12 @@ pdfView.fromAsset(String)
     .enableAntialiasing(true) // improve rendering a little bit on low-res screens
     // spacing between pages in dp. To define spacing color, set view background
     .spacing(0)
+    // spacing on the left and right if the pageFitPolicy is WIDTH in dp. To define spacing color, set view background
+    .sideMargin(0)
+    // spacing above the first page in dp. To define spacing color, set view background
+    .spacingTop(0)
+    // spacing below the last page in dp. To define spacing color, set view background
+    .spacingBottom(0)
     .linkHandler(DefaultLinkHandler)
     .pageFitPolicy(FitPolicy.WIDTH)
     .load();

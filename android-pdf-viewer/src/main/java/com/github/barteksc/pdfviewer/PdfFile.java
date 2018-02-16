@@ -53,6 +53,9 @@ class PdfFile {
     private SizeF maxWidthPageSize = new SizeF(0, 0);
     private boolean isVertical = true;
     private int spacingPx = 0;
+    private int spacingTopPx = 0;
+    private int spacingBottomPx = 0;
+    private int sideMargin = 0;
     /** Calculated offsets for pages */
     private List<Float> pageOffsets = new ArrayList<>();
     /** Calculated document length (width or height, depending on swipe mode) */
@@ -65,13 +68,16 @@ class PdfFile {
     private int[] originalUserPages;
 
     PdfFile(PdfiumCore pdfiumCore, PdfDocument pdfDocument, FitPolicy pageFitPolicy, Size viewSize, int[] originalUserPages,
-            boolean isVertical, int spacing) {
+            boolean isVertical, int spacing, int spacingTop, int spacingBottom, int sideMargin) {
         this.pdfiumCore = pdfiumCore;
         this.pdfDocument = pdfDocument;
         this.pageFitPolicy = pageFitPolicy;
         this.originalUserPages = originalUserPages;
         this.isVertical = isVertical;
         this.spacingPx = spacing;
+        this.spacingTopPx = spacingTop;
+        this.spacingBottomPx = spacingBottom;
+        this.sideMargin = sideMargin;
         setup(viewSize);
     }
 
@@ -104,7 +110,7 @@ class PdfFile {
     public void recalculatePageSizes(Size viewSize) {
         pageSizes.clear();
         PageSizeCalculator calculator = new PageSizeCalculator(pageFitPolicy, originalMaxWidthPageSize,
-                originalMaxHeightPageSize, viewSize);
+                originalMaxHeightPageSize, viewSize, sideMargin);
         maxWidthPageSize = calculator.getOptimalMaxWidthPageSize();
         maxHeightPageSize = calculator.getOptimalMaxHeightPageSize();
 
@@ -155,18 +161,18 @@ class PdfFile {
         for (SizeF pageSize : pageSizes) {
             length += isVertical ? pageSize.getHeight() : pageSize.getWidth();
         }
-        int spacing = spacingPx * (pageSizes.size() - 1);
+        int spacing = (spacingPx * (pageSizes.size() - 1)) + spacingTopPx + spacingBottomPx;
         documentLength = length + spacing;
     }
 
     private void preparePagesOffset() {
         pageOffsets.clear();
-        float offset = 0;
+        float offset = spacingTopPx;
         for (int i = 0; i < getPagesCount(); i++) {
             float spacing = i * spacingPx;
             pageOffsets.add(offset + spacing);
             SizeF size = pageSizes.get(i);
-            offset += isVertical ? size.getHeight() : size.getWidth();
+			offset += isVertical ? size.getHeight() : size.getWidth();
         }
     }
 
