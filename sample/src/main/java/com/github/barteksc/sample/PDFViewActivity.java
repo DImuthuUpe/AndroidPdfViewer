@@ -139,6 +139,8 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
                 .onLoad(this)
                 .scrollHandle(new DefaultScrollHandle(this))
                 .spacing(10) // in dp
+                .spacingTop(500) // in dp
+                .spacingBottom(500) // in dp
                 .sideMargin(50) // in dp (only supported with FitPolicy.WIDTH)
                 .onPageError(this)
                 .pageFitPolicy(FitPolicy.WIDTH)
