@@ -87,7 +87,8 @@ public class PageSizeCalculator {
     }
 
     private SizeF fitWidth(Size pageSize, float maxWidth) {
-        float w = pageSize.getWidth(), h = pageSize.getHeight();
+        float w = pageSize.getWidth();
+	    float h = pageSize.getHeight();
         float ratio = w / h;
         w = maxWidth;
         h = (float) Math.floor(maxWidth / ratio);
