@@ -21,6 +21,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Handler;
 import android.provider.OpenableColumns;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -33,6 +34,8 @@ import com.github.barteksc.pdfviewer.PDFView;
 import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener;
 import com.github.barteksc.pdfviewer.listener.OnPageChangeListener;
 import com.github.barteksc.pdfviewer.listener.OnPageErrorListener;
+import com.github.barteksc.pdfviewer.network.Downloading;
+import com.github.barteksc.pdfviewer.network.DownloadingImplementation;
 import com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle;
 import com.github.barteksc.pdfviewer.util.FitPolicy;
 import com.shockwave.pdfium.PdfDocument;
@@ -45,6 +48,7 @@ import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.ViewById;
 
+import java.io.File;
 import java.util.List;
 
 @EActivity(R.layout.activity_main)
@@ -130,6 +134,40 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
         pdfFileName = getFileName(uri);
 
         pdfView.fromUri(uri)
+                .defaultPage(pageNumber)
+                .onPageChange(this)
+                .enableAnnotationRendering(true)
+                .onLoad(this)
+                .scrollHandle(new DefaultScrollHandle(this))
+                .spacing(10) // in dp
+                .onPageError(this)
+                .load();
+    }
+
+    private void download(String url){
+        pdfFileName = url.substring(url.lastIndexOf('/') + 1);
+
+        new DownloadingImplementation(this, new Handler(), new Downloading.Listener() {
+            @Override
+            public void onSuccess(String url, File pdfFile) {
+                displayPdpFromFile(pdfFile);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+
+            }
+
+            @Override
+            public void onProgressUpdate(int progress, int total) {
+
+            }
+        }).download(url);
+
+    }
+
+    private void displayPdpFromFile(File file){
+        pdfView.fromFile(file)
                 .defaultPage(pageNumber)
                 .onPageChange(this)
                 .enableAnnotationRendering(true)
