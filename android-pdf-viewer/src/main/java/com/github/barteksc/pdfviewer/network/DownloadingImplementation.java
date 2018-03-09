@@ -101,10 +101,10 @@ public class DownloadingImplementation implements Downloading {
      */
     @Override
     public void download(String url) {
-        download(url, url.substring(url.lastIndexOf('/') + 1));
+        download(url, extractFileNameFromURL(url));
     }
 
-    private void notifySuccess(final String url, final File destinationPath) {
+    private void notifySuccess(final String url, final File pdfFile) {
         if (uiThread == null) {
             return;
         }
@@ -112,7 +112,7 @@ public class DownloadingImplementation implements Downloading {
         uiThread.post(new Runnable() {
             @Override
             public void run() {
-                listener.onSuccess(url, destinationPath);
+                listener.onSuccess(url, pdfFile);
             }
         });
     }
@@ -166,9 +166,9 @@ public class DownloadingImplementation implements Downloading {
          * return
          * @param url (for example if person want to save it in a hashMap as a key)
          * and
-         * @param file
+         * @param pdfFile
          */
-        public void onSuccess(String url, File file) {
+        public void onSuccess(String url, File pdfFile) {
             /* Empty */
         }
 

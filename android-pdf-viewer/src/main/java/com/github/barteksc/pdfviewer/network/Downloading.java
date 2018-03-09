@@ -13,7 +13,7 @@ public interface Downloading {
     void download(String url);
 
     interface Listener {
-        void onSuccess(String url, File destinationPath);
+        void onSuccess(String url, File pdfFile);
 
         void onFailure(Exception e);
 
