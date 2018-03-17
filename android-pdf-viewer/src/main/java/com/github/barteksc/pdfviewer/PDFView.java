@@ -218,7 +218,7 @@ public class PDFView extends RelativeLayout {
     /** Spacing between pages, in px */
     private int spacingPx = 0;
 
-    /** Calculate spacing to fit a single page on screen. This overrides {@link #spacingPx}. */
+    /** Add dynamic spacing to fit each page separately on the screen. */
     private boolean autoSpacing = false;
 
     /** Fling a single page at a time */

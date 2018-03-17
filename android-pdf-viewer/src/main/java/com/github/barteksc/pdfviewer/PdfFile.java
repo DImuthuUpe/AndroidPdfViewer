@@ -165,6 +165,9 @@ class PdfFile {
             SizeF pageSize = pageSizes.get(i);
             float spacing = isVertical ? viewSize.getHeight() - pageSize.getHeight() :
                     viewSize.getWidth() - pageSize.getWidth();
+            if (i < getPagesCount() - 1) {
+                spacing += spacingPx;
+            }
             pageSpacing.add(spacing);
         }
     }
@@ -191,6 +194,11 @@ class PdfFile {
             float size = isVertical ? pageSize.getHeight() : pageSize.getWidth();
             if (autoSpacing) {
                 offset += pageSpacing.get(i) / 2f;
+                if (i == 0) {
+                    offset -= spacingPx / 2f;
+                } else if (i == getPagesCount() - 1) {
+                    offset += spacingPx / 2f;
+                }
                 pageOffsets.add(offset);
                 offset += size + pageSpacing.get(i) / 2f;
             } else {
