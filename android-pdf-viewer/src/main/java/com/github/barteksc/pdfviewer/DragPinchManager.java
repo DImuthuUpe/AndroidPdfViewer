@@ -157,6 +157,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
 
     private void onScrollEnd(MotionEvent event) {
         pdfView.loadPages();
+        pdfView.doPageSnap();
         hideHandle();
     }
 

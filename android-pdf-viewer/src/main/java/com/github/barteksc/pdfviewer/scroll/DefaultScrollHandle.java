@@ -224,9 +224,11 @@ public class DefaultScrollHandle extends RelativeLayout implements ScrollHandle 
                     pdfView.setPositionOffset(relativeHandlerMiddle / (float) getWidth(), false);
                 }
                 return true;
-            case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_POINTER_UP:
+                pdfView.doPageSnap();
+                // fallthrough
+            case MotionEvent.ACTION_CANCEL:
                 hideDelayed();
                 return true;
         }

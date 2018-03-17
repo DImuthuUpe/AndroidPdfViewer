@@ -204,6 +204,11 @@ class PdfFile {
         return documentLength * zoom;
     }
 
+    public float getPageSpacing(int pageIndex, float zoom) {
+        float spacing = autoSpacing ? pageSpacing.get(pageIndex) : spacingPx;
+        return spacing * zoom;
+    }
+
     /** Get primary page offset, that is Y for vertical scroll and X for horizontal scroll */
     public float getPageOffset(int pageIndex, float zoom) {
         int docPage = documentPage(pageIndex);
@@ -227,13 +232,13 @@ class PdfFile {
 
     public int getPageAtOffset(float offset, float zoom) {
         int currentPage = 0;
-        for (float off : pageOffsets) {
-            if (off * zoom >= offset) {
+        for (int i = 0; i < getPagesCount(); i++) {
+            float off = pageOffsets.get(i) * zoom - getPageSpacing(i, zoom) / 2f;
+            if(off >= offset) {
                 break;
             }
             currentPage++;
         }
-
         return --currentPage >= 0 ? currentPage : 0;
     }
 
