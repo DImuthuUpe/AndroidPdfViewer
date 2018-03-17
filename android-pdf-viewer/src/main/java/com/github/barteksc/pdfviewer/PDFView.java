@@ -215,6 +215,9 @@ public class PDFView extends RelativeLayout {
     /** Spacing between pages, in px */
     private int spacingPx = 0;
 
+    /** Calculate spacing to fit a single page on screen. This overrides {@link #spacingPx}. */
+    private boolean autoSpacing = false;
+
     /** Pages numbers used when calling onDrawAllListener */
     private List<Integer> onDrawPagesNums = new ArrayList<>(10);
 
@@ -274,7 +277,7 @@ public class PDFView extends RelativeLayout {
         }
 
         page = pdfFile.determineValidPageNumberFrom(page);
-        float offset = -pdfFile.getPageOffset(page, zoom);
+        float offset = page == 0 ? 0 : -pdfFile.getPageOffset(page, zoom);
         if (swipeVertical) {
             if (withAnimation) {
                 animationManager.startYAnimation(currentYOffset, offset);
@@ -1065,8 +1068,16 @@ public class PDFView extends RelativeLayout {
         return spacingPx;
     }
 
+    boolean doAutoSpacing() {
+        return autoSpacing;
+    }
+
     private void setSpacing(int spacing) {
         this.spacingPx = Util.getDP(getContext(), spacing);
+    }
+
+    private void setAutoSpacing(boolean autoSpacing) {
+        this.autoSpacing = autoSpacing;
     }
 
     private void setPageFitPolicy(FitPolicy pageFitPolicy) {
@@ -1181,6 +1192,8 @@ public class PDFView extends RelativeLayout {
 
         private int spacing = 0;
 
+        private boolean autoSpacing = false;
+
         private FitPolicy pageFitPolicy = FitPolicy.WIDTH;
 
         private Configurator(DocumentSource documentSource) {
@@ -1287,6 +1300,11 @@ public class PDFView extends RelativeLayout {
             return this;
         }
 
+        public Configurator autoSpacing(boolean autoSpacing) {
+            this.autoSpacing = autoSpacing;
+            return this;
+        }
+
         public Configurator pageFitPolicy(FitPolicy pageFitPolicy) {
             this.pageFitPolicy = pageFitPolicy;
             return this;
@@ -1316,6 +1334,7 @@ public class PDFView extends RelativeLayout {
             PDFView.this.setScrollHandle(scrollHandle);
             PDFView.this.enableAntialiasing(antialiasing);
             PDFView.this.setSpacing(spacing);
+            PDFView.this.setAutoSpacing(autoSpacing);
             PDFView.this.setPageFitPolicy(pageFitPolicy);
 
             if (pageNumbers != null) {
