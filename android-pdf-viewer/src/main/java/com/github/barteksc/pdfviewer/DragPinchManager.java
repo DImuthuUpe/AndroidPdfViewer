@@ -21,6 +21,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.view.ViewConfiguration;
 
 import com.github.barteksc.pdfviewer.model.LinkTapEvent;
 import com.github.barteksc.pdfviewer.scroll.ScrollHandle;
@@ -157,8 +158,10 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
 
     private void onScrollEnd(MotionEvent event) {
         pdfView.loadPages();
-        pdfView.doPageSnap();
         hideHandle();
+        if(!animationManager.isFlinging()) {
+            pdfView.doPageSnap();
+        }
     }
 
     @Override
@@ -170,6 +173,12 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
         if (!pdfView.isSwipeEnabled()) {
             return false;
+        }
+        if (pdfView.doPageFling()) {
+            if (checkDoPageFling(velocityX, velocityY)) {
+                animationManager.startPageFlingAnimation(e1, e2, velocityX, velocityY);
+            }
+            return true;
         }
         int xOffset = (int) pdfView.getCurrentXOffset();
         int yOffset = (int) pdfView.getCurrentYOffset();
@@ -186,7 +195,6 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
 
         animationManager.startFlingAnimation(xOffset, yOffset, (int) (velocityX), (int) (velocityY),
                 (int) minX, 0, (int) minY, 0);
-
         return true;
     }
 
@@ -238,6 +246,15 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         ScrollHandle scrollHandle = pdfView.getScrollHandle();
         if (scrollHandle != null && scrollHandle.shown()) {
             scrollHandle.hideDelayed();
+        }
+    }
+
+    private boolean checkDoPageFling(float velocityX, float velocityY) {
+        int minVelocity = ViewConfiguration.get(pdfView.getContext()).getScaledMinimumFlingVelocity();
+        if (pdfView.isSwipeVertical()) {
+            return Math.abs(velocityY) > minVelocity;
+        } else {
+            return Math.abs(velocityX) > minVelocity;
         }
     }
 }

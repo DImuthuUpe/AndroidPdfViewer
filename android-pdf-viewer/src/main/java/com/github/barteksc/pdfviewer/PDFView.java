@@ -221,6 +221,9 @@ public class PDFView extends RelativeLayout {
     /** Calculate spacing to fit a single page on screen. This overrides {@link #spacingPx}. */
     private boolean autoSpacing = false;
 
+    /** Fling a single page at a time */
+    private boolean pageFling = true;
+
     /** Pages numbers used when calling onDrawAllListener */
     private List<Integer> onDrawPagesNums = new ArrayList<>(10);
 
@@ -868,21 +871,15 @@ public class PDFView extends RelativeLayout {
         }
     }
 
+    /**
+     * Animate to the nearest snapping position for the current SnapPolicy
+     */
     public void doPageSnap() {
         if (snapPolicy == SnapPolicy.NONE || pdfFile == null || pdfFile.getPagesCount() == 0) {
             return;
         }
-        int targetPage = findPageToSnap();
-        float offset = pdfFile.getPageOffset(targetPage, zoom);
-
-        float size = swipeVertical ? getHeight() : getWidth();
-        float pageSize = getPageLength(targetPage);
-
-        if (snapPolicy == SnapPolicy.CENTER) {
-            offset = offset - size / 2f + pageSize * zoom / 2f;
-        } else if (snapPolicy == SnapPolicy.END) {
-            offset = offset - size + (pageSize * zoom);
-        }
+        int targetPage = findPageToSnap(0);
+        float offset = snapOffsetForPage(targetPage);
 
         if (swipeVertical) {
             animationManager.startYAnimation(currentYOffset, -offset);
@@ -891,15 +888,30 @@ public class PDFView extends RelativeLayout {
         }
     }
 
-    private int findPageToSnap() {
+    float snapOffsetForPage(int pageIndex) {
+        float offset = pdfFile.getPageOffset(pageIndex, zoom);
+
+        float size = swipeVertical ? getHeight() : getWidth();
+        float pageSize = getPageLength(pageIndex);
+
+        if (snapPolicy == SnapPolicy.CENTER) {
+            offset = offset - size / 2f + pageSize * zoom / 2f;
+        } else if (snapPolicy == SnapPolicy.END) {
+            offset = offset - size + (pageSize * zoom);
+        }
+        return offset;
+    }
+
+    int findPageToSnap(float positionOffset) {
         switch (snapPolicy) {
             case CENTER:
                 // get page at center
-                float center = swipeVertical ? currentYOffset - getHeight() / 2f : currentXOffset - getWidth() / 2f;
+                float center = swipeVertical ? (currentYOffset + positionOffset) - getHeight() / 2f :
+                        (currentXOffset + positionOffset) - getWidth() / 2f;
                 return pdfFile.getPageAtOffset(-center, zoom);
             case START:
                 // get page at starting edge
-                float start = swipeVertical ? currentYOffset : currentYOffset;
+                float start = (swipeVertical ? currentYOffset : currentYOffset) + positionOffset;
                 int startIndex = pdfFile.getPageAtOffset(-start, zoom);
                 if (startIndex < getPageCount() - 1) {
                     // check if next page start is actually closer
@@ -912,7 +924,7 @@ public class PDFView extends RelativeLayout {
                 return startIndex;
             case END:
                 // get page at ending edge
-                float end = swipeVertical ? currentYOffset - getHeight() : currentXOffset - getWidth();
+                float end = swipeVertical ? (currentYOffset + positionOffset) - getHeight() : (currentXOffset + positionOffset) - getWidth();
                 int endIndex = pdfFile.getPageAtOffset(-end, zoom);
                 if (endIndex > 0) {
                     // check if previous page is actually closer
@@ -1143,6 +1155,14 @@ public class PDFView extends RelativeLayout {
         return autoSpacing;
     }
 
+    public void setPageFling(boolean pageFling) {
+        this.pageFling = pageFling;
+    }
+
+    public boolean doPageFling() {
+        return pageFling;
+    }
+
     private void setSpacing(int spacing) {
         this.spacingPx = Util.getDP(getContext(), spacing);
     }
@@ -1277,6 +1297,8 @@ public class PDFView extends RelativeLayout {
 
         private SnapPolicy snapPolicy = SnapPolicy.NONE;
 
+        private boolean pageFling = false;
+
         private Configurator(DocumentSource documentSource) {
             this.documentSource = documentSource;
         }
@@ -1396,6 +1418,11 @@ public class PDFView extends RelativeLayout {
             return this;
         }
 
+        public Configurator pageFling(boolean pageFling) {
+            this.pageFling = pageFling;
+            return this;
+        }
+
         public void load() {
             if (!hasSize) {
                 waitingDocumentConfigurator = this;
@@ -1423,6 +1450,7 @@ public class PDFView extends RelativeLayout {
             PDFView.this.setAutoSpacing(autoSpacing);
             PDFView.this.setPageFitPolicy(pageFitPolicy);
             PDFView.this.setSnapPolicy(snapPolicy);
+            PDFView.this.setPageFling(pageFling);
 
             if (pageNumbers != null) {
                 PDFView.this.load(documentSource, password, pageNumbers);
