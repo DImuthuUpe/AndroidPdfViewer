@@ -878,7 +878,7 @@ public class PDFView extends RelativeLayout {
         if (snapPolicy == SnapPolicy.NONE || pdfFile == null || pdfFile.getPagesCount() == 0) {
             return;
         }
-        int targetPage = findPageToSnap(0);
+        int targetPage = findPageToSnap(currentXOffset, currentYOffset);
         float offset = snapOffsetForPage(targetPage);
 
         if (swipeVertical) {
@@ -888,30 +888,32 @@ public class PDFView extends RelativeLayout {
         }
     }
 
+    /**
+     * Get the offset to move to in order to snap to the specified page
+     */
     float snapOffsetForPage(int pageIndex) {
         float offset = pdfFile.getPageOffset(pageIndex, zoom);
 
         float size = swipeVertical ? getHeight() : getWidth();
-        float pageSize = getPageLength(pageIndex);
+        float pageSize = getPageLength(pageIndex, zoom);
 
         if (snapPolicy == SnapPolicy.CENTER) {
-            offset = offset - size / 2f + pageSize * zoom / 2f;
+            offset = offset - size / 2f + pageSize / 2f;
         } else if (snapPolicy == SnapPolicy.END) {
-            offset = offset - size + (pageSize * zoom);
+            offset = offset - size + pageSize;
         }
         return offset;
     }
 
-    int findPageToSnap(float positionOffset) {
+    int findPageToSnap(float xOffset, float yOffset) {
         switch (snapPolicy) {
             case CENTER:
                 // get page at center
-                float center = swipeVertical ? (currentYOffset + positionOffset) - getHeight() / 2f :
-                        (currentXOffset + positionOffset) - getWidth() / 2f;
+                float center = swipeVertical ? yOffset - getHeight() / 2f : xOffset - getWidth() / 2f;
                 return pdfFile.getPageAtOffset(-center, zoom);
             case START:
                 // get page at starting edge
-                float start = (swipeVertical ? currentYOffset : currentYOffset) + positionOffset;
+                float start = swipeVertical ? yOffset : xOffset;
                 int startIndex = pdfFile.getPageAtOffset(-start, zoom);
                 if (startIndex < getPageCount() - 1) {
                     // check if next page start is actually closer
@@ -924,12 +926,13 @@ public class PDFView extends RelativeLayout {
                 return startIndex;
             case END:
                 // get page at ending edge
-                float end = swipeVertical ? (currentYOffset + positionOffset) - getHeight() : (currentXOffset + positionOffset) - getWidth();
+                float end = swipeVertical ? yOffset - getHeight() : xOffset - getWidth();
                 int endIndex = pdfFile.getPageAtOffset(-end, zoom);
                 if (endIndex > 0) {
                     // check if previous page is actually closer
-                    float pageEnd = -pdfFile.getPageOffset(endIndex, zoom) - getPageLength(endIndex) * zoom;
-                    float prevPageEnd = -pdfFile.getPageOffset(endIndex - 1, zoom) - getPageLength(endIndex - 1) * zoom;
+                    float pageEnd = -pdfFile.getPageOffset(endIndex, zoom) - getPageLength(endIndex, zoom);
+                    float prevPageEnd = -pdfFile.getPageOffset(endIndex - 1, zoom) -
+                            getPageLength(endIndex - 1, zoom);
                     if (end - pageEnd > prevPageEnd - end) {
                         return endIndex - 1;
                     }
@@ -941,11 +944,11 @@ public class PDFView extends RelativeLayout {
     }
 
     /**
-     * Gets the page size in the current layout direction
+     * Get the page's height if swiping vertical, or width if swiping horizontal.
      */
-    private float getPageLength(int pageIndex) {
+    private float getPageLength(int pageIndex, float zoom) {
         SizeF size = pdfFile.getPageSize(pageIndex);
-        return swipeVertical ? size.getHeight() : size.getWidth();
+        return (swipeVertical ? size.getHeight() : size.getWidth()) * zoom;
     }
 
     /**
@@ -1147,11 +1150,11 @@ public class PDFView extends RelativeLayout {
         this.enableAntialiasing = enableAntialiasing;
     }
 
-    int getSpacingPx() {
+    public int getSpacingPx() {
         return spacingPx;
     }
 
-    boolean doAutoSpacing() {
+    public boolean doAutoSpacing() {
         return autoSpacing;
     }
 

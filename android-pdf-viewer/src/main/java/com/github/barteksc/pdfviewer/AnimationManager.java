@@ -21,7 +21,6 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.graphics.PointF;
-import android.view.MotionEvent;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.OverScroller;
 
@@ -88,23 +87,11 @@ class AnimationManager {
         scroller.fling(startX, startY, velocityX, velocityY, minX, maxX, minY, maxY);
     }
 
-    public void startPageFlingAnimation(MotionEvent downEvent, MotionEvent ev, float velocityX, float velocityY) {
-        int direction;
-        if(pdfView.isSwipeVertical()) {
-            direction = velocityY > 0 ? -1 : 1;
-        } else {
-            direction = velocityX > 0 ? -1 : 1;
-        }
-        // get the focused page for the down event to ensure a single page is changed
-        float delta = pdfView.isSwipeVertical() ? ev.getY() - downEvent.getY() : ev.getX() - downEvent.getX();
-        int startingPage = pdfView.findPageToSnap(-delta * pdfView.getZoom());
-        int targetPage = Math.max(0, Math.min(pdfView.getPageCount() - 1, startingPage + direction));
-        float offset = pdfView.snapOffsetForPage(targetPage);
-
+    public void startPageFlinfAnimation(float targetOffset) {
         if (pdfView.isSwipeVertical()) {
-            startYAnimation(pdfView.getCurrentYOffset(), -offset);
+            startYAnimation(pdfView.getCurrentYOffset(), targetOffset);
         } else {
-            startXAnimation(pdfView.getCurrentXOffset(), -offset);
+            startXAnimation(pdfView.getCurrentXOffset(), targetOffset);
         }
         pageFlinging = true;
     }

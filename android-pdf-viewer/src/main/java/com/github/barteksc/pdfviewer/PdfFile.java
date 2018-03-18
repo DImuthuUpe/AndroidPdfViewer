@@ -242,7 +242,7 @@ class PdfFile {
         int currentPage = 0;
         for (int i = 0; i < getPagesCount(); i++) {
             float off = pageOffsets.get(i) * zoom - getPageSpacing(i, zoom) / 2f;
-            if(off >= offset) {
+            if (off >= offset) {
                 break;
             }
             currentPage++;

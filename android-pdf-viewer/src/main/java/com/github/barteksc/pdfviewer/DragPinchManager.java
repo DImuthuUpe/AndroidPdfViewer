@@ -107,6 +107,28 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         return false;
     }
 
+    private void startPageFling(MotionEvent downEvent, MotionEvent ev, float velocityX, float velocityY) {
+        if (!checkDoPageFling(velocityX, velocityY)) {
+            return;
+        }
+
+        int direction;
+        if (pdfView.isSwipeVertical()) {
+            direction = velocityY > 0 ? -1 : 1;
+        } else {
+            direction = velocityX > 0 ? -1 : 1;
+        }
+        // get the focused page during the down event to ensure only a single page is changed
+        float delta = pdfView.isSwipeVertical() ? ev.getY() - downEvent.getY() : ev.getX() - downEvent.getX();
+        float offsetX = pdfView.getCurrentXOffset() - delta * pdfView.getZoom();
+        float offsetY = pdfView.getCurrentYOffset() - delta * pdfView.getZoom();
+        int startingPage = pdfView.findPageToSnap(offsetX, offsetY);
+        int targetPage = Math.max(0, Math.min(pdfView.getPageCount() - 1, startingPage + direction));
+
+        float offset = pdfView.snapOffsetForPage(targetPage);
+        animationManager.startPageFlinfAnimation(-offset);
+    }
+
     @Override
     public boolean onDoubleTap(MotionEvent e) {
         if (!pdfView.isDoubletapEnabled()) {
@@ -175,9 +197,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
             return false;
         }
         if (!pdfView.isZooming() && pdfView.doPageFling()) {
-            if (checkDoPageFling(velocityX, velocityY)) {
-                animationManager.startPageFlingAnimation(e1, e2, velocityX, velocityY);
-            }
+            startPageFling(e1, e2, velocityX, velocityY);
             return true;
         }
         int xOffset = (int) pdfView.getCurrentXOffset();
