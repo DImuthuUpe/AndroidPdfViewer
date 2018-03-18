@@ -100,8 +100,12 @@ pdfView.fromAsset(String)
     .enableAntialiasing(true) // improve rendering a little bit on low-res screens
     // spacing between pages in dp. To define spacing color, set view background
     .spacing(0)
+    .autoSpacing(false) // add dynamic spacing to fit each page on its own on the screen
     .linkHandler(DefaultLinkHandler)
     .pageFitPolicy(FitPolicy.WIDTH)
+    // choose of start, center or end. Pages are snapped to this edge after scroll.
+    .snapPolicy(SnapPolicy.NONE)
+    .pageFling(false) // make a fling change only a single page like ViewPager
     .load();
 ```
 
@@ -204,6 +208,15 @@ Configurator.onRender(new OnRenderListener() {
         pdfView.fitToWidth(pageIndex);
     }
 });
+```
+
+### How can I scroll through single pages like a ViewPager?
+You can use a combination of the following settings to get scroll and fling behaviour similiar to a ViewPager:
+``` java
+    .swipeHorizontal(true)
+    .snapPolicy(SnapPolicy.CENTER)
+    .autoSpacing(true)
+    .pageFling(true)
 ```
 
 ## One more thing
