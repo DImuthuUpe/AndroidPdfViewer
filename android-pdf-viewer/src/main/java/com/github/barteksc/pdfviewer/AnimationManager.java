@@ -116,8 +116,10 @@ class AnimationManager {
         } else if (flinging) { // fling finished
             flinging = false;
             pdfView.loadPages();
-            pdfView.doPageSnap();
             hideHandle();
+            if (!pdfView.isZooming()) {
+                pdfView.doPageSnap();
+            }
         }
     }
 

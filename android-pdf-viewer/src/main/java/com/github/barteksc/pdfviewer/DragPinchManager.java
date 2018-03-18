@@ -159,7 +159,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     private void onScrollEnd(MotionEvent event) {
         pdfView.loadPages();
         hideHandle();
-        if(!animationManager.isFlinging()) {
+        if (!pdfView.isZooming() && !animationManager.isFlinging()) {
             pdfView.doPageSnap();
         }
     }
@@ -174,7 +174,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         if (!pdfView.isSwipeEnabled()) {
             return false;
         }
-        if (pdfView.doPageFling()) {
+        if (!pdfView.isZooming() && pdfView.doPageFling()) {
             if (checkDoPageFling(velocityX, velocityY)) {
                 animationManager.startPageFlingAnimation(e1, e2, velocityX, velocityY);
             }
