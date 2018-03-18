@@ -87,7 +87,7 @@ class AnimationManager {
         scroller.fling(startX, startY, velocityX, velocityY, minX, maxX, minY, maxY);
     }
 
-    public void startPageFlinfAnimation(float targetOffset) {
+    public void startPageFlingAnimation(float targetOffset) {
         if (pdfView.isSwipeVertical()) {
             startYAnimation(pdfView.getCurrentYOffset(), targetOffset);
         } else {
