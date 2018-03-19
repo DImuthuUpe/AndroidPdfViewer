@@ -163,8 +163,8 @@ class PdfFile {
         pageSpacing.clear();
         for (int i = 0; i < getPagesCount(); i++) {
             SizeF pageSize = pageSizes.get(i);
-            float spacing = isVertical ? viewSize.getHeight() - pageSize.getHeight() :
-                    viewSize.getWidth() - pageSize.getWidth();
+            float spacing = Math.max(0, isVertical ? viewSize.getHeight() - pageSize.getHeight() :
+                    viewSize.getWidth() - pageSize.getWidth());
             if (i < getPagesCount() - 1) {
                 spacing += spacingPx;
             }
