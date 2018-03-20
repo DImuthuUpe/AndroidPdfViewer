@@ -212,6 +212,14 @@ class PdfFile {
         return documentLength * zoom;
     }
 
+    /**
+     * Get the page's height if swiping vertical, or width if swiping horizontal.
+     */
+    public float getPageLength(int pageIndex, float zoom) {
+        SizeF size = getPageSize(pageIndex);
+        return (isVertical ? size.getHeight() : size.getWidth()) * zoom;
+    }
+
     public float getPageSpacing(int pageIndex, float zoom) {
         float spacing = autoSpacing ? pageSpacing.get(pageIndex) : spacingPx;
         return spacing * zoom;
@@ -356,5 +364,4 @@ class PdfFile {
 
         return documentPage;
     }
-
 }

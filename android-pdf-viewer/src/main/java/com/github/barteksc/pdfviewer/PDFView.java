@@ -895,7 +895,7 @@ public class PDFView extends RelativeLayout {
         float offset = pdfFile.getPageOffset(pageIndex, zoom);
 
         float size = swipeVertical ? getHeight() : getWidth();
-        float pageSize = getPageLength(pageIndex, zoom);
+        float pageSize = pdfFile.getPageLength(pageIndex, zoom);
 
         if (snapPolicy == SnapPolicy.CENTER) {
             offset = offset - size / 2f + pageSize / 2f;
@@ -930,9 +930,9 @@ public class PDFView extends RelativeLayout {
                 int endIndex = pdfFile.getPageAtOffset(-end, zoom);
                 if (endIndex > 0) {
                     // check if previous page is actually closer
-                    float pageEnd = -pdfFile.getPageOffset(endIndex, zoom) - getPageLength(endIndex, zoom);
+                    float pageEnd = -pdfFile.getPageOffset(endIndex, zoom) - pdfFile.getPageLength(endIndex, zoom);
                     float prevPageEnd = -pdfFile.getPageOffset(endIndex - 1, zoom) -
-                            getPageLength(endIndex - 1, zoom);
+                            pdfFile.getPageLength(endIndex - 1, zoom);
                     if (end - pageEnd > prevPageEnd - end) {
                         return endIndex - 1;
                     }
@@ -944,11 +944,16 @@ public class PDFView extends RelativeLayout {
     }
 
     /**
-     * Get the page's height if swiping vertical, or width if swiping horizontal.
+     * @return true if single page fills the entire screen in the scrolling direction
      */
-    private float getPageLength(int pageIndex, float zoom) {
-        SizeF size = pdfFile.getPageSize(pageIndex);
-        return (swipeVertical ? size.getHeight() : size.getWidth()) * zoom;
+    public boolean pageFillsScreen() {
+        float start = -pdfFile.getPageOffset(currentPage, zoom);
+        float end = start - pdfFile.getPageLength(currentPage, zoom);
+        if (isSwipeVertical()) {
+            return start > currentYOffset && end < currentYOffset - getHeight();
+        } else {
+            return start > currentXOffset && end < currentXOffset - getWidth();
+        }
     }
 
     /**

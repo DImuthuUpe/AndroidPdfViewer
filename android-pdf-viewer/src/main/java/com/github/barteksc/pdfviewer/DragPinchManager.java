@@ -21,7 +21,6 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
-import android.view.ViewConfiguration;
 
 import com.github.barteksc.pdfviewer.model.LinkTapEvent;
 import com.github.barteksc.pdfviewer.scroll.ScrollHandle;
@@ -181,7 +180,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     private void onScrollEnd(MotionEvent event) {
         pdfView.loadPages();
         hideHandle();
-        if (!pdfView.isZooming() && !animationManager.isFlinging()) {
+        if (!animationManager.isFlinging() && !pdfView.pageFillsScreen()) {
             pdfView.doPageSnap();
         }
     }
@@ -196,10 +195,15 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         if (!pdfView.isSwipeEnabled()) {
             return false;
         }
-        if (!pdfView.isZooming() && pdfView.doPageFling()) {
-            startPageFling(e1, e2, velocityX, velocityY);
+        if (pdfView.doPageFling()) {
+            if (pdfView.pageFillsScreen()) {
+                onBoundedFling(velocityX, velocityY);
+            } else {
+                startPageFling(e1, e2, velocityX, velocityY);
+            }
             return true;
         }
+
         int xOffset = (int) pdfView.getCurrentXOffset();
         int yOffset = (int) pdfView.getCurrentYOffset();
 
@@ -216,6 +220,31 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         animationManager.startFlingAnimation(xOffset, yOffset, (int) (velocityX), (int) (velocityY),
                 (int) minX, 0, (int) minY, 0);
         return true;
+    }
+
+    private void onBoundedFling(float velocityX, float velocityY) {
+        int xOffset = (int) pdfView.getCurrentXOffset();
+        int yOffset = (int) pdfView.getCurrentYOffset();
+
+        PdfFile pdfFile = pdfView.pdfFile;
+
+        float pageStart = -pdfFile.getPageOffset(pdfView.getCurrentPage(), pdfView.getZoom());
+        float pageEnd = pageStart - pdfFile.getPageLength(pdfView.getCurrentPage(), pdfView.getZoom());
+        float minX, minY, maxX, maxY;
+        if (pdfView.isSwipeVertical()) {
+            minX = -(pdfView.toCurrentScale(pdfFile.getMaxPageWidth()) - pdfView.getWidth());
+            minY = pageEnd + pdfView.getHeight();
+            maxX = 0;
+            maxY = pageStart;
+        } else {
+            minX = pageEnd + pdfView.getWidth();
+            minY = -(pdfView.toCurrentScale(pdfFile.getMaxPageHeight()) - pdfView.getHeight());
+            maxX = pageStart;
+            maxY = 0;
+        }
+
+        animationManager.startFlingAnimation(xOffset, yOffset, (int) (velocityX), (int) (velocityY),
+                (int) minX, (int) maxX, (int) minY, (int) maxY);
     }
 
     @Override
@@ -270,11 +299,8 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     }
 
     private boolean checkDoPageFling(float velocityX, float velocityY) {
-        int minVelocity = ViewConfiguration.get(pdfView.getContext()).getScaledMinimumFlingVelocity();
-        if (pdfView.isSwipeVertical()) {
-            return Math.abs(velocityY) > minVelocity;
-        } else {
-            return Math.abs(velocityX) > minVelocity;
-        }
+        float absX = Math.abs(velocityX);
+        float absY = Math.abs(velocityY);
+        return pdfView.isSwipeVertical() ? absY > absX : absX > absY;
     }
 }
