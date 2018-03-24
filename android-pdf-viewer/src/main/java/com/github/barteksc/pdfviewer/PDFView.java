@@ -56,7 +56,7 @@ import com.github.barteksc.pdfviewer.source.UriSource;
 import com.github.barteksc.pdfviewer.util.Constants;
 import com.github.barteksc.pdfviewer.util.FitPolicy;
 import com.github.barteksc.pdfviewer.util.MathUtils;
-import com.github.barteksc.pdfviewer.util.SnapPolicy;
+import com.github.barteksc.pdfviewer.util.SnapEdge;
 import com.github.barteksc.pdfviewer.util.Util;
 import com.shockwave.pdfium.PdfDocument;
 import com.shockwave.pdfium.PdfiumCore;
@@ -168,8 +168,6 @@ public class PDFView extends RelativeLayout {
     /** Policy for fitting pages to screen */
     private FitPolicy pageFitPolicy = FitPolicy.WIDTH;
 
-    private SnapPolicy snapPolicy = SnapPolicy.NONE;
-
     private int defaultPage = 0;
 
     /** True if should scroll through pages vertically instead of horizontally */
@@ -178,6 +176,8 @@ public class PDFView extends RelativeLayout {
     private boolean enableSwipe = true;
 
     private boolean doubletapEnabled = true;
+
+    private boolean pageSnap = true;
 
     /** Pdfium core for loading and rendering PDFs */
     private PdfiumCore pdfiumCore;
@@ -874,13 +874,17 @@ public class PDFView extends RelativeLayout {
     /**
      * Animate to the nearest snapping position for the current SnapPolicy
      */
-    public void doPageSnap() {
-        if (snapPolicy == SnapPolicy.NONE || pdfFile == null || pdfFile.getPagesCount() == 0) {
+    public void performPageSnap() {
+        if (!pageSnap || pdfFile == null || pdfFile.getPagesCount() == 0) {
             return;
         }
-        int targetPage = findPageToSnap(currentXOffset, currentYOffset);
-        float offset = snapOffsetForPage(targetPage);
+        int centerPage = findCenterPage(currentXOffset, currentYOffset);
+        SnapEdge edge = findSnapEdge(centerPage);
+        if (edge == SnapEdge.NONE) {
+            return;
+        }
 
+        float offset = snapOffsetForPage(centerPage, edge);
         if (swipeVertical) {
             animationManager.startYAnimation(currentYOffset, -offset);
         } else {
@@ -889,58 +893,48 @@ public class PDFView extends RelativeLayout {
     }
 
     /**
-     * Get the offset to move to in order to snap to the specified page
+     * Find the edge to snap to when showing the specified page
      */
-    float snapOffsetForPage(int pageIndex) {
+    SnapEdge findSnapEdge(int page) {
+        if (!pageSnap || page < 0) {
+            return SnapEdge.NONE;
+        }
+        float currentOffset = swipeVertical ? currentYOffset : currentXOffset;
+        float offset = -pdfFile.getPageOffset(page, zoom);
+        int length = swipeVertical ? getHeight() : getWidth();
+        float pageLength = pdfFile.getPageLength(page, zoom);
+
+        if (length >= pageLength) {
+            return SnapEdge.CENTER;
+        } else if (currentOffset >= offset) {
+            return SnapEdge.START;
+        } else if (offset - pageLength > currentOffset - length) {
+            return SnapEdge.END;
+        } else {
+            return SnapEdge.NONE;
+        }
+    }
+
+    /**
+     * Get the offset to move to in order to snap to the page
+     */
+    float snapOffsetForPage(int pageIndex, SnapEdge edge) {
         float offset = pdfFile.getPageOffset(pageIndex, zoom);
 
-        float size = swipeVertical ? getHeight() : getWidth();
-        float pageSize = pdfFile.getPageLength(pageIndex, zoom);
+        float length = swipeVertical ? getHeight() : getWidth();
+        float pageLength = pdfFile.getPageLength(pageIndex, zoom);
 
-        if (snapPolicy == SnapPolicy.CENTER) {
-            offset = offset - size / 2f + pageSize / 2f;
-        } else if (snapPolicy == SnapPolicy.END) {
-            offset = offset - size + pageSize;
+        if (edge == SnapEdge.CENTER) {
+            offset = offset - length / 2f + pageLength / 2f;
+        } else if (edge == SnapEdge.END) {
+            offset = offset - length + pageLength;
         }
         return offset;
     }
 
-    int findPageToSnap(float xOffset, float yOffset) {
-        switch (snapPolicy) {
-            case CENTER:
-                // get page at center
-                float center = swipeVertical ? yOffset - getHeight() / 2f : xOffset - getWidth() / 2f;
-                return pdfFile.getPageAtOffset(-center, zoom);
-            case START:
-                // get page at starting edge
-                float start = swipeVertical ? yOffset : xOffset;
-                int startIndex = pdfFile.getPageAtOffset(-start, zoom);
-                if (startIndex < getPageCount() - 1) {
-                    // check if next page start is actually closer
-                    float pageStart = -pdfFile.getPageOffset(startIndex, zoom);
-                    float nextPageStart = -pdfFile.getPageOffset(startIndex + 1, zoom);
-                    if (start - pageStart < nextPageStart - start) {
-                        return startIndex + 1;
-                    }
-                }
-                return startIndex;
-            case END:
-                // get page at ending edge
-                float end = swipeVertical ? yOffset - getHeight() : xOffset - getWidth();
-                int endIndex = pdfFile.getPageAtOffset(-end, zoom);
-                if (endIndex > 0) {
-                    // check if previous page is actually closer
-                    float pageEnd = -pdfFile.getPageOffset(endIndex, zoom) - pdfFile.getPageLength(endIndex, zoom);
-                    float prevPageEnd = -pdfFile.getPageOffset(endIndex - 1, zoom) -
-                            pdfFile.getPageLength(endIndex - 1, zoom);
-                    if (end - pageEnd > prevPageEnd - end) {
-                        return endIndex - 1;
-                    }
-                }
-                return endIndex;
-            default:
-                return -1;
-        }
+    int findCenterPage(float xOffset, float yOffset) {
+        float center = swipeVertical ? yOffset - getHeight() / 2f : xOffset - getWidth() / 2f;
+        return pdfFile.getPageAtOffset(-center, zoom);
     }
 
     /**
@@ -1187,12 +1181,12 @@ public class PDFView extends RelativeLayout {
         return pageFitPolicy;
     }
 
-    public void setSnapPolicy(SnapPolicy snapPolicy) {
-        this.snapPolicy = snapPolicy;
+    public boolean doPageSnap() {
+        return pageSnap;
     }
 
-    public SnapPolicy getSnapPolicy() {
-        return snapPolicy;
+    public void setPageSnap(boolean pageSnap) {
+        this.pageSnap = pageSnap;
     }
 
     public boolean doRenderDuringScale() {
@@ -1303,9 +1297,9 @@ public class PDFView extends RelativeLayout {
 
         private FitPolicy pageFitPolicy = FitPolicy.WIDTH;
 
-        private SnapPolicy snapPolicy = SnapPolicy.NONE;
-
         private boolean pageFling = false;
+
+        private boolean pageSnap = false;
 
         private Configurator(DocumentSource documentSource) {
             this.documentSource = documentSource;
@@ -1421,8 +1415,8 @@ public class PDFView extends RelativeLayout {
             return this;
         }
 
-        public Configurator snapPolicy(SnapPolicy snapPolicy) {
-            this.snapPolicy = snapPolicy;
+        public Configurator pageSnap(boolean pageSnap) {
+            this.pageSnap = pageSnap;
             return this;
         }
 
@@ -1457,7 +1451,7 @@ public class PDFView extends RelativeLayout {
             PDFView.this.setSpacing(spacing);
             PDFView.this.setAutoSpacing(autoSpacing);
             PDFView.this.setPageFitPolicy(pageFitPolicy);
-            PDFView.this.setSnapPolicy(snapPolicy);
+            PDFView.this.setPageSnap(pageSnap);
             PDFView.this.setPageFling(pageFling);
 
             if (pageNumbers != null) {

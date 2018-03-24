@@ -24,6 +24,7 @@ import android.view.View;
 
 import com.github.barteksc.pdfviewer.model.LinkTapEvent;
 import com.github.barteksc.pdfviewer.scroll.ScrollHandle;
+import com.github.barteksc.pdfviewer.util.SnapEdge;
 import com.shockwave.pdfium.PdfDocument;
 import com.shockwave.pdfium.util.SizeF;
 
@@ -121,10 +122,11 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         float delta = pdfView.isSwipeVertical() ? ev.getY() - downEvent.getY() : ev.getX() - downEvent.getX();
         float offsetX = pdfView.getCurrentXOffset() - delta * pdfView.getZoom();
         float offsetY = pdfView.getCurrentYOffset() - delta * pdfView.getZoom();
-        int startingPage = pdfView.findPageToSnap(offsetX, offsetY);
+        int startingPage = pdfView.findCenterPage(offsetX, offsetY);
         int targetPage = Math.max(0, Math.min(pdfView.getPageCount() - 1, startingPage + direction));
 
-        float offset = pdfView.snapOffsetForPage(targetPage);
+        SnapEdge edge = pdfView.findSnapEdge(targetPage);
+        float offset = pdfView.snapOffsetForPage(targetPage, edge);
         animationManager.startPageFlingAnimation(-offset);
     }
 
@@ -180,8 +182,8 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
     private void onScrollEnd(MotionEvent event) {
         pdfView.loadPages();
         hideHandle();
-        if (!animationManager.isFlinging() && !pdfView.pageFillsScreen()) {
-            pdfView.doPageSnap();
+        if (!animationManager.isFlinging()) {
+            pdfView.performPageSnap();
         }
     }
 

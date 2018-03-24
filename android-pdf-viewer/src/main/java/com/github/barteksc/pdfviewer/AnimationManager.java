@@ -104,9 +104,7 @@ class AnimationManager {
             flinging = false;
             pdfView.loadPages();
             hideHandle();
-            if (!pdfView.isZooming()) {
-                pdfView.doPageSnap();
-            }
+            pdfView.performPageSnap();
         }
     }
 
