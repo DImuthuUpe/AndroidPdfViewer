@@ -878,7 +878,7 @@ public class PDFView extends RelativeLayout {
         if (!pageSnap || pdfFile == null || pdfFile.getPagesCount() == 0) {
             return;
         }
-        int centerPage = findCenterPage(currentXOffset, currentYOffset);
+        int centerPage = findFocusPage(currentXOffset, currentYOffset);
         SnapEdge edge = findSnapEdge(centerPage);
         if (edge == SnapEdge.NONE) {
             return;
@@ -932,8 +932,17 @@ public class PDFView extends RelativeLayout {
         return offset;
     }
 
-    int findCenterPage(float xOffset, float yOffset) {
-        float center = swipeVertical ? yOffset - getHeight() / 2f : xOffset - getWidth() / 2f;
+    int findFocusPage(float xOffset, float yOffset) {
+        float currOffset = swipeVertical ? yOffset : xOffset;
+        float length = swipeVertical ? getHeight() : getWidth();
+        // make sure first and last page can be found
+        if (currOffset > -1) {
+            return 0;
+        } else if (currOffset < -pdfFile.getDocLen(zoom) + length + 1) {
+            return pdfFile.getPagesCount() - 1;
+        }
+        // else find page in center
+        float center = currOffset - length / 2f;
         return pdfFile.getPageAtOffset(-center, zoom);
     }
 

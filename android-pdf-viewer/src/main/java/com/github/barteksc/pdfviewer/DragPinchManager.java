@@ -122,7 +122,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         float delta = pdfView.isSwipeVertical() ? ev.getY() - downEvent.getY() : ev.getX() - downEvent.getX();
         float offsetX = pdfView.getCurrentXOffset() - delta * pdfView.getZoom();
         float offsetY = pdfView.getCurrentYOffset() - delta * pdfView.getZoom();
-        int startingPage = pdfView.findCenterPage(offsetX, offsetY);
+        int startingPage = pdfView.findFocusPage(offsetX, offsetY);
         int targetPage = Math.max(0, Math.min(pdfView.getPageCount() - 1, startingPage + direction));
 
         SnapEdge edge = pdfView.findSnapEdge(targetPage);
