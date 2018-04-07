@@ -56,6 +56,7 @@ import com.github.barteksc.pdfviewer.source.UriSource;
 import com.github.barteksc.pdfviewer.util.Constants;
 import com.github.barteksc.pdfviewer.util.FitPolicy;
 import com.github.barteksc.pdfviewer.util.MathUtils;
+import com.github.barteksc.pdfviewer.util.SnapEdge;
 import com.github.barteksc.pdfviewer.util.Util;
 import com.shockwave.pdfium.PdfDocument;
 import com.shockwave.pdfium.PdfiumCore;
@@ -176,6 +177,8 @@ public class PDFView extends RelativeLayout {
 
     private boolean doubletapEnabled = true;
 
+    private boolean pageSnap = true;
+
     /** Pdfium core for loading and rendering PDFs */
     private PdfiumCore pdfiumCore;
 
@@ -214,6 +217,12 @@ public class PDFView extends RelativeLayout {
 
     /** Spacing between pages, in px */
     private int spacingPx = 0;
+
+    /** Add dynamic spacing to fit each page separately on the screen. */
+    private boolean autoSpacing = false;
+
+    /** Fling a single page at a time */
+    private boolean pageFling = true;
 
     /** Pages numbers used when calling onDrawAllListener */
     private List<Integer> onDrawPagesNums = new ArrayList<>(10);
@@ -274,7 +283,7 @@ public class PDFView extends RelativeLayout {
         }
 
         page = pdfFile.determineValidPageNumberFrom(page);
-        float offset = -pdfFile.getPageOffset(page, zoom);
+        float offset = page == 0 ? 0 : -pdfFile.getPageOffset(page, zoom);
         if (swipeVertical) {
             if (withAnimation) {
                 animationManager.startYAnimation(currentYOffset, offset);
@@ -863,6 +872,94 @@ public class PDFView extends RelativeLayout {
     }
 
     /**
+     * Animate to the nearest snapping position for the current SnapPolicy
+     */
+    public void performPageSnap() {
+        if (!pageSnap || pdfFile == null || pdfFile.getPagesCount() == 0) {
+            return;
+        }
+        int centerPage = findFocusPage(currentXOffset, currentYOffset);
+        SnapEdge edge = findSnapEdge(centerPage);
+        if (edge == SnapEdge.NONE) {
+            return;
+        }
+
+        float offset = snapOffsetForPage(centerPage, edge);
+        if (swipeVertical) {
+            animationManager.startYAnimation(currentYOffset, -offset);
+        } else {
+            animationManager.startXAnimation(currentXOffset, -offset);
+        }
+    }
+
+    /**
+     * Find the edge to snap to when showing the specified page
+     */
+    SnapEdge findSnapEdge(int page) {
+        if (!pageSnap || page < 0) {
+            return SnapEdge.NONE;
+        }
+        float currentOffset = swipeVertical ? currentYOffset : currentXOffset;
+        float offset = -pdfFile.getPageOffset(page, zoom);
+        int length = swipeVertical ? getHeight() : getWidth();
+        float pageLength = pdfFile.getPageLength(page, zoom);
+
+        if (length >= pageLength) {
+            return SnapEdge.CENTER;
+        } else if (currentOffset >= offset) {
+            return SnapEdge.START;
+        } else if (offset - pageLength > currentOffset - length) {
+            return SnapEdge.END;
+        } else {
+            return SnapEdge.NONE;
+        }
+    }
+
+    /**
+     * Get the offset to move to in order to snap to the page
+     */
+    float snapOffsetForPage(int pageIndex, SnapEdge edge) {
+        float offset = pdfFile.getPageOffset(pageIndex, zoom);
+
+        float length = swipeVertical ? getHeight() : getWidth();
+        float pageLength = pdfFile.getPageLength(pageIndex, zoom);
+
+        if (edge == SnapEdge.CENTER) {
+            offset = offset - length / 2f + pageLength / 2f;
+        } else if (edge == SnapEdge.END) {
+            offset = offset - length + pageLength;
+        }
+        return offset;
+    }
+
+    int findFocusPage(float xOffset, float yOffset) {
+        float currOffset = swipeVertical ? yOffset : xOffset;
+        float length = swipeVertical ? getHeight() : getWidth();
+        // make sure first and last page can be found
+        if (currOffset > -1) {
+            return 0;
+        } else if (currOffset < -pdfFile.getDocLen(zoom) + length + 1) {
+            return pdfFile.getPagesCount() - 1;
+        }
+        // else find page in center
+        float center = currOffset - length / 2f;
+        return pdfFile.getPageAtOffset(-center, zoom);
+    }
+
+    /**
+     * @return true if single page fills the entire screen in the scrolling direction
+     */
+    public boolean pageFillsScreen() {
+        float start = -pdfFile.getPageOffset(currentPage, zoom);
+        float end = start - pdfFile.getPageLength(currentPage, zoom);
+        if (isSwipeVertical()) {
+            return start > currentYOffset && end < currentYOffset - getHeight();
+        } else {
+            return start > currentXOffset && end < currentXOffset - getWidth();
+        }
+    }
+
+    /**
      * Move relatively to the current position.
      *
      * @param dx The X difference you want to apply.
@@ -1061,12 +1158,28 @@ public class PDFView extends RelativeLayout {
         this.enableAntialiasing = enableAntialiasing;
     }
 
-    int getSpacingPx() {
+    public int getSpacingPx() {
         return spacingPx;
+    }
+
+    public boolean doAutoSpacing() {
+        return autoSpacing;
+    }
+
+    public void setPageFling(boolean pageFling) {
+        this.pageFling = pageFling;
+    }
+
+    public boolean doPageFling() {
+        return pageFling;
     }
 
     private void setSpacing(int spacing) {
         this.spacingPx = Util.getDP(getContext(), spacing);
+    }
+
+    private void setAutoSpacing(boolean autoSpacing) {
+        this.autoSpacing = autoSpacing;
     }
 
     private void setPageFitPolicy(FitPolicy pageFitPolicy) {
@@ -1075,6 +1188,14 @@ public class PDFView extends RelativeLayout {
 
     public FitPolicy getPageFitPolicy() {
         return pageFitPolicy;
+    }
+
+    public boolean doPageSnap() {
+        return pageSnap;
+    }
+
+    public void setPageSnap(boolean pageSnap) {
+        this.pageSnap = pageSnap;
     }
 
     public boolean doRenderDuringScale() {
@@ -1181,7 +1302,13 @@ public class PDFView extends RelativeLayout {
 
         private int spacing = 0;
 
+        private boolean autoSpacing = false;
+
         private FitPolicy pageFitPolicy = FitPolicy.WIDTH;
+
+        private boolean pageFling = false;
+
+        private boolean pageSnap = false;
 
         private Configurator(DocumentSource documentSource) {
             this.documentSource = documentSource;
@@ -1287,8 +1414,23 @@ public class PDFView extends RelativeLayout {
             return this;
         }
 
+        public Configurator autoSpacing(boolean autoSpacing) {
+            this.autoSpacing = autoSpacing;
+            return this;
+        }
+
         public Configurator pageFitPolicy(FitPolicy pageFitPolicy) {
             this.pageFitPolicy = pageFitPolicy;
+            return this;
+        }
+
+        public Configurator pageSnap(boolean pageSnap) {
+            this.pageSnap = pageSnap;
+            return this;
+        }
+
+        public Configurator pageFling(boolean pageFling) {
+            this.pageFling = pageFling;
             return this;
         }
 
@@ -1316,7 +1458,10 @@ public class PDFView extends RelativeLayout {
             PDFView.this.setScrollHandle(scrollHandle);
             PDFView.this.enableAntialiasing(antialiasing);
             PDFView.this.setSpacing(spacing);
+            PDFView.this.setAutoSpacing(autoSpacing);
             PDFView.this.setPageFitPolicy(pageFitPolicy);
+            PDFView.this.setPageSnap(pageSnap);
+            PDFView.this.setPageFling(pageFling);
 
             if (pageNumbers != null) {
                 PDFView.this.load(documentSource, password, pageNumbers);

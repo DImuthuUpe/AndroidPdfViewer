@@ -228,6 +228,7 @@ public class DefaultScrollHandle extends RelativeLayout implements ScrollHandle 
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_POINTER_UP:
                 hideDelayed();
+                pdfView.performPageSnap();
                 return true;
         }
 
