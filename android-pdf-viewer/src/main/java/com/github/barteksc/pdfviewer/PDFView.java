@@ -168,6 +168,8 @@ public class PDFView extends RelativeLayout {
     /** Policy for fitting pages to screen */
     private FitPolicy pageFitPolicy = FitPolicy.WIDTH;
 
+    private boolean fitEachPage = false;
+
     private int defaultPage = 0;
 
     /** True if should scroll through pages vertically instead of horizontally */
@@ -1190,6 +1192,14 @@ public class PDFView extends RelativeLayout {
         return pageFitPolicy;
     }
 
+    private void setFitEachPage(boolean fitEachPage) {
+        this.fitEachPage = fitEachPage;
+    }
+
+    public boolean doFitEachPage() {
+        return fitEachPage;
+    }
+
     public boolean doPageSnap() {
         return pageSnap;
     }
@@ -1305,6 +1315,8 @@ public class PDFView extends RelativeLayout {
         private boolean autoSpacing = false;
 
         private FitPolicy pageFitPolicy = FitPolicy.WIDTH;
+
+        private boolean fitEachPage = false;
 
         private boolean pageFling = false;
 
@@ -1424,6 +1436,11 @@ public class PDFView extends RelativeLayout {
             return this;
         }
 
+        public Configurator fitEachPage(boolean fitEachPage) {
+            this.fitEachPage = fitEachPage;
+            return this;
+        }
+
         public Configurator pageSnap(boolean pageSnap) {
             this.pageSnap = pageSnap;
             return this;
@@ -1460,6 +1477,7 @@ public class PDFView extends RelativeLayout {
             PDFView.this.setSpacing(spacing);
             PDFView.this.setAutoSpacing(autoSpacing);
             PDFView.this.setPageFitPolicy(pageFitPolicy);
+            PDFView.this.setFitEachPage(fitEachPage);
             PDFView.this.setPageSnap(pageSnap);
             PDFView.this.setPageFling(pageFling);
 

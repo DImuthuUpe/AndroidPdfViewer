@@ -52,9 +52,9 @@ class PdfFile {
     /** Scaled page with maximum width */
     private SizeF maxWidthPageSize = new SizeF(0, 0);
     /** True if scrolling is vertical, else it's horizontal */
-    private boolean isVertical = true;
+    private boolean isVertical;
     /** Fixed spacing between pages in pixels */
-    private int spacingPx = 0;
+    private int spacingPx;
     /** Calculate spacing automatically so each page fits on it's own in the center of the view */
     private boolean autoSpacing;
     /** Calculated offsets for pages */
@@ -64,6 +64,8 @@ class PdfFile {
     /** Calculated document length (width or height, depending on swipe mode) */
     private float documentLength = 0;
     private final FitPolicy pageFitPolicy;
+    /** If every page should fit to the screen as best as possible regardless of relative size */
+    private boolean fitEachPage;
     /**
      * The pages the user want to display in order
      * (ex: 0, 2, 2, 8, 8, 1, 1, 1)
@@ -71,7 +73,7 @@ class PdfFile {
     private int[] originalUserPages;
 
     PdfFile(PdfiumCore pdfiumCore, PdfDocument pdfDocument, FitPolicy pageFitPolicy, Size viewSize, int[] originalUserPages,
-            boolean isVertical, int spacing, boolean autoSpacing) {
+            boolean isVertical, int spacing, boolean autoSpacing, boolean fitEachPage) {
         this.pdfiumCore = pdfiumCore;
         this.pdfDocument = pdfDocument;
         this.pageFitPolicy = pageFitPolicy;
@@ -79,6 +81,7 @@ class PdfFile {
         this.isVertical = isVertical;
         this.spacingPx = spacing;
         this.autoSpacing = autoSpacing;
+        this.fitEachPage = fitEachPage;
         setup(viewSize);
     }
 
@@ -111,7 +114,7 @@ class PdfFile {
     public void recalculatePageSizes(Size viewSize) {
         pageSizes.clear();
         PageSizeCalculator calculator = new PageSizeCalculator(pageFitPolicy, originalMaxWidthPageSize,
-                originalMaxHeightPageSize, viewSize);
+                originalMaxHeightPageSize, viewSize, fitEachPage);
         maxWidthPageSize = calculator.getOptimalMaxWidthPageSize();
         maxHeightPageSize = calculator.getOptimalMaxHeightPageSize();
 
