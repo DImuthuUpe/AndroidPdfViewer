@@ -103,7 +103,8 @@ pdfView.fromAsset(String)
     .autoSpacing(false) // add dynamic spacing to fit each page on its own on the screen
     .linkHandler(DefaultLinkHandler)
     .pageFitPolicy(FitPolicy.WIDTH)
-    .pageSnap(true) // snap pages to screen boundaries
+    .fitEachPage(false) // fit each page to fill the view, disregarding relative size
+    .pageSnap(false) // snap pages to screen boundaries
     .pageFling(false) // make a fling change only a single page like ViewPager
     .load();
 ```
