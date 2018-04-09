@@ -67,7 +67,7 @@ public class Callbacks {
     /**
      * Call back object to call when the user does a long tap gesture
      */
-    private OnLongTapListener onLongTapListener;
+    private OnLongPressListener onLongPressListener;
 
     /**
      * Call back object to call when clicking link
@@ -158,12 +158,12 @@ public class Callbacks {
         return onTapListener != null && onTapListener.onTap(event);
     }
 
-    public void setOnLongTap(OnLongTapListener onLongTapListener) {
-        this.onLongTapListener = onLongTapListener;
+    public void setOnLongPress(OnLongPressListener onLongPressListener) {
+        this.onLongPressListener = onLongPressListener;
     }
 
-    public boolean callOnLongTap(MotionEvent event) {
-        return onLongTapListener != null && onLongTapListener.onLongTap(event);
+    public boolean callOnLongPress(MotionEvent event) {
+        return onLongPressListener != null && onLongPressListener.onLongPress(event);
     }
 
     public void setLinkHandler(LinkHandler linkHandler) {
