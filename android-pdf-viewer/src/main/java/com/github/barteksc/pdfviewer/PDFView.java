@@ -19,6 +19,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.PaintFlagsDrawFilter;
@@ -176,6 +178,8 @@ public class PDFView extends RelativeLayout {
     private boolean enableSwipe = true;
 
     private boolean doubletapEnabled = true;
+
+    private boolean nightMode = false;
 
     private boolean pageSnap = true;
 
@@ -372,6 +376,8 @@ public class PDFView extends RelativeLayout {
         this.enableSwipe = enableSwipe;
     }
 
+    public void setNightMode(boolean nightMode) { this.nightMode = nightMode; }
+
     void enableDoubletap(boolean enableDoubletap) {
         this.doubletapEnabled = enableDoubletap;
     }
@@ -548,7 +554,11 @@ public class PDFView extends RelativeLayout {
 
         Drawable bg = getBackground();
         if (bg == null) {
-            canvas.drawColor(Color.WHITE);
+            if (this.nightMode)
+                canvas.drawColor(Color.BLACK);
+            else
+                canvas.drawColor(Color.WHITE);
+
         } else {
             bg.draw(canvas);
         }
@@ -663,6 +673,25 @@ public class PDFView extends RelativeLayout {
             canvas.translate(-localTranslationX, -localTranslationY);
             return;
         }
+
+
+        // NIGHT MODE !!!
+        if ( this.nightMode ) {
+            paint = new Paint();
+            ColorMatrix colorMatrix_Inverted =
+                    new ColorMatrix(new float[] {
+                            -1,  0,  0,  0, 255,
+                            0, -1,  0,  0, 255,
+                            0,  0, -1,  0, 255,
+                            0,  0,  0,  1,   0});
+
+
+            ColorMatrixColorFilter filter = new ColorMatrixColorFilter(colorMatrix_Inverted);
+            paint.setColorFilter(filter);
+        }
+        else
+            paint = new Paint();
+        // NIGHT MODE !!!
 
         canvas.drawBitmap(renderedBitmap, srcRect, dstRect, paint);
 
@@ -1310,6 +1339,8 @@ public class PDFView extends RelativeLayout {
 
         private boolean pageSnap = false;
 
+        private boolean nightMode = false;
+
         private Configurator(DocumentSource documentSource) {
             this.documentSource = documentSource;
         }
@@ -1434,6 +1465,11 @@ public class PDFView extends RelativeLayout {
             return this;
         }
 
+        public Configurator setNightMode(boolean nightMode) {
+            this.nightMode = nightMode;
+            return this;
+        }
+
         public void load() {
             if (!hasSize) {
                 waitingDocumentConfigurator = this;
@@ -1451,6 +1487,7 @@ public class PDFView extends RelativeLayout {
             PDFView.this.callbacks.setOnPageError(onPageErrorListener);
             PDFView.this.callbacks.setLinkHandler(linkHandler);
             PDFView.this.setSwipeEnabled(enableSwipe);
+            PDFView.this.setNightMode(nightMode);
             PDFView.this.enableDoubletap(enableDoubletap);
             PDFView.this.setDefaultPage(defaultPage);
             PDFView.this.setSwipeVertical(!swipeHorizontal);
