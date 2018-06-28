@@ -1,3 +1,12 @@
+## 3.1.0-beta.1 (2018-06-29)
+* Merge pull request #557 for snapping pages (scrolling page by page)
+* merge pull request #618 for night mode
+* Merge pull request #566 for `OnLongTapListener`
+* Update PdfiumAndroid to 1.9.0, which uses `c++_shared` instead of `gnustl_static`
+* Update Gradle Plugin
+* Update compile SDK and support library to 26
+* Change minimum SDK to 14
+
 ## 3.0.0-beta.5 (2018-01-06)
 * Fix issue with `Configurator#pages()` from #486
 * Fix `IllegalStateException` from #464
