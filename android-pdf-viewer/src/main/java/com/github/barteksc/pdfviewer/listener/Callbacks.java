@@ -162,8 +162,10 @@ public class Callbacks {
         this.onLongPressListener = onLongPressListener;
     }
 
-    public boolean callOnLongPress(MotionEvent event) {
-        return onLongPressListener != null && onLongPressListener.onLongPress(event);
+    public void callOnLongPress(MotionEvent event) {
+        if (onLongPressListener != null) {
+            onLongPressListener.onLongPress(event);
+        }
     }
 
     public void setLinkHandler(LinkHandler linkHandler) {
