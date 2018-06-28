@@ -45,6 +45,7 @@ import com.github.barteksc.pdfviewer.listener.OnPageErrorListener;
 import com.github.barteksc.pdfviewer.listener.OnPageScrollListener;
 import com.github.barteksc.pdfviewer.listener.OnRenderListener;
 import com.github.barteksc.pdfviewer.listener.OnTapListener;
+import com.github.barteksc.pdfviewer.listener.OnLongPressListener;
 import com.github.barteksc.pdfviewer.model.PagePart;
 import com.github.barteksc.pdfviewer.scroll.ScrollHandle;
 import com.github.barteksc.pdfviewer.source.AssetSource;
@@ -1284,6 +1285,8 @@ public class PDFView extends RelativeLayout {
 
         private OnTapListener onTapListener;
 
+        private OnLongPressListener onLongPressListener;
+
         private OnPageErrorListener onPageErrorListener;
 
         private LinkHandler linkHandler = new DefaultLinkHandler(PDFView.this);
@@ -1379,6 +1382,11 @@ public class PDFView extends RelativeLayout {
             return this;
         }
 
+        public Configurator onLongPress(OnLongPressListener onLongPressListener) {
+            this.onLongPressListener = onLongPressListener;
+            return this;
+        }
+
         public Configurator linkHandler(LinkHandler linkHandler) {
             this.linkHandler = linkHandler;
             return this;
@@ -1448,6 +1456,7 @@ public class PDFView extends RelativeLayout {
             PDFView.this.callbacks.setOnPageScroll(onPageScrollListener);
             PDFView.this.callbacks.setOnRender(onRenderListener);
             PDFView.this.callbacks.setOnTap(onTapListener);
+            PDFView.this.callbacks.setOnLongPress(onLongPressListener);
             PDFView.this.callbacks.setOnPageError(onPageErrorListener);
             PDFView.this.callbacks.setLinkHandler(linkHandler);
             PDFView.this.setSwipeEnabled(enableSwipe);
