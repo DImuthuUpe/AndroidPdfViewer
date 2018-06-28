@@ -10,22 +10,14 @@ Library for displaying PDF documents on Android, with `animations`, `gestures`, 
 It is based on [PdfiumAndroid](https://github.com/barteksc/PdfiumAndroid) for decoding PDF files. Works on API 11 (Android 3.0) and higher.
 Licensed under Apache License 2.0.
 
-## What's new in 3.0.0-beta.1?
-* Add support for documents with different page sizes
-* Add support for links
-* Add support for defining page fit policy (fit width, height or both)
-* Update sample.pdf to contain different page sizes
-
-3.0.0-beta.2 fixes rendering with maximum zoom, improves fit policies and updates PdfiumAndroid to 1.8.1
-
-3.0.0-beta.3 fixes bug preventing `OnErrorListener` from being called
-
-3.0.0-beta.4 fixes not loaded pages when using animated `PDFView#jumpTo()` and NPE in `canScrollVertically()` and `canScrollHorizontally()`
-
-3.0.0-beta.5 fixes:
-* Issue with `Configurator#pages()` from #486
-* `IllegalStateException` from #464
-* Not detecting links reported in #447
+## What's new in 3.1.0-beta.1?
+* Merge pull request #557 for snapping pages (scrolling page by page)
+* merge pull request #618 for night mode
+* Merge pull request #566 for `OnLongTapListener`
+* Update PdfiumAndroid to 1.9.0, which uses `c++_shared` instead of `gnustl_static`
+* Update Gradle Plugin
+* Update compile SDK and support library to 26
+* Change minimum SDK to 14
 
 ## Changes in 3.0 API
 * Replaced `Contants.PRELOAD_COUNT` with `PRELOAD_OFFSET`
@@ -38,7 +30,7 @@ Licensed under Apache License 2.0.
 
 Add to _build.gradle_:
 
-`compile 'com.github.barteksc:android-pdf-viewer:3.0.0-beta.5'`
+`compile 'com.github.barteksc:android-pdf-viewer:3.1.0-beta.1'`
 
 or if you want to use more stable version:
  
@@ -94,6 +86,7 @@ pdfView.fromAsset(String)
     .onRender(onRenderListener) // called after document is rendered for the first time
     // called on single tap, return true if handled, false to toggle scroll handle visibility
     .onTap(onTapListener)
+    .onLongPress(onLongPressListener)
     .enableAnnotationRendering(false) // render annotations (such as comments, colors or forms)
     .password(null)
     .scrollHandle(null)
@@ -105,6 +98,7 @@ pdfView.fromAsset(String)
     .pageFitPolicy(FitPolicy.WIDTH)
     .pageSnap(true) // snap pages to screen boundaries
     .pageFling(false) // make a fling change only a single page like ViewPager
+    .nightMode(false) // toggle night mode
     .load();
 ```
 
