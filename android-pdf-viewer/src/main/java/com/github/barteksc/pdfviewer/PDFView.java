@@ -1164,7 +1164,7 @@ public class PDFView extends RelativeLayout {
         return spacingPx;
     }
 
-    public boolean doAutoSpacing() {
+    public boolean isAutoSpacingEnabled() {
         return autoSpacing;
     }
 
@@ -1172,12 +1172,12 @@ public class PDFView extends RelativeLayout {
         this.pageFling = pageFling;
     }
 
-    public boolean doPageFling() {
+    public boolean isPageFlingEnabled() {
         return pageFling;
     }
 
-    private void setSpacing(int spacing) {
-        this.spacingPx = Util.getDP(getContext(), spacing);
+    private void setSpacing(int spacingDp) {
+        this.spacingPx = Util.getDP(getContext(), spacingDp);
     }
 
     private void setAutoSpacing(boolean autoSpacing) {
@@ -1196,11 +1196,11 @@ public class PDFView extends RelativeLayout {
         this.fitEachPage = fitEachPage;
     }
 
-    public boolean doFitEachPage() {
+    public boolean isFitEachPage() {
         return fitEachPage;
     }
 
-    public boolean doPageSnap() {
+    public boolean isPageSnap() {
         return pageSnap;
     }
 

@@ -64,8 +64,11 @@ class PdfFile {
     /** Calculated document length (width or height, depending on swipe mode) */
     private float documentLength = 0;
     private final FitPolicy pageFitPolicy;
-    /** If every page should fit to the screen as best as possible regardless of relative size */
-    private boolean fitEachPage;
+    /**
+     * True if every page should fit separately according to the FitPolicy,
+     * else the largest page fits and other pages scale relatively
+     */
+    private final boolean fitEachPage;
     /**
      * The pages the user want to display in order
      * (ex: 0, 2, 2, 8, 8, 1, 1, 1)
