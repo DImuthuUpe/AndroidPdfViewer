@@ -189,7 +189,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
 
     @Override
     public void onLongPress(MotionEvent e) {
-
+        pdfView.callbacks.callOnLongPress(e);
     }
 
     @Override

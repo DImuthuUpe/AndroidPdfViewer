@@ -1,27 +1,23 @@
 buildscript {
     repositories {
+        google()
         jcenter()
-    }
-    dependencies {
-        // replace with the current version of the android-apt plugin
-        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
     }
 }
 
 repositories {
+    google()
     jcenter()
 }
 
 apply plugin: 'com.android.application'
-apply plugin: 'android-apt'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.3"
+    compileSdkVersion 26
 
     defaultConfig {
-        minSdkVersion 11
-        targetSdkVersion 25
+        minSdkVersion 14
+        targetSdkVersion 26
         versionCode 3
         versionName "3.0.0"
     }
@@ -29,8 +25,8 @@ android {
 }
 
 dependencies {
-    compile project(':android-pdf-viewer')
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    provided 'org.androidannotations:androidannotations:4.0.0'
-    compile 'org.androidannotations:androidannotations-api:4.0.0'
+    implementation project(':android-pdf-viewer')
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation 'org.androidannotations:androidannotations-api:4.4.0'
+    annotationProcessor "org.androidannotations:androidannotations:4.4.0"
 }
