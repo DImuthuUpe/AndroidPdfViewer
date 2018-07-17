@@ -83,6 +83,9 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
 
     private boolean checkLinkTapped(float x, float y) {
         PdfFile pdfFile = pdfView.pdfFile;
+        if (pdfFile == null) {
+            return false;
+        }
         float mappedX = -pdfView.getCurrentXOffset() + x;
         float mappedY = -pdfView.getCurrentYOffset() + y;
         int page = pdfFile.getPageAtOffset(pdfView.isSwipeVertical() ? mappedY : mappedX, pdfView.getZoom());
