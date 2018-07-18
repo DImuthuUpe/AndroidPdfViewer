@@ -30,11 +30,11 @@ Licensed under Apache License 2.0.
 
 Add to _build.gradle_:
 
-`compile 'com.github.barteksc:android-pdf-viewer:3.1.0-beta.1'`
+`implementation 'com.github.barteksc:android-pdf-viewer:3.1.0-beta.1'`
 
 or if you want to use more stable version:
  
-`compile 'com.github.barteksc:android-pdf-viewer:2.8.2'`
+`implementation 'com.github.barteksc:android-pdf-viewer:2.8.2'`
 
 Library is available in jcenter repository, probably it'll be in Maven Central soon.
 
