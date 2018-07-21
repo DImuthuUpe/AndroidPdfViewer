@@ -31,6 +31,9 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.HandlerThread;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.widget.RelativeLayout;
@@ -68,6 +71,7 @@ import com.shockwave.pdfium.util.SizeF;
 
 import java.io.File;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -123,6 +127,9 @@ public class PDFView extends RelativeLayout {
     private DragPinchManager dragPinchManager;
 
     PdfFile pdfFile;
+
+    private PdfViewState restoredState;
+    private boolean hasRestoredFromState;
 
     /** The index of the current sequence */
     private int currentPage;
@@ -261,6 +268,21 @@ public class PDFView extends RelativeLayout {
         setWillNotDraw(false);
     }
 
+    @Nullable
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        SavedState state = new SavedState(super.onSaveInstanceState());
+        state.viewState = getCurrentViewState();
+        return state;
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Parcelable parcelable) {
+        SavedState state = (SavedState) parcelable;
+        restoredState = state.viewState;
+        super.onRestoreInstanceState(state.getSuperState());
+    }
+
     private void load(DocumentSource docSource, String password) {
         load(docSource, password, null);
     }
@@ -275,6 +297,52 @@ public class PDFView extends RelativeLayout {
         // Start decoding document
         decodingAsyncTask = new DecodingAsyncTask(docSource, password, userPages, this, pdfiumCore);
         decodingAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    /**
+     * Gets the current position and zoom state of the view.
+     * This state can be saved or persisted and later restored with {@link #restoreViewState(PdfViewState)}
+     */
+    public PdfViewState getCurrentViewState() {
+        return new PdfViewState(this);
+    }
+
+    /**
+     * <p>Restores a view state previously gotten with {@link #getCurrentViewState()} or
+     * {@link #onSaveInstanceState()}. </p>
+     * <p>The view handles restoring state with onSaveInstanceState for configuration changes or
+     * activity destruction, but the host application has to make sure the same pdf is loaded.
+     * This view has no way of knowing if the pdf loaded after restoring is the same as before.
+     * If the pdf content changed or a different pdf is loaded, it may restore to a incorrect position.
+     * To disable the automatic restoration call {@link #setSaveEnabled(boolean)}.</p>
+     * <p>Note: This must be called after a pdf file has been loaded. A good place to call this is
+     * in the loadComplete callback.</p>
+     * @throws IllegalStateException If pdf file is not loaded
+     */
+    public void restoreViewState(PdfViewState state) {
+        if (pdfFile == null) {
+            throw new IllegalStateException("Pdf file has not been loaded. Call restoreViewState from the loadCompleted callback.");
+        }
+        zoom = state.zoom;
+        int maxPageCount = pdfFile.getPagesCount() - 1;
+        currentPage = Math.min(maxPageCount, state.currentPage);
+        // since view and page sizes might have changed in a different configuration we cant just restore x/y offsets
+        if (swipeVertical) {
+            float maxXOffset = toCurrentScale(pdfFile.getMaxPageWidth()) - getWidth();
+            currentXOffset = Math.min(maxXOffset, state.offsetX);
+            float newYOffset = pdfFile.getPageOffset(currentPage, zoom) - state.offsetY;
+            float maxYOffset = pdfFile.getDocLen(zoom) - getHeight();
+            currentYOffset = -Math.min(maxYOffset, newYOffset);
+        } else {
+            float newXOffset = pdfFile.getPageOffset(currentPage, zoom) - state.offsetX;
+            float maxXOffset = pdfFile.getDocLen(zoom) - getWidth();
+            currentXOffset = -Math.min(maxXOffset, newXOffset);
+            float maxYOffset = toCurrentScale(pdfFile.getMaxPageHeight()) - getHeight();
+            currentYOffset = Math.min(maxYOffset, state.offsetY);
+        }
+
+        showPage(currentPage);
+        hasRestoredFromState = true;
     }
 
     /**
@@ -735,9 +803,17 @@ public class PDFView extends RelativeLayout {
 
         dragPinchManager.enable();
 
+        hasRestoredFromState = false;
         callbacks.callOnLoadComplete(pdfFile.getPagesCount());
 
-        jumpTo(defaultPage, false);
+        if (!hasRestoredFromState && restoredState != null) {
+            restoreViewState(restoredState);
+            restoredState = null;
+        }
+
+        if (!hasRestoredFromState) {
+            jumpTo(defaultPage, false);
+        }
     }
 
     void loadError(Throwable t) {
@@ -1280,6 +1356,7 @@ public class PDFView extends RelativeLayout {
 
     private enum State {DEFAULT, LOADED, SHOWN, ERROR}
 
+    @SuppressWarnings("unused")
     public class Configurator {
 
         private final DocumentSource documentSource;
@@ -1507,5 +1584,100 @@ public class PDFView extends RelativeLayout {
                 PDFView.this.load(documentSource, password);
             }
         }
+    }
+
+    /**
+     * Holds the zoom and position state for PdfView
+     */
+    public static class PdfViewState implements Serializable, Parcelable {
+
+        int currentPage;
+        float zoom = 1f;
+        float offsetX;
+        float offsetY;
+
+        public PdfViewState() {
+        }
+
+        public PdfViewState(PDFView view) {
+            currentPage = view.getCurrentPage();
+            zoom = view.getZoom();
+            offsetX = view.getCurrentXOffset();
+            offsetY = view.getCurrentYOffset();
+            if (view.pdfFile != null) {
+                float pageOffset = view.pdfFile.getPageOffset(currentPage, zoom);
+                if (view.swipeVertical) {
+                    offsetY += pageOffset;
+                } else {
+                    offsetX += pageOffset;
+                }
+            }
+        }
+
+        private PdfViewState(Parcel in) {
+            currentPage = in.readInt();
+            zoom = in.readFloat();
+            offsetX = in.readFloat();
+            offsetY = in.readFloat();
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            out.writeInt(currentPage);
+            out.writeFloat(zoom);
+            out.writeFloat(offsetX);
+            out.writeFloat(offsetY);
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        public static final Parcelable.Creator<PdfViewState> CREATOR =
+                new Parcelable.Creator<PdfViewState>() {
+                    public PdfViewState createFromParcel(Parcel in) {
+                        return new PdfViewState(in);
+                    }
+
+                    public PdfViewState[] newArray(int size) {
+                        return new PdfViewState[size];
+                    }
+                };
+    }
+
+    /**
+     * Wrapper around {@link PdfViewState} to not leak super state in public API.
+     */
+    static class SavedState extends BaseSavedState {
+
+        PdfViewState viewState;
+
+        public SavedState(Parcelable superState) {
+            super(superState);
+        }
+
+        private SavedState(Parcel in) {
+            super(in);
+            viewState = in.readParcelable(getClass().getClassLoader());
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            super.writeToParcel(out, flags);
+            out.writeParcelable(viewState, 0);
+        }
+
+        public static final Parcelable.Creator<SavedState> CREATOR =
+                new Parcelable.Creator<SavedState>() {
+                    public SavedState createFromParcel(Parcel in) {
+                        return new SavedState(in);
+                    }
+
+                    public SavedState[] newArray(int size) {
+                        return new SavedState[size];
+                    }
+                };
+
     }
 }
