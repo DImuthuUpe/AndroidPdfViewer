@@ -288,7 +288,6 @@ public class PDFView extends RelativeLayout {
     }
 
     private void load(DocumentSource docSource, String password, int[] userPages) {
-
         if (!recycled) {
             throw new IllegalStateException("Don't call load on a PDF View without recycling it first.");
         }
@@ -301,10 +300,23 @@ public class PDFView extends RelativeLayout {
 
     /**
      * Gets the current position and zoom state of the view.
-     * This state can be saved or persisted and later restored with {@link #restoreViewState(PdfViewState)}
+     * This state can be saved or persisted and later restored with {@link #restoreViewState(PdfViewState)}.
      */
     public PdfViewState getCurrentViewState() {
-        return new PdfViewState(this);
+        PdfViewState state = new PdfViewState();
+        state.zoom = getZoom();
+        state.currentPage = getCurrentPage();
+        float centerX = -currentXOffset + (getWidth() / 2f);
+        float centerY = -currentYOffset + (getHeight() / 2f);
+        SizeF pageSize = pdfFile.getScaledPageSize(state.currentPage, state.zoom);
+        if (swipeVertical) {
+            state.pageFocusX = (centerX - pdfFile.getSecondaryPageOffset(state.currentPage, zoom)) / pageSize.getWidth();
+            state.pageFocusY = (centerY - pdfFile.getPageOffset(state.currentPage, zoom)) / pageSize.getHeight();
+        } else {
+            state.pageFocusX = (centerX - pdfFile.getPageOffset(state.currentPage, zoom)) / pageSize.getWidth();
+            state.pageFocusY = (centerY - pdfFile.getSecondaryPageOffset(state.currentPage, zoom)) / pageSize.getHeight();
+        }
+        return state;
     }
 
     /**
@@ -314,9 +326,9 @@ public class PDFView extends RelativeLayout {
      * activity destruction, but the host application has to make sure the same pdf is loaded.
      * This view has no way of knowing if the pdf loaded after restoring is the same as before.
      * If the pdf content changed or a different pdf is loaded, it may restore to a incorrect position.
-     * To disable the automatic restoration call {@link #setSaveEnabled(boolean)}.</p>
+     * To disable the automatic restoration use {@link #setSaveEnabled(boolean)}.</p>
      * <p>Note: This must be called after a pdf file has been loaded. A good place to call this is
-     * in the loadComplete callback.</p>
+     * in the {@link OnLoadCompleteListener} callback.</p>
      * @throws IllegalStateException If pdf file is not loaded
      */
     public void restoreViewState(PdfViewState state) {
@@ -326,22 +338,29 @@ public class PDFView extends RelativeLayout {
         zoom = state.zoom;
         int maxPageCount = pdfFile.getPagesCount() - 1;
         currentPage = Math.min(maxPageCount, state.currentPage);
-        // since view and page sizes might have changed in a different configuration we cant just restore x/y offsets
-        if (swipeVertical) {
-            float maxXOffset = toCurrentScale(pdfFile.getMaxPageWidth()) - getWidth();
-            currentXOffset = Math.min(maxXOffset, state.offsetX);
-            float newYOffset = pdfFile.getPageOffset(currentPage, zoom) - state.offsetY;
-            float maxYOffset = pdfFile.getDocLen(zoom) - getHeight();
-            currentYOffset = -Math.min(maxYOffset, newYOffset);
-        } else {
-            float newXOffset = pdfFile.getPageOffset(currentPage, zoom) - state.offsetX;
-            float maxXOffset = pdfFile.getDocLen(zoom) - getWidth();
-            currentXOffset = -Math.min(maxXOffset, newXOffset);
-            float maxYOffset = toCurrentScale(pdfFile.getMaxPageHeight()) - getHeight();
-            currentYOffset = Math.min(maxYOffset, state.offsetY);
-        }
 
+        SizeF pageSize = pdfFile.getScaledPageSize(currentPage, zoom);
+        float pageX = pageSize.getWidth() * state.pageFocusX;
+        float pageY = pageSize.getHeight() * state.pageFocusY;
+        float mainOffset = pdfFile.getPageOffset(currentPage, zoom);
+        float secondaryOffset = pdfFile.getSecondaryPageOffset(currentPage, zoom);
+        if (swipeVertical) {
+            float newXOffset = secondaryOffset + pageX - (getWidth() / 2f);
+            float maxXOffset = toCurrentScale(pdfFile.getMaxPageWidth()) - getWidth();
+            currentXOffset = -MathUtils.limit(newXOffset, 0, maxXOffset);
+            float newYOffset = mainOffset + pageY - (getHeight() / 2f);
+            float maxYOffset = pdfFile.getDocLen(zoom) - getHeight();
+            currentYOffset = -MathUtils.limit(newYOffset, 0, maxYOffset);
+        } else {
+            float newXOffset = mainOffset + pageX - (getWidth() / 2f);
+            float maxXOffset = pdfFile.getDocLen(zoom) - getWidth();
+            currentXOffset = -MathUtils.limit(newXOffset, 0, maxXOffset);
+            float newYOffset = secondaryOffset + pageY - (getHeight() / 2f);
+            float maxYOffset = toCurrentScale(pdfFile.getMaxPageHeight()) - getHeight();
+            currentYOffset = -MathUtils.limit(newYOffset, 0, maxYOffset);
+        }
         showPage(currentPage);
+        performPageSnap(false);
         hasRestoredFromState = true;
     }
 
@@ -973,6 +992,13 @@ public class PDFView extends RelativeLayout {
      * Animate to the nearest snapping position for the current SnapPolicy
      */
     public void performPageSnap() {
+        performPageSnap(true);
+    }
+
+    /**
+     * Snap to the nearest snapping position for the current SnapPolicy
+     */
+    public void performPageSnap(boolean animated) {
         if (!pageSnap || pdfFile == null || pdfFile.getPagesCount() == 0) {
             return;
         }
@@ -983,10 +1009,18 @@ public class PDFView extends RelativeLayout {
         }
 
         float offset = snapOffsetForPage(centerPage, edge);
-        if (swipeVertical) {
-            animationManager.startYAnimation(currentYOffset, -offset);
+        if (animated) {
+            if (swipeVertical) {
+                animationManager.startYAnimation(currentYOffset, -offset);
+            } else {
+                animationManager.startXAnimation(currentXOffset, -offset);
+            }
         } else {
-            animationManager.startXAnimation(currentXOffset, -offset);
+            if (swipeVertical) {
+                moveTo(currentXOffset, -offset);
+            } else {
+                moveTo(-offset, currentYOffset);
+            }
         }
     }
 
@@ -1593,40 +1627,26 @@ public class PDFView extends RelativeLayout {
 
         int currentPage;
         float zoom = 1f;
-        float offsetX;
-        float offsetY;
+        // relative point of the page (0 to 1) that is in the center of the view
+        float pageFocusX;
+        float pageFocusY;
 
         public PdfViewState() {
-        }
-
-        public PdfViewState(PDFView view) {
-            currentPage = view.getCurrentPage();
-            zoom = view.getZoom();
-            offsetX = view.getCurrentXOffset();
-            offsetY = view.getCurrentYOffset();
-            if (view.pdfFile != null) {
-                float pageOffset = view.pdfFile.getPageOffset(currentPage, zoom);
-                if (view.swipeVertical) {
-                    offsetY += pageOffset;
-                } else {
-                    offsetX += pageOffset;
-                }
-            }
         }
 
         private PdfViewState(Parcel in) {
             currentPage = in.readInt();
             zoom = in.readFloat();
-            offsetX = in.readFloat();
-            offsetY = in.readFloat();
+            pageFocusX = in.readFloat();
+            pageFocusY = in.readFloat();
         }
 
         @Override
         public void writeToParcel(Parcel out, int flags) {
             out.writeInt(currentPage);
             out.writeFloat(zoom);
-            out.writeFloat(offsetX);
-            out.writeFloat(offsetY);
+            out.writeFloat(pageFocusX);
+            out.writeFloat(pageFocusY);
         }
 
         @Override
