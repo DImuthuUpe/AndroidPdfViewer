@@ -272,7 +272,9 @@ public class PDFView extends RelativeLayout {
     @Override
     protected Parcelable onSaveInstanceState() {
         SavedState state = new SavedState(super.onSaveInstanceState());
-        state.viewState = getCurrentViewState();
+        if (pdfFile != null) {
+            state.viewState = getCurrentViewState();
+        }
         return state;
     }
 
@@ -303,6 +305,9 @@ public class PDFView extends RelativeLayout {
      * This state can be saved or persisted and later restored with {@link #restoreViewState(PdfViewState)}.
      */
     public PdfViewState getCurrentViewState() {
+        if (pdfFile == null) {
+            throw new IllegalStateException("Failed to save current view state (no file loaded)");
+        }
         PdfViewState state = new PdfViewState();
         state.zoom = getZoom();
         state.currentPage = getCurrentPage();
@@ -344,21 +349,15 @@ public class PDFView extends RelativeLayout {
         float pageY = pageSize.getHeight() * state.pageFocusY;
         float mainOffset = pdfFile.getPageOffset(currentPage, zoom);
         float secondaryOffset = pdfFile.getSecondaryPageOffset(currentPage, zoom);
+        float x, y;
         if (swipeVertical) {
-            float newXOffset = secondaryOffset + pageX - (getWidth() / 2f);
-            float maxXOffset = toCurrentScale(pdfFile.getMaxPageWidth()) - getWidth();
-            currentXOffset = -MathUtils.limit(newXOffset, 0, maxXOffset);
-            float newYOffset = mainOffset + pageY - (getHeight() / 2f);
-            float maxYOffset = pdfFile.getDocLen(zoom) - getHeight();
-            currentYOffset = -MathUtils.limit(newYOffset, 0, maxYOffset);
+            x = secondaryOffset + pageX - (getWidth() / 2f);
+            y = mainOffset + pageY - (getHeight() / 2f);
         } else {
-            float newXOffset = mainOffset + pageX - (getWidth() / 2f);
-            float maxXOffset = pdfFile.getDocLen(zoom) - getWidth();
-            currentXOffset = -MathUtils.limit(newXOffset, 0, maxXOffset);
-            float newYOffset = secondaryOffset + pageY - (getHeight() / 2f);
-            float maxYOffset = toCurrentScale(pdfFile.getMaxPageHeight()) - getHeight();
-            currentYOffset = -MathUtils.limit(newYOffset, 0, maxYOffset);
+            x = mainOffset + pageX - (getWidth() / 2f);
+            y = secondaryOffset + pageY - (getHeight() / 2f);
         }
+        moveTo(-x, -y);
         showPage(currentPage);
         performPageSnap(false);
         hasRestoredFromState = true;
@@ -1671,7 +1670,7 @@ public class PDFView extends RelativeLayout {
      */
     static class SavedState extends BaseSavedState {
 
-        PdfViewState viewState;
+        @Nullable PdfViewState viewState;
 
         public SavedState(Parcelable superState) {
             super(superState);
@@ -1679,13 +1678,18 @@ public class PDFView extends RelativeLayout {
 
         private SavedState(Parcel in) {
             super(in);
-            viewState = in.readParcelable(getClass().getClassLoader());
+            if (in.readByte() == 1) {
+                viewState = in.readParcelable(getClass().getClassLoader());
+            }
         }
 
         @Override
         public void writeToParcel(Parcel out, int flags) {
             super.writeToParcel(out, flags);
-            out.writeParcelable(viewState, 0);
+            out.writeByte((byte) (viewState == null ? 0 : 1));
+            if (viewState != null) {
+                out.writeParcelable(viewState, 0);
+            }
         }
 
         public static final Parcelable.Creator<SavedState> CREATOR =
