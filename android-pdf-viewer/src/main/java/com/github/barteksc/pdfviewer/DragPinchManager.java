@@ -63,6 +63,10 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         enabled = false;
     }
 
+    void disableLongpress(){
+        gestureDetector.setIsLongpressEnabled(false);
+    }
+
     @Override
     public boolean onSingleTapConfirmed(MotionEvent e) {
         boolean onTapHandled = pdfView.callbacks.callOnTap(e);
