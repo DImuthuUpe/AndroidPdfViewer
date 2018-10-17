@@ -22,11 +22,13 @@ import com.shockwave.pdfium.PdfDocument;
 import com.shockwave.pdfium.PdfiumCore;
 import com.shockwave.pdfium.util.Size;
 
+import java.lang.ref.WeakReference;
+
 class DecodingAsyncTask extends AsyncTask<Void, Void, Throwable> {
 
     private boolean cancelled;
 
-    private PDFView pdfView;
+    private WeakReference<PDFView> pdfViewReference;
 
     private PdfiumCore pdfiumCore;
     private String password;
@@ -38,7 +40,7 @@ class DecodingAsyncTask extends AsyncTask<Void, Void, Throwable> {
         this.docSource = docSource;
         this.userPages = userPages;
         this.cancelled = false;
-        this.pdfView = pdfView;
+        this.pdfViewReference = new WeakReference<>(pdfView);
         this.password = password;
         this.pdfiumCore = pdfiumCore;
     }
@@ -46,27 +48,36 @@ class DecodingAsyncTask extends AsyncTask<Void, Void, Throwable> {
     @Override
     protected Throwable doInBackground(Void... params) {
         try {
-            PdfDocument pdfDocument = docSource.createDocument(pdfView.getContext(), pdfiumCore, password);
-            pdfFile = new PdfFile(pdfiumCore, pdfDocument, pdfView.getPageFitPolicy(), getViewSize(),
-                    userPages, pdfView.isSwipeVertical(), pdfView.getSpacingPx(), pdfView.doAutoSpacing());
-            return null;
+            PDFView pdfView = pdfViewReference.get();
+            if (pdfView != null) {
+                PdfDocument pdfDocument = docSource.createDocument(pdfView.getContext(), pdfiumCore, password);
+                pdfFile = new PdfFile(pdfiumCore, pdfDocument, pdfView.getPageFitPolicy(), getViewSize(pdfView),
+                        userPages, pdfView.isSwipeVertical(), pdfView.getSpacingPx(), pdfView.doAutoSpacing());
+                return null;
+            } else {
+                return new NullPointerException("pdfView == null");
+            }
+
         } catch (Throwable t) {
             return t;
         }
     }
 
-    private Size getViewSize() {
+    private Size getViewSize(PDFView pdfView) {
         return new Size(pdfView.getWidth(), pdfView.getHeight());
     }
 
     @Override
     protected void onPostExecute(Throwable t) {
-        if (t != null) {
-            pdfView.loadError(t);
-            return;
-        }
-        if (!cancelled) {
-            pdfView.loadComplete(pdfFile);
+        PDFView pdfView = pdfViewReference.get();
+        if (pdfView != null) {
+            if (t != null) {
+                pdfView.loadError(t);
+                return;
+            }
+            if (!cancelled) {
+                pdfView.loadComplete(pdfFile);
+            }
         }
     }
 
