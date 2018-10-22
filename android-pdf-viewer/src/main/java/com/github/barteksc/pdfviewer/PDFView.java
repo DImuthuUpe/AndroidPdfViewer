@@ -30,6 +30,7 @@ import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.HandlerThread;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -154,7 +155,7 @@ public class PDFView extends RelativeLayout {
     private DecodingAsyncTask decodingAsyncTask;
 
     /** The thread {@link #renderingHandler} will run on */
-    private final HandlerThread renderingHandlerThread;
+    private HandlerThread renderingHandlerThread;
     /** Handler always waiting in the background and rendering tasks */
     RenderingHandler renderingHandler;
 
@@ -462,6 +463,14 @@ public class PDFView extends RelativeLayout {
     @Override
     protected void onDetachedFromWindow() {
         recycle();
+        if (renderingHandlerThread != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                renderingHandlerThread.quitSafely();
+            } else {
+                renderingHandlerThread.quit();
+            }
+            renderingHandlerThread = null;
+        }
         super.onDetachedFromWindow();
     }
 
