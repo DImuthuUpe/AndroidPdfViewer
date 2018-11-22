@@ -22,6 +22,9 @@ import com.github.barteksc.pdfviewer.util.MathUtils;
 import com.github.barteksc.pdfviewer.util.Util;
 import com.shockwave.pdfium.util.SizeF;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import static com.github.barteksc.pdfviewer.util.Constants.Cache.CACHE_SIZE;
 import static com.github.barteksc.pdfviewer.util.Constants.PRELOAD_OFFSET;
 
@@ -37,21 +40,55 @@ class PagesLoader {
     private float partRenderHeight;
     private final RectF thumbnailRect = new RectF(0, 0, 1, 1);
     private final int preloadOffset;
-    private final Holder firstHolder = new Holder();
-    private final Holder lastHolder = new Holder();
-    private final GridSize firstGrid = new GridSize();
-    private final GridSize lastGrid = new GridSize();
-    private final GridSize middleGrid = new GridSize();
 
     private class Holder {
-        int page;
         int row;
         int col;
+
+        @Override
+        public String toString() {
+            return "Holder{" +
+                    "row=" + row +
+                    ", col=" + col +
+                    '}';
+        }
+    }
+
+    private class RenderRange {
+        int page;
+        GridSize gridSize;
+        Holder leftTop;
+        Holder rightBottom;
+
+        RenderRange() {
+            this.page = 0;
+            this.gridSize = new GridSize();
+            this.leftTop = new Holder();
+            this.rightBottom = new Holder();
+        }
+
+        @Override
+        public String toString() {
+            return "RenderRange{" +
+                    "page=" + page +
+                    ", gridSize=" + gridSize +
+                    ", leftTop=" + leftTop +
+                    ", rightBottom=" + rightBottom +
+                    '}';
+        }
     }
 
     private class GridSize {
         int rows;
         int cols;
+
+        @Override
+        public String toString() {
+            return "GridSize{" +
+                    "rows=" + rows +
+                    ", cols=" + cols +
+                    '}';
+        }
     }
 
     PagesLoader(PDFView pdfView) {
@@ -69,36 +106,6 @@ class PagesLoader {
         grid.cols = MathUtils.ceil(1f / partWidth);
     }
 
-    private Holder getPageAndCoordsByOffset(Holder holder, GridSize grid, float localXOffset,
-                                            float localYOffset, boolean endOffset) {
-        float fixedXOffset = -MathUtils.max(localXOffset, 0);
-        float fixedYOffset = -MathUtils.max(localYOffset, 0);
-        float offset = pdfView.isSwipeVertical() ? fixedYOffset : fixedXOffset;
-        holder.page = pdfView.pdfFile.getPageAtOffset(offset, pdfView.getZoom());
-        getPageColsRows(grid, holder.page);
-        SizeF scaledPageSize = pdfView.pdfFile.getScaledPageSize(holder.page, pdfView.getZoom());
-        float rowHeight = scaledPageSize.getHeight() / grid.rows;
-        float colWidth = scaledPageSize.getWidth() / grid.cols;
-        float row, col;
-        float secondaryOffset = pdfView.pdfFile.getSecondaryPageOffset(holder.page, pdfView.getZoom());
-        if (pdfView.isSwipeVertical()) {
-            row = Math.abs(fixedYOffset - pdfView.pdfFile.getPageOffset(holder.page, pdfView.getZoom())) / rowHeight;
-            col = MathUtils.min(fixedXOffset - secondaryOffset, 0) / colWidth;
-        } else {
-            col = Math.abs(fixedXOffset - pdfView.pdfFile.getPageOffset(holder.page, pdfView.getZoom())) / colWidth;
-            row = MathUtils.min(fixedYOffset - secondaryOffset, 0) / rowHeight;
-        }
-
-        if (endOffset) {
-            holder.row = MathUtils.ceil(row);
-            holder.col = MathUtils.ceil(col);
-        } else {
-            holder.row = MathUtils.floor(row);
-            holder.col = MathUtils.floor(col);
-        }
-        return holder;
-    }
-
     private void calculatePartSize(GridSize grid) {
         pageRelativePartWidth = 1f / (float) grid.cols;
         pageRelativePartHeight = 1f / (float) grid.rows;
@@ -106,87 +113,137 @@ class PagesLoader {
         partRenderHeight = Constants.PART_SIZE / pageRelativePartHeight;
     }
 
+
+    /**
+     * calculate the render range of each page
+     */
+    private List<RenderRange> getRenderRangeList(float firstXOffset, float firstYOffset, float lastXOffset, float lastYOffset) {
+
+        float fixedFirstXOffset = -MathUtils.max(firstXOffset, 0);
+        float fixedFirstYOffset = -MathUtils.max(firstYOffset, 0);
+
+        float fixedLastXOffset = -MathUtils.max(lastXOffset, 0);
+        float fixedLastYOffset = -MathUtils.max(lastYOffset, 0);
+
+        float offsetFirst = pdfView.isSwipeVertical() ? fixedFirstYOffset : fixedFirstXOffset;
+        float offsetLast = pdfView.isSwipeVertical() ? fixedLastYOffset : fixedLastXOffset;
+
+        int firstPage = pdfView.pdfFile.getPageAtOffset(offsetFirst, pdfView.getZoom());
+        int lastPage = pdfView.pdfFile.getPageAtOffset(offsetLast, pdfView.getZoom());
+        int pageCount = lastPage - firstPage + 1;
+
+        List<RenderRange> renderRanges = new LinkedList<>();
+
+        for (int page = firstPage; page <= lastPage; page++) {
+            RenderRange range = new RenderRange();
+            range.page = page;
+
+            float pageFirstXOffset, pageFirstYOffset, pageLastXOffset, pageLastYOffset;
+            if (page == firstPage) {
+                pageFirstXOffset = fixedFirstXOffset;
+                pageFirstYOffset = fixedFirstYOffset;
+                if (pageCount == 1) {
+                    pageLastXOffset = fixedLastXOffset;
+                    pageLastYOffset = fixedLastYOffset;
+                } else {
+                    float pageOffset = pdfView.pdfFile.getPageOffset(page, pdfView.getZoom());
+                    SizeF pageSize = pdfView.pdfFile.getScaledPageSize(page, pdfView.getZoom());
+                    if (pdfView.isSwipeVertical()) {
+                        pageLastXOffset = fixedLastXOffset;
+                        pageLastYOffset = pageOffset + pageSize.getHeight();
+                    } else {
+                        pageLastYOffset = fixedLastYOffset;
+                        pageLastXOffset = pageOffset + pageSize.getWidth();
+                    }
+                }
+            } else if (page == lastPage) {
+                float pageOffset = pdfView.pdfFile.getPageOffset(page, pdfView.getZoom());
+
+                if (pdfView.isSwipeVertical()) {
+                    pageFirstXOffset = fixedFirstXOffset;
+                    pageFirstYOffset = pageOffset;
+                } else {
+                    pageFirstYOffset = fixedFirstYOffset;
+                    pageFirstXOffset = pageOffset;
+                }
+
+                pageLastXOffset = fixedLastXOffset;
+                pageLastYOffset = fixedLastYOffset;
+
+            } else {
+                float pageOffset = pdfView.pdfFile.getPageOffset(page, pdfView.getZoom());
+                SizeF pageSize = pdfView.pdfFile.getScaledPageSize(page, pdfView.getZoom());
+                if (pdfView.isSwipeVertical()) {
+                    pageFirstXOffset = fixedFirstXOffset;
+                    pageFirstYOffset = pageOffset;
+
+                    pageLastXOffset = fixedLastXOffset;
+                    pageLastYOffset = pageOffset + pageSize.getHeight();
+                } else {
+                    pageFirstXOffset = pageOffset;
+                    pageFirstYOffset = fixedFirstYOffset;
+
+                    pageLastXOffset = pageOffset + pageSize.getWidth();
+                    pageLastYOffset = fixedLastYOffset;
+                }
+            }
+
+            getPageColsRows(range.gridSize, range.page); // get the page's grid size that rows and cols
+            SizeF scaledPageSize = pdfView.pdfFile.getScaledPageSize(range.page, pdfView.getZoom());
+            float rowHeight = scaledPageSize.getHeight() / range.gridSize.rows;
+            float colWidth = scaledPageSize.getWidth() / range.gridSize.cols;
+
+
+            // get the page offset int the whole file
+            // ---------------------------------------
+            // |            |           |            |
+            // |<--offset-->|   (page)  |<--offset-->|
+            // |            |           |            |
+            // |            |           |            |
+            // ---------------------------------------
+            float secondaryOffset = pdfView.pdfFile.getSecondaryPageOffset(page, pdfView.getZoom());
+
+            // calculate the row,col of the point in the leftTop and rightBottom
+            if (pdfView.isSwipeVertical()) {
+                range.leftTop.row = MathUtils.floor(Math.abs(pageFirstYOffset - pdfView.pdfFile.getPageOffset(range.page, pdfView.getZoom())) / rowHeight);
+                range.leftTop.col = MathUtils.floor(MathUtils.min(pageFirstXOffset - secondaryOffset, 0) / colWidth);
+
+                range.rightBottom.row = MathUtils.ceil(Math.abs(pageLastYOffset - pdfView.pdfFile.getPageOffset(range.page, pdfView.getZoom())) / rowHeight);
+                range.rightBottom.col = MathUtils.floor(MathUtils.min(pageLastXOffset - secondaryOffset, 0) / colWidth);
+            } else {
+                range.leftTop.col = MathUtils.floor(Math.abs(pageFirstXOffset - pdfView.pdfFile.getPageOffset(range.page, pdfView.getZoom())) / colWidth);
+                range.leftTop.row = MathUtils.floor(MathUtils.min(pageFirstYOffset - secondaryOffset, 0) / rowHeight);
+
+                range.rightBottom.col = MathUtils.floor(Math.abs(pageLastXOffset - pdfView.pdfFile.getPageOffset(range.page, pdfView.getZoom())) / colWidth);
+                range.rightBottom.row = MathUtils.floor(MathUtils.min(pageLastYOffset - secondaryOffset, 0) / rowHeight);
+            }
+
+            renderRanges.add(range);
+        }
+
+        return renderRanges;
+    }
+
     private void loadVisible() {
         int parts = 0;
-        float scaledPreloadOffset = preloadOffset * pdfView.getZoom();
+        float scaledPreloadOffset = preloadOffset;
         float firstXOffset = -xOffset + scaledPreloadOffset;
         float lastXOffset = -xOffset - pdfView.getWidth() - scaledPreloadOffset;
         float firstYOffset = -yOffset + scaledPreloadOffset;
         float lastYOffset = -yOffset - pdfView.getHeight() - scaledPreloadOffset;
 
-        getPageAndCoordsByOffset(firstHolder, firstGrid, firstXOffset, firstYOffset, false);
-        getPageAndCoordsByOffset(lastHolder, lastGrid, lastXOffset, lastYOffset, true);
+        List<RenderRange> rangeList = getRenderRangeList(firstXOffset, firstYOffset, lastXOffset, lastYOffset);
 
-        for (int i = firstHolder.page; i <= lastHolder.page; i++) {
-            loadThumbnail(i);
+        for (RenderRange range : rangeList) {
+            loadThumbnail(range.page);
         }
 
-        int pagesCount = lastHolder.page - firstHolder.page + 1;
-        for (int page = firstHolder.page; page <= lastHolder.page && parts < CACHE_SIZE; page++) {
-
-            if (page == firstHolder.page && pagesCount > 1) {
-                parts += loadPageEnd(firstHolder, firstGrid, CACHE_SIZE - parts);
-            } else if (page == lastHolder.page && pagesCount > 1) {
-                parts += loadPageStart(lastHolder, lastGrid, CACHE_SIZE - parts);
-            } else if(pagesCount == 1) {
-                parts += loadPageCenter(firstHolder, lastHolder, firstGrid, CACHE_SIZE - parts);
-            } else {
-                getPageColsRows(middleGrid, page);
-                parts += loadWholePage(page, middleGrid, CACHE_SIZE - parts);
+        for (RenderRange range : rangeList) {
+            calculatePartSize(range.gridSize);
+            parts += loadPage(range.page, range.leftTop.row, range.rightBottom.row, range.leftTop.col, range.rightBottom.col, CACHE_SIZE - parts);
+            if (parts >= CACHE_SIZE) {
+                break;
             }
-        }
-
-    }
-
-    /**
-     * When whole page is visible
-     *
-     * @return loaded parts count
-     */
-    private int loadWholePage(int page, GridSize grid, int nbOfPartsLoadable) {
-        calculatePartSize(grid);
-        return loadPage(page, 0, grid.rows - 1, 0, grid.cols - 1, nbOfPartsLoadable);
-    }
-
-    /**
-     * When only part of one page is visible
-     *
-     * @return loaded parts count
-     */
-    private int loadPageCenter(Holder firstHolder, Holder lastHolder, GridSize grid, int nbOfPartsLoadable) {
-        calculatePartSize(grid);
-        return loadPage(firstHolder.page, firstHolder.row, lastHolder.row, firstHolder.col, lastHolder.col, nbOfPartsLoadable);
-    }
-
-    /**
-     * When only end of page is visible
-     *
-     * @return loaded parts count
-     */
-    private int loadPageEnd(Holder holder, GridSize grid, int nbOfPartsLoadable) {
-        calculatePartSize(grid);
-        if (pdfView.isSwipeVertical()) {
-            int firstRow = holder.row;
-            return loadPage(holder.page, firstRow, grid.rows - 1, 0, grid.cols - 1, nbOfPartsLoadable);
-        } else {
-            int firstCol = holder.col;
-            return loadPage(holder.page, 0, grid.rows - 1, firstCol, grid.cols - 1, nbOfPartsLoadable);
-        }
-    }
-
-    /**
-     * If only start of the page is visible
-     *
-     * @return loaded parts count
-     */
-    private int loadPageStart(Holder holder, GridSize grid, int nbOfPartsLoadable) {
-        calculatePartSize(grid);
-        if (pdfView.isSwipeVertical()) {
-            int lastRow = holder.row;
-            return loadPage(holder.page, 0, lastRow, 0, grid.cols - 1, nbOfPartsLoadable);
-        } else {
-            int lastCol = holder.col;
-            return loadPage(holder.page, 0, grid.rows - 1, 0, lastCol, nbOfPartsLoadable);
         }
 
     }
