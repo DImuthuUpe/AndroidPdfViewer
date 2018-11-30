@@ -2,6 +2,13 @@
 
 # Android PdfViewer
 
+
+__这个分支，在原3.1.0-beta1的基础上，优化了渲染区域的计算方式，减少不必要的渲染区域。__
+
+3.1.0-beta1在计算渲染方式上有个bug，在跨页的时候会渲染上一页的最后一行，不管这一行是不是全部显示在屏幕中。当放大的倍数越大，
+需要渲染的块就多，由于最大数量的限制，会导致部分在屏幕下方的区域不会被渲染。
+
+
 __AndroidPdfViewer 1.x is available on [AndroidPdfViewerV1](https://github.com/barteksc/AndroidPdfViewerV1)
 repo, where can be developed independently. Version 1.x uses different engine for drawing document on canvas,
 so if you don't like 2.x version, try 1.x.__
