@@ -29,4 +29,5 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:26.1.0'
     implementation 'org.androidannotations:androidannotations-api:4.4.0'
     annotationProcessor "org.androidannotations:androidannotations:4.4.0"
+    implementation 'com.tom_roush:pdfbox-android:1.8.10.0'
 }

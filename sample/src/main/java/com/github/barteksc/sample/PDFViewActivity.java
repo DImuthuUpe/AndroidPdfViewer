@@ -27,6 +27,10 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.barteksc.pdfviewer.PDFView;
@@ -45,6 +49,7 @@ import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.ViewById;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @EActivity(R.layout.activity_main)
@@ -62,6 +67,25 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
 
     @ViewById
     PDFView pdfView;
+
+    @ViewById
+    EditText searchET;
+    @ViewById
+    Button searchBtn;
+    @ViewById
+    Button exitSearchBtn;
+    @ViewById
+    Button searchResultBeforeBtn;
+    @ViewById
+    Button searchResultAfterBtn;
+    @ViewById
+    TextView searchIndexTV;
+    @ViewById
+    RelativeLayout searchResultRelativeLayout;
+
+    int pageCount = 0;
+    int currentSearchResultIndex = -1;
+    ArrayList<Integer> searchIndeces;
 
     @NonConfigurationInstance
     Uri uri;
