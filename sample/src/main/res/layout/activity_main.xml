@@ -3,9 +3,83 @@
 	android:layout_width="match_parent"
 	android:layout_height="match_parent">
 
-    <com.github.barteksc.pdfviewer.PDFView
-        android:id="@+id/pdfView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal"
+		android:id="@+id/searchLayout"
+		android:weightSum="5">
+
+		<EditText
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:id="@+id/searchET"
+			android:layout_weight="4"
+			android:hint="search here" />
+
+		<Button
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:id="@+id/searchBtn"
+			android:layout_weight="1"
+			android:visibility="visible"
+			android:text="Search"
+			android:onClick="search"/>
+
+
+	</LinearLayout>
+
+
+	<RelativeLayout
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:id="@+id/searchResultRelativeLayout"
+		android:layout_alignParentRight="true"
+		android:visibility="invisible">
+
+		<Button
+			android:layout_width="25dp"
+			android:layout_height="25dp"
+			android:id="@+id/exitSearchBtn"
+			android:background="@android:drawable/ic_menu_close_clear_cancel"
+			android:onClick="exitSearch"
+			android:layout_centerVertical="true"/>
+
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="1/8"
+			android:id="@+id/searchIndexTV"
+			android:layout_centerVertical="true"
+			android:layout_toRightOf="@+id/exitSearchBtn"
+			android:layout_alignBaseline="@+id/exitSearchBtn" />
+
+		<Button
+			android:layout_width="35dp"
+			android:layout_height="35dp"
+			android:id="@+id/searchResultBeforeBtn"
+			android:onClick="goToBeforeSearchResult"
+			android:background="@android:drawable/arrow_up_float"
+			android:layout_toRightOf="@+id/searchIndexTV"
+			android:layout_marginLeft="5dp"
+			android:layout_centerVertical="true"/>
+
+		<Button
+			android:layout_width="35dp"
+			android:layout_height="35dp"
+			android:id="@+id/searchResultAfterBtn"
+			android:onClick="goToAfterSearchResult"
+			android:layout_toRightOf="@+id/searchResultBeforeBtn"
+			android:background="@android:drawable/arrow_down_float"
+			android:layout_centerVertical="true"/>
+
+	</RelativeLayout>
+
+
+	<com.github.barteksc.pdfviewer.PDFView
+		android:layout_below="@+id/searchLayout"
+		android:id="@+id/pdfView"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent" />
 
 </RelativeLayout>
