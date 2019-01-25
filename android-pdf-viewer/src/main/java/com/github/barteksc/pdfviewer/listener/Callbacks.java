@@ -78,9 +78,9 @@ public class Callbacks {
         this.onLoadCompleteListener = onLoadCompleteListener;
     }
 
-    public void callOnLoadComplete(int pagesCount) {
+    public void callOnLoadComplete(int pagesCount, float pageWidth, float pageHeight) {
         if (onLoadCompleteListener != null) {
-            onLoadCompleteListener.loadComplete(pagesCount);
+            onLoadCompleteListener.loadComplete(pagesCount, pageWidth, pageHeight);
         }
     }
 
