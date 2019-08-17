@@ -204,7 +204,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         if (!pdfView.isSwipeEnabled()) {
             return false;
         }
-        if (pdfView.doPageFling()) {
+        if (pdfView.isPageFlingEnabled()) {
             if (pdfView.pageFillsScreen()) {
                 onBoundedFling(velocityX, velocityY);
             } else {
