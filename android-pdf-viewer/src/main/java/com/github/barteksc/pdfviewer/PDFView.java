@@ -474,13 +474,33 @@ public class PDFView extends RelativeLayout {
         if (isInEditMode() || state != State.SHOWN) {
             return;
         }
+
+        // calculates the position of the point which in the center of view relative to big strip
+        float centerPointInStripXOffset = -currentXOffset + oldw * 0.5f;
+        float centerPointInStripYOffset = -currentYOffset + oldh * 0.5f;
+
+        float relativeCenterPointInStripXOffset;
+        float relativeCenterPointInStripYOffset;
+
+        if (swipeVertical){
+            relativeCenterPointInStripXOffset = centerPointInStripXOffset / pdfFile.getMaxPageWidth();
+            relativeCenterPointInStripYOffset = centerPointInStripYOffset / pdfFile.getDocLen(zoom);
+        }else {
+            relativeCenterPointInStripXOffset = centerPointInStripXOffset / pdfFile.getDocLen(zoom);
+            relativeCenterPointInStripYOffset = centerPointInStripYOffset / pdfFile.getMaxPageHeight();
+        }
+
         animationManager.stopAll();
         pdfFile.recalculatePageSizes(new Size(w, h));
+
         if (swipeVertical) {
-            moveTo(currentXOffset, -pdfFile.getPageOffset(currentPage, zoom));
-        } else {
-            moveTo(-pdfFile.getPageOffset(currentPage, zoom), currentYOffset);
+            currentXOffset = -relativeCenterPointInStripXOffset * pdfFile.getMaxPageWidth() + w * 0.5f;
+            currentYOffset = -relativeCenterPointInStripYOffset * pdfFile.getDocLen(zoom) + h * 0.5f ;
+        }else {
+            currentXOffset = -relativeCenterPointInStripXOffset * pdfFile.getDocLen(zoom) + w * 0.5f;
+            currentYOffset = -relativeCenterPointInStripYOffset * pdfFile.getMaxPageHeight() + h * 0.5f;
         }
+        moveTo(currentXOffset,currentYOffset);
         loadPageByOffset();
     }
 
