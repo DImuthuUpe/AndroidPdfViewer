@@ -172,6 +172,8 @@ public class PDFView extends RelativeLayout {
     /** Policy for fitting pages to screen */
     private FitPolicy pageFitPolicy = FitPolicy.WIDTH;
 
+    private boolean fitEachPage = false;
+
     private int defaultPage = 0;
 
     /** True if should scroll through pages vertically instead of horizontally */
@@ -1213,7 +1215,7 @@ public class PDFView extends RelativeLayout {
         return spacingPx;
     }
 
-    public boolean doAutoSpacing() {
+    public boolean isAutoSpacingEnabled() {
         return autoSpacing;
     }
 
@@ -1221,12 +1223,12 @@ public class PDFView extends RelativeLayout {
         this.pageFling = pageFling;
     }
 
-    public boolean doPageFling() {
+    public boolean isPageFlingEnabled() {
         return pageFling;
     }
 
-    private void setSpacing(int spacing) {
-        this.spacingPx = Util.getDP(getContext(), spacing);
+    private void setSpacing(int spacingDp) {
+        this.spacingPx = Util.getDP(getContext(), spacingDp);
     }
 
     private void setAutoSpacing(boolean autoSpacing) {
@@ -1241,7 +1243,15 @@ public class PDFView extends RelativeLayout {
         return pageFitPolicy;
     }
 
-    public boolean doPageSnap() {
+    private void setFitEachPage(boolean fitEachPage) {
+        this.fitEachPage = fitEachPage;
+    }
+
+    public boolean isFitEachPage() {
+        return fitEachPage;
+    }
+
+    public boolean isPageSnap() {
         return pageSnap;
     }
 
@@ -1358,6 +1368,8 @@ public class PDFView extends RelativeLayout {
         private boolean autoSpacing = false;
 
         private FitPolicy pageFitPolicy = FitPolicy.WIDTH;
+
+        private boolean fitEachPage = false;
 
         private boolean pageFling = false;
 
@@ -1484,6 +1496,11 @@ public class PDFView extends RelativeLayout {
             return this;
         }
 
+        public Configurator fitEachPage(boolean fitEachPage) {
+            this.fitEachPage = fitEachPage;
+            return this;
+        }
+
         public Configurator pageSnap(boolean pageSnap) {
             this.pageSnap = pageSnap;
             return this;
@@ -1532,6 +1549,7 @@ public class PDFView extends RelativeLayout {
             PDFView.this.setSpacing(spacing);
             PDFView.this.setAutoSpacing(autoSpacing);
             PDFView.this.setPageFitPolicy(pageFitPolicy);
+            PDFView.this.setFitEachPage(fitEachPage);
             PDFView.this.setPageSnap(pageSnap);
             PDFView.this.setPageFling(pageFling);
 
