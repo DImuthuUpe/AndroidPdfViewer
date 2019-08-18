@@ -1,3 +1,17 @@
+## 3.2.0-beta.1 (2019-08-18)
+* Merge PR #714 with optimized page load
+* Merge PR #776 with fix for max & min zoom level
+* Merge PR #722 with fix for showing right position when view size changed
+* Merge PR #703 with fix for too many threads
+* Merge PR #702 with fix for memory leak
+* Merge PR #689 with possibility to disable long click
+* Merge PR #628 with fix for hiding scroll handle
+* Merge PR #627 with `fitEachPage` option
+* Merge PR #638 and #406 with fixed NPE
+* Merge PR #780 with README fix
+* Update compile SDK and support library to 28
+* Update Gradle and Gradle Plugin
+
 ## 3.1.0-beta.1 (2018-06-29)
 * Merge pull request #557 for snapping pages (scrolling page by page)
 * merge pull request #618 for night mode

@@ -13,7 +13,7 @@ ext {
     siteUrl = 'https://github.com/barteksc/AndroidPdfViewer'
     gitUrl = 'https://github.com/barteksc/AndroidPdfViewer.git'
 
-    libraryVersion = '3.1.0-beta.1'
+    libraryVersion = '3.2.0-beta.1'
 
     developerId = 'barteksc'
     developerName = 'Bartosz Schiller'
@@ -25,21 +25,20 @@ ext {
 }
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion 28
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 26
+        targetSdkVersion 28
         versionCode 1
-        versionName "3.1.0-beta.1"
+        versionName "3.2.0-beta.1"
     }
 
 }
 
 dependencies {
-    implementation 'com.android.support:support-compat:26.1.0'
+    implementation 'com.android.support:support-compat:28.0.0'
     api 'com.github.barteksc:pdfium-android:1.9.0'
 }
 
-apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle'
-apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/bintrayv1.gradle'
+apply from: 'bintray.gradle'
