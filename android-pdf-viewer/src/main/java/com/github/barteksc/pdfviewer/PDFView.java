@@ -753,7 +753,7 @@ public class PDFView extends RelativeLayout {
 
         this.pdfFile = pdfFile;
 
-        if (!renderingHandlerThread.isAlive()) {
+        if (renderingHandlerThread != null && !renderingHandlerThread.isAlive()) {
             renderingHandlerThread.start();
         }
         renderingHandler = new RenderingHandler(renderingHandlerThread.getLooper(), this);
