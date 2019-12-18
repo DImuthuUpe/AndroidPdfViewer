@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package android.lib.pdfviewer.link;
+package com.github.barteksc.pdfviewer.link;
 
 import android.content.Context;
 import android.content.Intent;

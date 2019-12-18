@@ -1,4 +1,4 @@
-package android.lib.pdfviewer.scroll;
+package com.github.barteksc.pdfviewer.scroll;
 
 import android.content.Context;
 import android.graphics.Color;
