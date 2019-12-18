@@ -149,7 +149,11 @@ public class DefaultScrollHandle extends RelativeLayout implements ScrollHandle 
             pos = getY();
             viewSize = getHeight();
             pdfViewSize = pdfView.getHeight();
-        } else {
+        } else if (pdfView.isOnDualPageMode()){
+            pos = getX();
+            viewSize = getWidth() / 2;
+            pdfViewSize = pdfView.getWidth() / 2;
+        } else  {
             pos = getX();
             viewSize = getWidth();
             pdfViewSize = pdfView.getWidth();

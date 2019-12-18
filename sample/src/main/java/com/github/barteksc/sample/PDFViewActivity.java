@@ -18,6 +18,7 @@ package com.github.barteksc.sample;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
@@ -71,6 +72,8 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
 
     String pdfFileName;
 
+
+
     @OptionsItem(R.id.pickFile)
     void pickFile() {
         int permissionCheck = ContextCompat.checkSelfPermission(this,
@@ -112,6 +115,9 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
     }
 
     private void displayFromAsset(String assetFileName) {
+        boolean isLandscape = false;
+        int orientation = this.getResources().getConfiguration().orientation;
+        isLandscape = orientation == Configuration.ORIENTATION_LANDSCAPE;
         pdfFileName = assetFileName;
 
         pdfView.fromAsset(SAMPLE_FILE)
@@ -119,8 +125,14 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
                 .onPageChange(this)
                 .enableAnnotationRendering(true)
                 .onLoad(this)
+                .landscapeOrientation(isLandscape)
+                .dualPageMode(true)
                 .scrollHandle(new DefaultScrollHandle(this))
-                .spacing(10) // in dp
+                .spacing(0) // in dp
+                .enableSwipe(true)
+                .swipeHorizontal(true)
+                .pageFling(true)
+                .fitEachPage(false)
                 .onPageError(this)
                 .pageFitPolicy(FitPolicy.BOTH)
                 .load();
@@ -135,7 +147,11 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
                 .enableAnnotationRendering(true)
                 .onLoad(this)
                 .scrollHandle(new DefaultScrollHandle(this))
-                .spacing(10) // in dp
+                .spacing(0) // in dp
+                .dualPageMode(true)
+                .enableSwipe(true)
+                .swipeHorizontal(true)
+                .pageFling(true)
                 .onPageError(this)
                 .load();
     }
