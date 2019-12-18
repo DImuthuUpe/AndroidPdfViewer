@@ -1,4 +1,4 @@
-package com.github.barteksc.pdfviewer.exception;
+package android.lib.pdfviewer.exception;
 
 public class PageRenderingException extends Exception {
     private final int page;

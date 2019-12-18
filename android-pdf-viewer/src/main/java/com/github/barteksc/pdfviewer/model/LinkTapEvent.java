@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.barteksc.pdfviewer.model;
+package android.lib.pdfviewer.model;
 
 import android.graphics.RectF;
 

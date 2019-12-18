@@ -1,4 +1,4 @@
-package com.github.barteksc.pdfviewer.scroll;
+package android.lib.pdfviewer.scroll;
 
 import com.github.barteksc.pdfviewer.PDFView;
 
