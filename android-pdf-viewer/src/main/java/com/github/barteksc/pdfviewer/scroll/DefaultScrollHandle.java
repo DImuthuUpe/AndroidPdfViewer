@@ -1,10 +1,11 @@
 package com.github.barteksc.pdfviewer.scroll;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
-import android.support.v4.content.ContextCompat;
+import androidx.core.content.ContextCompat;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
@@ -200,6 +201,7 @@ public class DefaultScrollHandle extends RelativeLayout implements ScrollHandle 
         return pdfView != null && pdfView.getPageCount() > 0 && !pdfView.documentFitsView();
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
