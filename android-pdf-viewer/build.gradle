@@ -25,11 +25,11 @@ ext {
 }
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
 
     defaultConfig {
         minSdkVersion 14
-        targetSdkVersion 28
+        targetSdkVersion 29
         versionCode 1
         versionName "3.2.0-beta.1"
     }
@@ -37,7 +37,7 @@ android {
 }
 
 dependencies {
-    implementation 'com.android.support:support-compat:28.0.0'
+    implementation 'androidx.core:core:1.2.0'
     api 'com.github.barteksc:pdfium-android:1.9.0'
 }
 
