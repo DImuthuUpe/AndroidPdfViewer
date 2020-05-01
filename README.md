@@ -7,11 +7,11 @@ This fork was made in order to migrate the library to AndroidX. Add-ons and upda
 Add to _build.gradle_:
 ```groovy
 allprojects {
-		repositories {
-			...
-			maven { url 'https://jitpack.io' }
-		}
+	repositories {
+		...
+		maven { url 'https://jitpack.io' }
 	}
+}
 ```
 Add the dependency
 ```groovy
