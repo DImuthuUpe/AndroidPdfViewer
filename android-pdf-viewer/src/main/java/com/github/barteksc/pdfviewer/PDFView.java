@@ -202,17 +202,11 @@ public class PDFView extends RelativeLayout {
 
     private int defaultPage = 0;
 
-<<<<<<< HEAD
-    /**
-     * True if should scroll through pages vertically instead of horizontally
-     */
-=======
     private boolean dualPageMode = false;
 
     private boolean isLandscapeOrientation = false;
 
     /** True if should scroll through pages vertically instead of horizontally */
->>>>>>> 34884282f7465aca016a3fa9a06618b9116cb8e1
     private boolean swipeVertical = true;
 
     private boolean enableSwipe = true;
