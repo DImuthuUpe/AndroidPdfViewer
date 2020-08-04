@@ -202,9 +202,17 @@ public class PDFView extends RelativeLayout {
 
     private int defaultPage = 0;
 
+<<<<<<< HEAD
     /**
      * True if should scroll through pages vertically instead of horizontally
      */
+=======
+    private boolean dualPageMode = false;
+
+    private boolean isLandscapeOrientation = false;
+
+    /** True if should scroll through pages vertically instead of horizontally */
+>>>>>>> 34884282f7465aca016a3fa9a06618b9116cb8e1
     private boolean swipeVertical = true;
 
     private boolean enableSwipe = true;
@@ -1236,6 +1244,18 @@ public class PDFView extends RelativeLayout {
         return bestQuality;
     }
 
+    public boolean isOnDualPageMode() {
+        return dualPageMode;
+    }
+
+    public boolean isOnLandscapeOrientation() { return isLandscapeOrientation; }
+
+    public void setLandscapeOrientation(boolean landscapeOrientation) {this.isLandscapeOrientation = landscapeOrientation; }
+
+    public void setDualPageMode(boolean dualPageMode) {
+        this.dualPageMode = dualPageMode;
+    }
+
     public boolean isSwipeVertical() {
         return swipeVertical;
     }
@@ -1428,6 +1448,10 @@ public class PDFView extends RelativeLayout {
 
         private int defaultPage = 0;
 
+        private boolean landscapeOrientation = false;
+
+        private boolean dualPageMode = false;
+
         private boolean swipeHorizontal = false;
 
         private boolean annotationRendering = false;
@@ -1536,6 +1560,16 @@ public class PDFView extends RelativeLayout {
             return this;
         }
 
+        public Configurator landscapeOrientation(boolean landscapeOrientation) {
+            this.landscapeOrientation = landscapeOrientation;
+            return this;
+        }
+
+        public Configurator dualPageMode(boolean dualPageMode) {
+            this.dualPageMode = dualPageMode;
+            return this;
+        }
+
         public Configurator swipeHorizontal(boolean swipeHorizontal) {
             this.swipeHorizontal = swipeHorizontal;
             return this;
@@ -1617,6 +1651,8 @@ public class PDFView extends RelativeLayout {
             PDFView.this.setNightMode(nightMode);
             PDFView.this.enableDoubletap(enableDoubletap);
             PDFView.this.setDefaultPage(defaultPage);
+            PDFView.this.setLandscapeOrientation(landscapeOrientation);
+            PDFView.this.setDualPageMode(dualPageMode);
             PDFView.this.setSwipeVertical(!swipeHorizontal);
             PDFView.this.enableAnnotationRendering(annotationRendering);
             PDFView.this.setScrollHandle(scrollHandle);
