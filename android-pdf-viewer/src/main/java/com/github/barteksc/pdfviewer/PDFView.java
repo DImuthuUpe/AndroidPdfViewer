@@ -206,7 +206,9 @@ public class PDFView extends RelativeLayout {
 
     private boolean isLandscapeOrientation = false;
 
-    /** True if should scroll through pages vertically instead of horizontally */
+    /**
+     * True if should scroll through pages vertically instead of horizontally
+     */
     private boolean swipeVertical = true;
 
     private boolean enableSwipe = true;
@@ -807,7 +809,7 @@ public class PDFView extends RelativeLayout {
 
         this.pdfFile = pdfFile;
 
-        if(renderingHandlerThread == null){
+        if (renderingHandlerThread == null) {
             renderingHandlerThread = new HandlerThread("PDF renderer");
         }
 
@@ -1242,9 +1244,13 @@ public class PDFView extends RelativeLayout {
         return dualPageMode;
     }
 
-    public boolean isOnLandscapeOrientation() { return isLandscapeOrientation; }
+    public boolean isOnLandscapeOrientation() {
+        return isLandscapeOrientation;
+    }
 
-    public void setLandscapeOrientation(boolean landscapeOrientation) {this.isLandscapeOrientation = landscapeOrientation; }
+    public void setLandscapeOrientation(boolean landscapeOrientation) {
+        this.isLandscapeOrientation = landscapeOrientation;
+    }
 
     public void setDualPageMode(boolean dualPageMode) {
         this.dualPageMode = dualPageMode;

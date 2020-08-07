@@ -1,32 +1,26 @@
-buildscript {
-    repositories {
-        google()
-        jcenter()
-    }
-}
-
-repositories {
-    google()
-    jcenter()
-}
-
 apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 29
 
     defaultConfig {
-        minSdkVersion 14
+        applicationId "com.pdfviewer"
+        minSdkVersion 16
         targetSdkVersion 29
         versionCode 3
         versionName "3.0.0"
     }
 
+    buildTypes {
+        release {
+            minifyEnabled true
+            debuggable true
+            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+        }
+    }
 }
 
 dependencies {
     implementation project(':android-pdf-viewer')
     implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'org.androidannotations:androidannotations-api:4.6.0'
-    annotationProcessor "org.androidannotations:androidannotations:4.6.0"
 }

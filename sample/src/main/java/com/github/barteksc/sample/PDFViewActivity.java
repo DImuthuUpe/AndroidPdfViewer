@@ -22,13 +22,18 @@ import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Bundle;
 import android.provider.OpenableColumns;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.appcompat.app.AppCompatActivity;
-import android.util.Log;
-import android.widget.Toast;
 
 import com.github.barteksc.pdfviewer.PDFView;
 import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener;
@@ -38,18 +43,8 @@ import com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle;
 import com.github.barteksc.pdfviewer.util.FitPolicy;
 import com.shockwave.pdfium.PdfDocument;
 
-import org.androidannotations.annotations.AfterViews;
-import org.androidannotations.annotations.EActivity;
-import org.androidannotations.annotations.NonConfigurationInstance;
-import org.androidannotations.annotations.OnActivityResult;
-import org.androidannotations.annotations.OptionsItem;
-import org.androidannotations.annotations.OptionsMenu;
-import org.androidannotations.annotations.ViewById;
-
 import java.util.List;
 
-@EActivity(R.layout.activity_main)
-@OptionsMenu(R.menu.options)
 public class PDFViewActivity extends AppCompatActivity implements OnPageChangeListener, OnLoadCompleteListener,
         OnPageErrorListener {
 
@@ -61,20 +56,46 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
     public static final String SAMPLE_FILE = "sample.pdf";
     public static final String READ_EXTERNAL_STORAGE = "android.permission.READ_EXTERNAL_STORAGE";
 
-    @ViewById
-    PDFView pdfView;
+    private PDFView pdfView;
 
-    @NonConfigurationInstance
-    Uri uri;
+    private Uri uri;
 
-    @NonConfigurationInstance
-    Integer pageNumber = 0;
+    private Integer pageNumber = 0;
 
-    String pdfFileName;
+    private String pdfFileName;
 
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
+        initViews();
+    }
 
-    @OptionsItem(R.id.pickFile)
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.options, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.pickFile:
+                pickFile();
+
+                break;
+        }
+
+        return true;
+    }
+
+    private void initViews() {
+        pdfView = findViewById(R.id.pdfView);
+
+        afterViews();
+    }
+
     void pickFile() {
         int permissionCheck = ContextCompat.checkSelfPermission(this,
                 READ_EXTERNAL_STORAGE);
@@ -103,7 +124,6 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
         }
     }
 
-    @AfterViews
     void afterViews() {
         pdfView.setBackgroundColor(Color.LTGRAY);
         if (uri != null) {
@@ -126,7 +146,7 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
                 .enableAnnotationRendering(true)
                 .onLoad(this)
                 .landscapeOrientation(isLandscape)
-                .dualPageMode(true)
+                .dualPageMode(false)
                 .scrollHandle(new DefaultScrollHandle(this))
                 .spacing(0) // in dp
                 .enableSwipe(true)
@@ -156,7 +176,13 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
                 .load();
     }
 
-    @OnActivityResult(REQUEST_CODE)
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        onResult(resultCode, data);
+    }
+
     public void onResult(int resultCode, Intent intent) {
         if (resultCode == RESULT_OK) {
             uri = intent.getData();
