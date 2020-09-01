@@ -49,7 +49,7 @@ Library is available in jcenter repository, probably it'll be in Maven Central s
 If you are using ProGuard, add following rule to proguard config file:
 
 ```proguard
--keep class com.shockwave.**
+-keep class com.shockwave.** { *; }
 ```
 
 ## Include PDFView in your layout
