@@ -43,6 +43,8 @@ class AnimationManager {
 
     private boolean pageFlinging = false;
 
+    private long animationDuration = 400;
+
     public AnimationManager(PDFView pdfView) {
         this.pdfView = pdfView;
         scroller = new OverScroller(pdfView.getContext());
@@ -55,7 +57,7 @@ class AnimationManager {
         animation.setInterpolator(new DecelerateInterpolator());
         animation.addUpdateListener(xAnimation);
         animation.addListener(xAnimation);
-        animation.setDuration(400);
+        animation.setDuration(animationDuration);
         animation.start();
     }
 
@@ -66,7 +68,7 @@ class AnimationManager {
         animation.setInterpolator(new DecelerateInterpolator());
         animation.addUpdateListener(yAnimation);
         animation.addListener(yAnimation);
-        animation.setDuration(400);
+        animation.setDuration(animationDuration);
         animation.start();
     }
 
@@ -77,7 +79,7 @@ class AnimationManager {
         ZoomAnimation zoomAnim = new ZoomAnimation(centerX, centerY);
         animation.addUpdateListener(zoomAnim);
         animation.addListener(zoomAnim);
-        animation.setDuration(400);
+        animation.setDuration(animationDuration);
         animation.start();
     }
 
@@ -123,6 +125,14 @@ class AnimationManager {
 
     public boolean isFlinging() {
         return flinging || pageFlinging;
+    }
+
+    public void setAnimationDuration(long animationDuration) {
+        this.animationDuration = animationDuration;
+    }
+
+    public long getAnimationDuration() {
+        return animationDuration;
     }
 
     class XAnimation extends AnimatorListenerAdapter implements AnimatorUpdateListener {
