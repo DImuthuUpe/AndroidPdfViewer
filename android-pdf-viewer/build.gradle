@@ -1,29 +1,5 @@
 apply plugin: 'com.android.library'
 
-ext {
-    bintrayRepo = 'maven'
-    bintrayName = 'android-pdf-viewer'
-
-    publishedGroupId = 'com.github.barteksc'
-    libraryName = 'AndroidPdfViewer'
-    artifact = 'android-pdf-viewer'
-
-    libraryDescription = 'Android view for displaying PDFs rendered with PdfiumAndroid'
-
-    siteUrl = 'https://github.com/barteksc/AndroidPdfViewer'
-    gitUrl = 'https://github.com/barteksc/AndroidPdfViewer.git'
-
-    libraryVersion = '3.2.0-beta.1'
-
-    developerId = 'barteksc'
-    developerName = 'Bartosz Schiller'
-    developerEmail = 'barteksch@boo.pl'
-
-    licenseName = 'The Apache Software License, Version 2.0'
-    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-    allLicenses = ["Apache-2.0"]
-}
-
 android {
     compileSdkVersion 28
 
@@ -41,4 +17,11 @@ dependencies {
     api 'com.github.barteksc:pdfium-android:1.9.0'
 }
 
-apply from: 'bintray.gradle'
+// Maven Publishing
+ext {
+    PUBLISH_GROUP_ID = 'com.github.mhiew'
+    PUBLISH_VERSION = '3.2.0-beta.1'
+    PUBLISH_ARTIFACT_ID = 'android-pdf-viewer'
+}
+
+apply from: "${rootProject.projectDir}/android-pdf-viewer/publish-mavencentral.gradle"

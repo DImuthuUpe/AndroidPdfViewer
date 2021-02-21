@@ -1,5 +1,6 @@
 
-# Looking for new maintainer!
+#### This is a fork of the [AndroidPdfViewerV1](https://github.com/barteksc/AndroidPdfViewerV1)
+switch back to the mainline repo when it gets migrated off JCenter
 
 
 # Android PdfViewer
@@ -37,13 +38,17 @@ Licensed under Apache License 2.0.
 
 Add to _build.gradle_:
 
-`implementation 'com.github.barteksc:android-pdf-viewer:3.2.0-beta.1'`
+```groovy
+allprojects {
+  repositories {
+    ...
+    mavenCentral()
+    ...
+  }
+}
+```
 
-or if you want to use more stable version:
- 
-`implementation 'com.github.barteksc:android-pdf-viewer:2.8.2'`
-
-Library is available in jcenter repository, probably it'll be in Maven Central soon.
+`implementation 'com.github.mhiew:android-pdf-viewer:3.2.0-beta.1'`
 
 ## ProGuard
 If you are using ProGuard, add following rule to proguard config file:
