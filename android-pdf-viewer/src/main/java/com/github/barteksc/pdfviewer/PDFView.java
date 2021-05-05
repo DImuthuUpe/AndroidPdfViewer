@@ -123,7 +123,7 @@ public class PDFView extends RelativeLayout {
     /** Drag manager manage all touch events */
     private DragPinchManager dragPinchManager;
 
-    PdfFile pdfFile;
+    public PdfFile pdfFile;
 
     /** The index of the current sequence */
     private int currentPage;
