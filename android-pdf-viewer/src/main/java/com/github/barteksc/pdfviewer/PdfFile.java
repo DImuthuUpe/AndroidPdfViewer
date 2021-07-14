@@ -184,8 +184,10 @@ class PdfFile {
         pageSpacing.clear();
         for (int i = 0; i < getPagesCount(); i++) {
             float spacing = spacingPx;
-            if (i == 0 || i == getPagesCount() - 1) {
+            if (i == 0) {
                 spacing += spacingPx * 2;
+            } else if (i == getPagesCount() - 1) {
+                spacing += spacingPx;
             }
             pageSpacing.add(spacing);
         }
@@ -217,14 +219,12 @@ class PdfFile {
                 pageOffsets.add(offset);
                 offset += size + pageSpacing.get(i) / 2f;
             } else {
-                offset += pageSpacing.get(i);
+                offset += spacingPx;
                 if (i == 0) {
-                    offset -= spacingPx;
-                } else if (i == getPagesCount() - 1) {
-                    offset -= spacingPx * 2;
+                    offset += spacingPx;
                 }
                 pageOffsets.add(offset);
-                offset += size + pageSpacing.get(i);
+                offset += size;
             }
         }
     }
