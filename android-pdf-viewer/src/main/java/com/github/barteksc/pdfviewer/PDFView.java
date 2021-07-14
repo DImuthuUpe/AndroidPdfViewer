@@ -397,6 +397,10 @@ public class PDFView extends RelativeLayout {
         }
     }
 
+    public void setPageShadow(int elevation) {
+        paint.setShadowLayer(elevation, 0, 0, Color.BLACK);
+    }
+
     void enableDoubletap(boolean enableDoubletap) {
         this.doubletapEnabled = enableDoubletap;
     }
@@ -1377,6 +1381,8 @@ public class PDFView extends RelativeLayout {
 
         private boolean nightMode = false;
 
+        private int pageElevation = 0;
+
         private Configurator(DocumentSource documentSource) {
             this.documentSource = documentSource;
         }
@@ -1521,6 +1527,11 @@ public class PDFView extends RelativeLayout {
             return this;
         }
 
+        public Configurator pageElevation(int elevation) {
+            this.pageElevation = elevation;
+            return this;
+        }
+
         public void load() {
             if (!hasSize) {
                 waitingDocumentConfigurator = this;
@@ -1552,6 +1563,7 @@ public class PDFView extends RelativeLayout {
             PDFView.this.setFitEachPage(fitEachPage);
             PDFView.this.setPageSnap(pageSnap);
             PDFView.this.setPageFling(pageFling);
+            PDFView.this.setPageShadow(pageElevation);
 
             if (pageNumbers != null) {
                 PDFView.this.load(documentSource, password, pageNumbers);

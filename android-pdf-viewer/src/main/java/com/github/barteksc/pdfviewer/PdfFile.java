@@ -126,6 +126,8 @@ class PdfFile {
         }
         if (autoSpacing) {
             prepareAutoSpacing(viewSize);
+        } else {
+            prepareSpacing();
         }
         prepareDocLen();
         preparePagesOffset();
@@ -178,16 +180,23 @@ class PdfFile {
         }
     }
 
+    private void prepareSpacing() {
+        pageSpacing.clear();
+        for (int i = 0; i < getPagesCount(); i++) {
+            float spacing = spacingPx;
+            if (i == 0 || i == getPagesCount() - 1) {
+                spacing += spacingPx * 2;
+            }
+            pageSpacing.add(spacing);
+        }
+    }
+
     private void prepareDocLen() {
         float length = 0;
         for (int i = 0; i < getPagesCount(); i++) {
             SizeF pageSize = pageSizes.get(i);
             length += isVertical ? pageSize.getHeight() : pageSize.getWidth();
-            if (autoSpacing) {
-                length += pageSpacing.get(i);
-            } else if (i < getPagesCount() - 1) {
-                length += spacingPx;
-            }
+            length += pageSpacing.get(i);
         }
         documentLength = length;
     }
@@ -208,8 +217,14 @@ class PdfFile {
                 pageOffsets.add(offset);
                 offset += size + pageSpacing.get(i) / 2f;
             } else {
+                offset += pageSpacing.get(i);
+                if (i == 0) {
+                    offset -= spacingPx;
+                } else if (i == getPagesCount() - 1) {
+                    offset -= spacingPx * 2;
+                }
                 pageOffsets.add(offset);
-                offset += size + spacingPx;
+                offset += size + pageSpacing.get(i);
             }
         }
     }
