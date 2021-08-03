@@ -48,7 +48,9 @@ import com.github.barteksc.pdfviewer.listener.OnPageChangeListener;
 import com.github.barteksc.pdfviewer.listener.OnPageErrorListener;
 import com.github.barteksc.pdfviewer.listener.OnPageScrollListener;
 import com.github.barteksc.pdfviewer.listener.OnRenderListener;
+import com.github.barteksc.pdfviewer.listener.OnScrollListener;
 import com.github.barteksc.pdfviewer.listener.OnTapListener;
+import com.github.barteksc.pdfviewer.listener.OnZoomChangeListener;
 import com.github.barteksc.pdfviewer.model.PagePart;
 import com.github.barteksc.pdfviewer.scroll.ScrollHandle;
 import com.github.barteksc.pdfviewer.source.AssetSource;
@@ -897,6 +899,7 @@ public class PDFView extends RelativeLayout {
         }
 
         callbacks.callOnPageScroll(getCurrentPage(), positionOffset);
+        callbacks.callOnScroll(offsetX, offsetY);
 
         redraw();
     }
@@ -1028,6 +1031,7 @@ public class PDFView extends RelativeLayout {
      */
     public void zoomTo(float zoom) {
         this.zoom = zoom;
+        this.callbacks.callOnZoomChange(zoom);
     }
 
     /**
@@ -1341,6 +1345,10 @@ public class PDFView extends RelativeLayout {
 
         private OnPageScrollListener onPageScrollListener;
 
+        private OnScrollListener onScrollListener;
+
+        private OnZoomChangeListener onZoomChangeListener;
+
         private OnRenderListener onRenderListener;
 
         private OnTapListener onTapListener;
@@ -1418,6 +1426,16 @@ public class PDFView extends RelativeLayout {
 
         public Configurator onPageScroll(OnPageScrollListener onPageScrollListener) {
             this.onPageScrollListener = onPageScrollListener;
+            return this;
+        }
+
+        public Configurator onScroll(OnScrollListener onScrollListener) {
+            this.onScrollListener = onScrollListener;
+            return this;
+        }
+
+        public Configurator onZoomChange(OnZoomChangeListener onZoomChangeListener) {
+            this.onZoomChangeListener = onZoomChangeListener;
             return this;
         }
 
@@ -1533,6 +1551,8 @@ public class PDFView extends RelativeLayout {
             PDFView.this.callbacks.setOnDrawAll(onDrawAllListener);
             PDFView.this.callbacks.setOnPageChange(onPageChangeListener);
             PDFView.this.callbacks.setOnPageScroll(onPageScrollListener);
+            PDFView.this.callbacks.setOnZoomChange(onZoomChangeListener);
+            PDFView.this.callbacks.setOnScroll(onScrollListener);
             PDFView.this.callbacks.setOnRender(onRenderListener);
             PDFView.this.callbacks.setOnTap(onTapListener);
             PDFView.this.callbacks.setOnLongPress(onLongPressListener);
