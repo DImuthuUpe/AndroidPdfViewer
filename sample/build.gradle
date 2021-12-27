@@ -20,8 +20,13 @@ android {
         targetSdkVersion 28
         versionCode 3
         versionName "3.0.0"
-    }
 
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = ["androidManifestFile": "$projectDir/src/main/AndroidManifest.xml".toString()]
+            }
+        }
+    }
 }
 
 dependencies {
