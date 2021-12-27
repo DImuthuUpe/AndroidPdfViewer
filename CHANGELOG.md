@@ -1,3 +1,7 @@
+## 3.2.1-beta.2 (2021-12-27)
+* Fix a potential NPE due to out of sync render thread management [Pull Request](https://github.com/barteksc/AndroidPdfViewer/pull/824)
+* Update the sample app configuration so that it can compile [Pull Request](https://github.com/mhiew/AndroidPdfViewer/pull/2)
+
 ## 3.2.0-beta.1 (2019-08-18)
 * Merge PR #714 with optimized page load
 * Merge PR #776 with fix for max & min zoom level

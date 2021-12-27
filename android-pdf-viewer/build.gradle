@@ -20,7 +20,7 @@ dependencies {
 // Maven Publishing
 ext {
     PUBLISH_GROUP_ID = 'com.github.mhiew'
-    PUBLISH_VERSION = '3.2.0-beta.1'
+    PUBLISH_VERSION = '3.2.0-beta.2'
     PUBLISH_ARTIFACT_ID = 'android-pdf-viewer'
 }
 
