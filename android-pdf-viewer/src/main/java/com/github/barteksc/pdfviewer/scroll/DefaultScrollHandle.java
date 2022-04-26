@@ -4,7 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
-import android.support.v4.content.ContextCompat;
+import androidx.core.content.ContextCompat;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
@@ -78,11 +78,7 @@ public class DefaultScrollHandle extends RelativeLayout implements ScrollHandle 
             }
         }
 
-        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.JELLY_BEAN) {
-            setBackgroundDrawable(background);
-        } else {
-            setBackground(background);
-        }
+        setBackground(background);
 
         LayoutParams lp = new LayoutParams(Util.getDP(context, width), Util.getDP(context, height));
         lp.setMargins(0, 0, 0, 0);
@@ -149,7 +145,11 @@ public class DefaultScrollHandle extends RelativeLayout implements ScrollHandle 
             pos = getY();
             viewSize = getHeight();
             pdfViewSize = pdfView.getHeight();
-        } else {
+        } else if (pdfView.isOnDualPageMode()){
+            pos = getX();
+            viewSize = getWidth() / 2f;
+            pdfViewSize = pdfView.getWidth() / 2f;
+        } else  {
             pos = getX();
             viewSize = getWidth();
             pdfViewSize = pdfView.getWidth();
