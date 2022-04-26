@@ -985,10 +985,14 @@ public class PDFView extends RelativeLayout {
         }
     }
 
+    public void performPageSnap() {
+        performPageSnap(true);
+    }
+
     /**
      * Animate to the nearest snapping position for the current SnapPolicy
      */
-    public void performPageSnap() {
+    public void performPageSnap(boolean withAnimation) {
         if (!pageSnap || pdfFile == null || pdfFile.getPagesCount() == 0) {
             return;
         }
@@ -1000,9 +1004,17 @@ public class PDFView extends RelativeLayout {
 
         float offset = snapOffsetForPage(centerPage, edge);
         if (swipeVertical) {
-            animationManager.startYAnimation(currentYOffset, -offset);
+            if (withAnimation) {
+                animationManager.startYAnimation(currentYOffset, -offset);
+            } else {
+                moveTo(currentXOffset, -offset);
+            }
         } else {
-            animationManager.startXAnimation(currentXOffset, -offset);
+            if (withAnimation) {
+                animationManager.startXAnimation(currentXOffset, -offset);
+            } else {
+                moveTo(-offset, currentYOffset);
+            }
         }
     }
 
