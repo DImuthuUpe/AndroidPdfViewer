@@ -245,8 +245,6 @@ public class PDFView extends RelativeLayout {
     public PDFView(Context context, AttributeSet set) {
         super(context, set);
 
-        renderingHandlerThread = new HandlerThread("PDF renderer");
-
         if (isInEditMode()) {
             return;
         }
@@ -460,6 +458,13 @@ public class PDFView extends RelativeLayout {
             return;
         }
         animationManager.computeFling();
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        // Re initialise handler thread here since it's being set to null when onDetachedFromWindow is invoked
+        renderingHandlerThread = new HandlerThread("PDF renderer");
     }
 
     @Override
@@ -752,6 +757,11 @@ public class PDFView extends RelativeLayout {
         state = State.LOADED;
 
         this.pdfFile = pdfFile;
+
+        // Fix NPE: https://github.com/barteksc/AndroidPdfViewer/issues/991
+        if (renderingHandlerThread == null) {
+            renderingHandlerThread = new HandlerThread("PDF renderer");
+        }
 
         if (!renderingHandlerThread.isAlive()) {
             renderingHandlerThread.start();
