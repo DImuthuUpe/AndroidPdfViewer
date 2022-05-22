@@ -1,13 +1,13 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion rootProject.tools.compileSdk
 
     defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion 28
+        minSdkVersion rootProject.tools.minSdk
+        targetSdkVersion rootProject.tools.targetSdk
         versionCode 1
-        versionName "3.2.0-beta.1"
+        versionName "${rootProject.tools.versionName}"
     }
 
 }
@@ -20,7 +20,7 @@ dependencies {
 // Maven Publishing
 ext {
     PUBLISH_GROUP_ID = 'com.github.mhiew'
-    PUBLISH_VERSION = '3.2.0-beta.2'
+    PUBLISH_VERSION = "${rootProject.tools.versionName}"
     PUBLISH_ARTIFACT_ID = 'android-pdf-viewer'
 }
 

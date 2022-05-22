@@ -13,13 +13,13 @@ repositories {
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion rootProject.tools.compileSdk
 
     defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion 28
+        minSdkVersion rootProject.tools.minSdk
+        targetSdkVersion rootProject.tools.targetSdk
         versionCode 3
-        versionName "3.0.0"
+        versionName "${rootProject.tools.versionName}"
 
         javaCompileOptions {
             annotationProcessorOptions {
