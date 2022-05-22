@@ -18,9 +18,9 @@ allprojects {
 
 ext {
     tools = [
-            minSdk      : 14,
-            targetSdk   : 28,
-            compileSdk  : 28,
+            minSdk      : 19,
+            targetSdk   : 31,
+            compileSdk  : 31,
             versionName: '3.2.0-beta.2'
     ]
 }
