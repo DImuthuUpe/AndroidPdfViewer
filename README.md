@@ -193,7 +193,7 @@ available [here](http://ph0b.com/android-studio-gradle-and-ndk-integration/).
 Most important section is _Improving multiple APKs creation and versionCode handling with APK Splits_, but whole article is worth reading.
 You only need to do this in your application, no need for forking PdfiumAndroid or so.
 
-### Why I cannot open PDF from URL?
+### Why can't I open a PDF from a URL?
 Downloading files is long running process which must be aware of Activity lifecycle, must support some configuration, 
 data cleanup and caching, so creating such module will probably end up as new library.
 
