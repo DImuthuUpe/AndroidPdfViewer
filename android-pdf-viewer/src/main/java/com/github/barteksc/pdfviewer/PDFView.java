@@ -1544,6 +1544,11 @@ public class PDFView extends RelativeLayout {
             return this;
         }
 
+        public Configurator animationDuration(long duration){
+            animationManager.setAnimationDuration(duration);
+            return this;
+        }
+
         public void load() {
             if (!hasSize) {
                 waitingDocumentConfigurator = this;
