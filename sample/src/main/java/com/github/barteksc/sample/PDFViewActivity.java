@@ -66,9 +66,6 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
     @NonConfigurationInstance
     Uri uri;
 
-    @NonConfigurationInstance
-    Integer pageNumber = 0;
-
     String pdfFileName;
 
     @OptionsItem(R.id.pickFile)
@@ -115,7 +112,6 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
         pdfFileName = assetFileName;
 
         pdfView.fromAsset(SAMPLE_FILE)
-                .defaultPage(pageNumber)
                 .onPageChange(this)
                 .enableAnnotationRendering(true)
                 .onLoad(this)
@@ -130,7 +126,6 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
         pdfFileName = getFileName(uri);
 
         pdfView.fromUri(uri)
-                .defaultPage(pageNumber)
                 .onPageChange(this)
                 .enableAnnotationRendering(true)
                 .onLoad(this)
@@ -150,7 +145,6 @@ public class PDFViewActivity extends AppCompatActivity implements OnPageChangeLi
 
     @Override
     public void onPageChanged(int page, int pageCount) {
-        pageNumber = page;
         setTitle(String.format("%s %s / %s", pdfFileName, page + 1, pageCount));
     }
 
