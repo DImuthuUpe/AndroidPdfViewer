@@ -873,8 +873,9 @@ public class PDFView extends RelativeLayout {
         dragPinchManager.enable();
 
         hasRestoredFromState = false;
-        callbacks.callOnLoadComplete(pdfFile.getPagesCount());
-
+        SizeF size = pdfFile.getPageSize(defaultPage);
+        callbacks.callOnLoadComplete(pdfFile.getPagesCount(), size.getWidth(), size.getHeight());
+        
         if (!hasRestoredFromState && restoredState != null) {
             restoreViewState(restoredState);
             restoredState = null;
