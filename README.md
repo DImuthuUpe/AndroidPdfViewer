@@ -1,5 +1,5 @@
 
-#### This is a fork of the [AndroidPdfViewerV1](https://github.com/barteksc/AndroidPdfViewerV1)
+#### This is a fork of the [AndroidPdfViewer](https://github.com/barteksc/AndroidPdfViewer)
 switch back to the mainline repo when it gets migrated off JCenter
 
 
