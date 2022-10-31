@@ -1,3 +1,8 @@
+## 3.3.0 (2022-10-31)
+Changelogs are not taken from the main repository.
+Not available in deprecated `jcenter.bintray`.
+Available only as a submodule.
+
 ## 3.2.0-beta.1 (2019-08-18)
 * Merge PR #714 with optimized page load
 * Merge PR #776 with fix for max & min zoom level

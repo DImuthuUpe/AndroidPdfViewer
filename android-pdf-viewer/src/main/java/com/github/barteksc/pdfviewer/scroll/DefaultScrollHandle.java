@@ -79,11 +79,7 @@ public class DefaultScrollHandle extends RelativeLayout implements ScrollHandle 
             }
         }
 
-        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.JELLY_BEAN) {
-            setBackgroundDrawable(background);
-        } else {
-            setBackground(background);
-        }
+        setBackground(background);
 
         LayoutParams lp = new LayoutParams(Util.getDP(context, width), Util.getDP(context, height));
         lp.setMargins(0, 0, 0, 0);
