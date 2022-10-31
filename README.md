@@ -1,6 +1,10 @@
 
 # Looking for new maintainer!
 
+## 3.3.0 (2022-10-31)
+Changelogs are not taken from the main repository.
+Not available in deprecated `jcenter.bintray`.
+Available only as a submodule.
 
 # Android PdfViewer
 
