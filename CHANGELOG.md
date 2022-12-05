@@ -1,3 +1,13 @@
+## 3.2.0-beta.3 (2022-05-22)
+* Change minimum SDK version to 19
+* Drop MIPS support
+* Update to Androidx
+* Switch pdfium-android to a [fork](https://github.com/mhiew/PdfiumAndroid) so we can disable jetifier
+
+## 3.2.0-beta.2 (2021-12-27)
+* Fix a potential NPE due to out of sync render thread management [Pull Request](https://github.com/barteksc/AndroidPdfViewer/pull/824)
+* Update the sample app configuration so that it can compile [Pull Request](https://github.com/mhiew/AndroidPdfViewer/pull/2)
+
 ## 3.2.0-beta.1 (2019-08-18)
 * Merge PR #714 with optimized page load
 * Merge PR #776 with fix for max & min zoom level
