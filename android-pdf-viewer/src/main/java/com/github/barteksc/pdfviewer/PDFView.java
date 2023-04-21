@@ -39,15 +39,8 @@ import com.github.barteksc.pdfviewer.exception.PageRenderingException;
 import com.github.barteksc.pdfviewer.link.DefaultLinkHandler;
 import com.github.barteksc.pdfviewer.link.LinkHandler;
 import com.github.barteksc.pdfviewer.listener.Callbacks;
-import com.github.barteksc.pdfviewer.listener.OnDrawListener;
 import com.github.barteksc.pdfviewer.listener.OnErrorListener;
-import com.github.barteksc.pdfviewer.listener.OnLoadCompleteListener;
-import com.github.barteksc.pdfviewer.listener.OnLongPressListener;
-import com.github.barteksc.pdfviewer.listener.OnPageChangeListener;
-import com.github.barteksc.pdfviewer.listener.OnPageErrorListener;
-import com.github.barteksc.pdfviewer.listener.OnPageScrollListener;
 import com.github.barteksc.pdfviewer.listener.OnRenderListener;
-import com.github.barteksc.pdfviewer.listener.OnTapListener;
 import com.github.barteksc.pdfviewer.model.PagePart;
 import com.github.barteksc.pdfviewer.scroll.ScrollHandle;
 import com.github.barteksc.pdfviewer.source.DocumentSource;
@@ -93,17 +86,6 @@ public class PDFView extends RelativeLayout {
     private float minZoom = DEFAULT_MIN_SCALE;
     private float midZoom = DEFAULT_MID_SCALE;
     private float maxZoom = DEFAULT_MAX_SCALE;
-
-    /**
-     * START - scrolling in first page direction
-     * END - scrolling in last page direction
-     * NONE - not scrolling
-     */
-    enum ScrollDir {
-        NONE, START, END
-    }
-
-    private ScrollDir scrollDir = ScrollDir.NONE;
 
     /** Rendered parts go to the cache manager */
     CacheManager cacheManager;
@@ -316,8 +298,6 @@ public class PDFView extends RelativeLayout {
         if (scrollHandle != null && !documentFitsView()) {
             scrollHandle.setPageNum(currentPage + 1);
         }
-
-        callbacks.callOnPageChange(currentPage, pdfFile.getPagesCount());
     }
 
     /**
@@ -348,10 +328,6 @@ public class PDFView extends RelativeLayout {
             moveTo((-pdfFile.getDocLen(zoom) + getWidth()) * progress, currentYOffset, moveHandle);
         }
         loadPageByOffset();
-    }
-
-    public void setPositionOffset(float progress) {
-        setPositionOffset(progress, true);
     }
 
     public void stopFling() {
@@ -395,9 +371,7 @@ public class PDFView extends RelativeLayout {
     }
 
     void onPageError(PageRenderingException ex) {
-        if (!callbacks.callOnPageError(ex.getPage(), ex.getCause())) {
-            Log.e(TAG, "Cannot open page " + ex.getPage(), ex.getCause());
-        }
+        Log.e(TAG, "Cannot open page " + ex.getPage(), ex.getCause());
     }
 
     public void recycle() {
@@ -610,43 +584,12 @@ public class PDFView extends RelativeLayout {
         // Draws parts
         for (PagePart part : cacheManager.getPageParts()) {
             drawPart(canvas, part);
-            if (callbacks.getOnDrawAll() != null
-                    && !onDrawPagesNums.contains(part.getPage())) {
-                onDrawPagesNums.add(part.getPage());
-            }
         }
 
-        for (Integer page : onDrawPagesNums) {
-            drawWithListener(canvas, page, callbacks.getOnDrawAll());
-        }
         onDrawPagesNums.clear();
-
-        drawWithListener(canvas, currentPage, callbacks.getOnDraw());
 
         // Restores the canvas position
         canvas.translate(-currentXOffset, -currentYOffset);
-    }
-
-    private void drawWithListener(Canvas canvas, int page, OnDrawListener listener) {
-        if (listener != null) {
-            float translateX, translateY;
-            if (swipeVertical) {
-                translateX = 0;
-                translateY = pdfFile.getPageOffset(page, zoom);
-            } else {
-                translateY = 0;
-                translateX = pdfFile.getPageOffset(page, zoom);
-            }
-
-            canvas.translate(translateX, translateY);
-            SizeF size = pdfFile.getPageSize(page);
-            listener.onLayerDrawn(canvas,
-                    toCurrentScale(size.getWidth()),
-                    toCurrentScale(size.getHeight()),
-                    page);
-
-            canvas.translate(-translateX, -translateY);
-        }
     }
 
     /** Draw a given PagePart on the canvas */
@@ -753,8 +696,6 @@ public class PDFView extends RelativeLayout {
 
         dragPinchManager.enable();
 
-        callbacks.callOnLoadComplete(pdfFile.getPagesCount());
-
         jumpTo(defaultPage, false);
     }
 
@@ -833,14 +774,6 @@ public class PDFView extends RelativeLayout {
                     offsetY = -contentHeight + getHeight();
                 }
             }
-
-            if (offsetY < currentYOffset) {
-                scrollDir = ScrollDir.END;
-            } else if (offsetY > currentYOffset) {
-                scrollDir = ScrollDir.START;
-            } else {
-                scrollDir = ScrollDir.NONE;
-            }
         } else {
             // Check Y offset
             float scaledPageHeight = toCurrentScale(pdfFile.getMaxPageHeight());
@@ -865,14 +798,6 @@ public class PDFView extends RelativeLayout {
                     offsetX = -contentWidth + getWidth();
                 }
             }
-
-            if (offsetX < currentXOffset) {
-                scrollDir = ScrollDir.END;
-            } else if (offsetX > currentXOffset) {
-                scrollDir = ScrollDir.START;
-            } else {
-                scrollDir = ScrollDir.NONE;
-            }
         }
 
         currentXOffset = offsetX;
@@ -882,8 +807,6 @@ public class PDFView extends RelativeLayout {
         if (moveHandle && scrollHandle != null && !documentFitsView()) {
             scrollHandle.setScroll(positionOffset);
         }
-
-        callbacks.callOnPageScroll(getCurrentPage(), positionOffset);
 
         redraw();
     }
@@ -1209,25 +1132,9 @@ public class PDFView extends RelativeLayout {
 
         private boolean enableDoubletap = true;
 
-        private OnDrawListener onDrawListener;
-
-        private OnDrawListener onDrawAllListener;
-
-        private OnLoadCompleteListener onLoadCompleteListener;
-
         private OnErrorListener onErrorListener;
 
-        private OnPageChangeListener onPageChangeListener;
-
-        private OnPageScrollListener onPageScrollListener;
-
         private OnRenderListener onRenderListener;
-
-        private OnTapListener onTapListener;
-
-        private OnLongPressListener onLongPressListener;
-
-        private OnPageErrorListener onPageErrorListener;
 
         private LinkHandler linkHandler = new DefaultLinkHandler(PDFView.this);
 
@@ -1287,16 +1194,8 @@ public class PDFView extends RelativeLayout {
                 return;
             }
             PDFView.this.recycle();
-            PDFView.this.callbacks.setOnLoadComplete(onLoadCompleteListener);
             PDFView.this.callbacks.setOnError(onErrorListener);
-            PDFView.this.callbacks.setOnDraw(onDrawListener);
-            PDFView.this.callbacks.setOnDrawAll(onDrawAllListener);
-            PDFView.this.callbacks.setOnPageChange(onPageChangeListener);
-            PDFView.this.callbacks.setOnPageScroll(onPageScrollListener);
             PDFView.this.callbacks.setOnRender(onRenderListener);
-            PDFView.this.callbacks.setOnTap(onTapListener);
-            PDFView.this.callbacks.setOnLongPress(onLongPressListener);
-            PDFView.this.callbacks.setOnPageError(onPageErrorListener);
             PDFView.this.callbacks.setLinkHandler(linkHandler);
             PDFView.this.setSwipeEnabled(enableSwipe);
             PDFView.this.setNightMode(nightMode);

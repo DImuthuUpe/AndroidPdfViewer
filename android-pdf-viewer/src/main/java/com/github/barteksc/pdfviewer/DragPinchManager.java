@@ -63,13 +63,9 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
         enabled = false;
     }
 
-    void disableLongpress(){
-        gestureDetector.setIsLongpressEnabled(false);
-    }
-
     @Override
     public boolean onSingleTapConfirmed(MotionEvent e) {
-        boolean onTapHandled = pdfView.callbacks.callOnTap(e);
+        boolean onTapHandled = false;
         boolean linkTapped = checkLinkTapped(e.getX(), e.getY());
         if (!onTapHandled && !linkTapped) {
             ScrollHandle ps = pdfView.getScrollHandle();
@@ -107,7 +103,7 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
                     (int) pageSize.getHeight(), link.getBounds());
             mapped.sort();
             if (mapped.contains(mappedX, mappedY)) {
-                pdfView.callbacks.callLinkHandler(new LinkTapEvent(x, y, mappedX, mappedY, mapped, link));
+                pdfView.callbacks.callLinkHandler(new LinkTapEvent(link));
                 return true;
             }
         }
@@ -196,7 +192,6 @@ class DragPinchManager implements GestureDetector.OnGestureListener, GestureDete
 
     @Override
     public void onLongPress(MotionEvent e) {
-        pdfView.callbacks.callOnLongPress(e);
     }
 
     @Override
