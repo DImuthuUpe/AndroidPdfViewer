@@ -34,7 +34,6 @@ import android.os.HandlerThread;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.widget.RelativeLayout;
-
 import com.github.barteksc.pdfviewer.exception.PageRenderingException;
 import com.github.barteksc.pdfviewer.link.DefaultLinkHandler;
 import com.github.barteksc.pdfviewer.link.LinkHandler;
