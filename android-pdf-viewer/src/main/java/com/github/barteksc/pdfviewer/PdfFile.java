@@ -311,20 +311,6 @@ class PdfFile {
                 bounds.left, bounds.top, bounds.width(), bounds.height(), annotationRendering);
     }
 
-    public PdfDocument.Meta getMetaData() {
-        if (pdfDocument == null) {
-            return null;
-        }
-        return pdfiumCore.getDocumentMeta(pdfDocument);
-    }
-
-    public List<PdfDocument.Bookmark> getBookmarks() {
-        if (pdfDocument == null) {
-            return new ArrayList<>();
-        }
-        return pdfiumCore.getTableOfContents(pdfDocument);
-    }
-
     public List<PdfDocument.Link> getPageLinks(int pageIndex) {
         int docPage = documentPage(pageIndex);
         return pdfiumCore.getPageLinks(pdfDocument, docPage);

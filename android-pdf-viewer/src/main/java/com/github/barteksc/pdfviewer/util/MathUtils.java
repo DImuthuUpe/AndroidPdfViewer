@@ -32,31 +32,11 @@ public class MathUtils {
      * @param and     The biggest value the number can take.
      * @return The limited number.
      */
-    public static int limit(int number, int between, int and) {
-        if (number <= between) {
-            return between;
-        }
-        if (number >= and) {
-            return and;
-        }
-        return number;
-    }
-
-    /**
-     * Limits the given <b>number</b> between the other values
-     * @param number  The number to limit.
-     * @param between The smallest value the number can take.
-     * @param and     The biggest value the number can take.
-     * @return The limited number.
-     */
     public static float limit(float number, float between, float and) {
         if (number <= between) {
             return between;
         }
-        if (number >= and) {
-            return and;
-        }
-        return number;
+        return Math.min(number, and);
     }
 
     public static float max(float number, float max) {
@@ -67,20 +47,6 @@ public class MathUtils {
     }
 
     public static float min(float number, float min) {
-        if (number < min) {
-            return min;
-        }
-        return number;
-    }
-
-    public static int max(int number, int max) {
-        if (number > max) {
-            return max;
-        }
-        return number;
-    }
-
-    public static int min(int number, int min) {
         if (number < min) {
             return min;
         }
