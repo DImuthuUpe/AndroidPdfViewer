@@ -5,9 +5,9 @@ plugins {
 
 ext {
     tools = [
-            minSdk      : 23,
+            minSdk      : 21,
             targetSdk   : 34,
             compileSdk  : 34,
-            versionName: '3.2.1'
+            versionName: '3.2.2'
     ]
 }

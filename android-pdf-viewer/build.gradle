@@ -40,7 +40,7 @@ android {
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    api 'com.github.lion1988dev:PdfiumAndroid:1.9.1'
+    api 'com.github.lion1988dev:PdfiumAndroid:1.9.2'
 }
 
 publishing {
@@ -48,7 +48,7 @@ publishing {
         release(MavenPublication) {
             groupId = 'com.github.lion1988dev'
             artifactId = 'com.github.barteksc.pdfviewer'
-            version = "3.2.1"
+            version = "3.2.2"
 
             afterEvaluate {
                 from components.release
