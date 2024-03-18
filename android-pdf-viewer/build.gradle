@@ -3,6 +3,8 @@ plugins {
     id 'maven-publish'
 }
 
+group "com.github.lion1988dev"
+
 android {
     namespace "com.github.barteksc.pdfviewer"
 
@@ -47,7 +49,7 @@ publishing {
     publications {
         release(MavenPublication) {
             groupId = 'com.github.lion1988dev'
-            artifactId = 'com.github.barteksc.pdfviewer'
+            artifactId = 'AndroidPdfViewer'
             version = "3.2.3"
 
             afterEvaluate {
