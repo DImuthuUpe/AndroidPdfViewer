@@ -12,7 +12,7 @@ android {
         minSdk rootProject.tools.minSdk
         targetSdk rootProject.tools.targetSdk
 
-        versionCode 1
+        versionCode rootProject.tools.versionCode
         versionName "${rootProject.tools.versionName}"
     }
 
@@ -40,7 +40,7 @@ android {
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    api 'com.github.lion1988dev:PdfiumAndroid:1.9.2'
+    api 'com.github.lion1988dev:PdfiumAndroid:1.9.3'
 }
 
 publishing {
@@ -48,7 +48,7 @@ publishing {
         release(MavenPublication) {
             groupId = 'com.github.lion1988dev'
             artifactId = 'com.github.barteksc.pdfviewer'
-            version = "3.2.2"
+            version = "3.2.3"
 
             afterEvaluate {
                 from components.release
