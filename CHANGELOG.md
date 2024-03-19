@@ -1,3 +1,6 @@
+## 3.2.4 (2024-03-19)
+* Update [PdfiumAndroid library](https://github.com/lion1988dev/PdfiumAndroid) to 1.9.4
+
 ## 3.2.3 (2024-03-18)
 * Change minimum SDK version to 21
 * Update [PdfiumAndroid library](https://github.com/lion1988dev/PdfiumAndroid) to 1.9.3
