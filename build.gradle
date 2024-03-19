@@ -1,19 +1,14 @@
-
-buildscript {
-    repositories {
-        google()
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.4.2'
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
-        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
-    }
+plugins {
+    id 'com.android.application' version '8.3.0' apply false
+    id 'com.android.library' version '8.3.0' apply false
 }
 
-allprojects {
-    repositories {
-        google()
-        jcenter()
-    }
+ext {
+    tools = [
+            minSdk      : 21,
+            targetSdk   : 34,
+            compileSdk  : 34,
+            versionCode: 3,
+            versionName: '3.2.4'
+    ]
 }

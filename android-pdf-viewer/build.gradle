@@ -1,44 +1,60 @@
-apply plugin: 'com.android.library'
-
-ext {
-    bintrayRepo = 'maven'
-    bintrayName = 'android-pdf-viewer'
-
-    publishedGroupId = 'com.github.barteksc'
-    libraryName = 'AndroidPdfViewer'
-    artifact = 'android-pdf-viewer'
-
-    libraryDescription = 'Android view for displaying PDFs rendered with PdfiumAndroid'
-
-    siteUrl = 'https://github.com/barteksc/AndroidPdfViewer'
-    gitUrl = 'https://github.com/barteksc/AndroidPdfViewer.git'
-
-    libraryVersion = '3.2.0-beta.1'
-
-    developerId = 'barteksc'
-    developerName = 'Bartosz Schiller'
-    developerEmail = 'barteksch@boo.pl'
-
-    licenseName = 'The Apache Software License, Version 2.0'
-    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-    allLicenses = ["Apache-2.0"]
+plugins {
+    id 'com.android.library'
+    id 'maven-publish'
 }
 
+group "com.github.lion1988dev"
+
 android {
-    compileSdkVersion 28
+    namespace "com.github.barteksc.pdfviewer"
+
+    compileSdk rootProject.tools.compileSdk
 
     defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion 28
-        versionCode 1
-        versionName "3.2.0-beta.1"
+        minSdk rootProject.tools.minSdk
+        targetSdk rootProject.tools.targetSdk
+
+        versionCode rootProject.tools.versionCode
+        versionName "${rootProject.tools.versionName}"
     }
 
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    publishing {
+        publishing {
+            singleVariant("release") {
+                withSourcesJar()
+                withJavadocJar()
+            }
+        }
+    }
 }
 
 dependencies {
-    implementation 'com.android.support:support-compat:28.0.0'
-    api 'com.github.barteksc:pdfium-android:1.9.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    api 'com.github.lion1988dev:PdfiumAndroid:1.9.4'
 }
 
-apply from: 'bintray.gradle'
+publishing {
+    publications {
+        release(MavenPublication) {
+            groupId = 'com.github.lion1988dev'
+            artifactId = 'AndroidPdfViewer'
+            version = "3.2.4"
+
+            afterEvaluate {
+                from components.release
+            }
+        }
+    }
+}
