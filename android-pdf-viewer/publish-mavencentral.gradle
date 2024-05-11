@@ -80,7 +80,7 @@ afterEvaluate {
                 pom {
                     name = PUBLISH_ARTIFACT_ID
                     description = 'Fork of Barteksc AndroidPdfViewer - Android view for displaying PDFs rendered with PdfiumAndroid'
-                    url = 'https://github.com/mhiew/AndroidPdfViewer'
+                    url = 'https://github.com/Brawl93/AndroidPdfViewer'
                     licenses {
                         license {
                             name = 'The Apache License, Version 2.0'
@@ -89,14 +89,14 @@ afterEvaluate {
                     }
                     developers {
                         developer {
-                            id = 'min'
-                            name = 'Min Hiew'
+                            id = 'Brawl93'
+                            name = 'Simone Baruffa'
                         }
                     }
                     scm {
-                        connection = 'scm:git:https://github.com/mhiew/AndroidPdfViewer'
-                        developerConnection = 'scm:git:ssh:github.com:mhiew/AndroidPdfViewer.git'
-                        url = 'https://github.com/mhiew/AndroidPdfViewer'
+                        connection = 'scm:git:https://github.com/Brawl93/AndroidPdfViewer'
+                        developerConnection = 'scm:git:ssh:github.com:Brawl93/AndroidPdfViewer.git'
+                        url = 'https://github.com/Brawl93/AndroidPdfViewer'
                     }
                 }
             }
