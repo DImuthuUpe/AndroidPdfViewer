@@ -12,8 +12,6 @@ android {
         minSdk rootProject.tools.minSdk
         targetSdk rootProject.tools.targetSdk
 
-        versionCode 1
-        versionName "${rootProject.tools.versionName}"
     }
 
     buildTypes {
@@ -41,7 +39,7 @@ android {
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    api 'com.github.lion1988dev:PdfiumAndroid:1.9.1'
+    api 'com.github.barteksc:pdfium-android:1.9.0'
 }
 
 // Maven Publishing
@@ -50,7 +48,7 @@ publishing {
         release(MavenPublication) {
             groupId = 'com.github.brawl93'
             artifactId = 'com.github.brawl93.pdfviewer'
-            version = "3.2.1"
+            version = "3.3.0"
 
             afterEvaluate {
                 from components.release
