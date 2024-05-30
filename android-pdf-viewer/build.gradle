@@ -37,8 +37,9 @@ android {
 }
 
 dependencies {
-    implementation 'com.android.support:support-compat:28.0.0'
-    api 'com.github.barteksc:pdfium-android:1.9.0'
+    api fileTree(include: ['*.aar'], dir: 'libs')
+
+    implementation 'androidx.core:core:1.3.1'
 }
 
 apply from: 'bintray.gradle'
