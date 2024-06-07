@@ -32,6 +32,9 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.HandlerThread;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.widget.RelativeLayout;
@@ -69,6 +72,7 @@ import com.shockwave.pdfium.util.SizeF;
 
 import java.io.File;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -124,6 +128,9 @@ public class PDFView extends RelativeLayout {
     private DragPinchManager dragPinchManager;
 
     PdfFile pdfFile;
+
+    private PdfViewState restoredState;
+    private boolean hasRestoredFromState;
 
     /** The index of the current sequence */
     private int currentPage;
@@ -264,12 +271,28 @@ public class PDFView extends RelativeLayout {
         setWillNotDraw(false);
     }
 
+    @Nullable
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        SavedState state = new SavedState(super.onSaveInstanceState());
+        if (pdfFile != null) {
+            state.viewState = getCurrentViewState();
+        }
+        return state;
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Parcelable parcelable) {
+        SavedState state = (SavedState) parcelable;
+        restoredState = state.viewState;
+        super.onRestoreInstanceState(state.getSuperState());
+    }
+
     private void load(DocumentSource docSource, String password) {
         load(docSource, password, null);
     }
 
     private void load(DocumentSource docSource, String password, int[] userPages) {
-
         if (!recycled) {
             throw new IllegalStateException("Don't call load on a PDF View without recycling it first.");
         }
@@ -278,6 +301,69 @@ public class PDFView extends RelativeLayout {
         // Start decoding document
         decodingAsyncTask = new DecodingAsyncTask(docSource, password, userPages, this, pdfiumCore);
         decodingAsyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    /**
+     * Gets the current position and zoom state of the view.
+     * This state can be saved or persisted and later restored with {@link #restoreViewState(PdfViewState)}.
+     */
+    public PdfViewState getCurrentViewState() {
+        if (pdfFile == null) {
+            throw new IllegalStateException("Failed to save current view state (no file loaded)");
+        }
+        PdfViewState state = new PdfViewState();
+        state.zoom = getZoom();
+        state.currentPage = getCurrentPage();
+        float centerX = -currentXOffset + (getWidth() / 2f);
+        float centerY = -currentYOffset + (getHeight() / 2f);
+        SizeF pageSize = pdfFile.getScaledPageSize(state.currentPage, state.zoom);
+        if (swipeVertical) {
+            state.pageFocusX = (centerX - pdfFile.getSecondaryPageOffset(state.currentPage, zoom)) / pageSize.getWidth();
+            state.pageFocusY = (centerY - pdfFile.getPageOffset(state.currentPage, zoom)) / pageSize.getHeight();
+        } else {
+            state.pageFocusX = (centerX - pdfFile.getPageOffset(state.currentPage, zoom)) / pageSize.getWidth();
+            state.pageFocusY = (centerY - pdfFile.getSecondaryPageOffset(state.currentPage, zoom)) / pageSize.getHeight();
+        }
+        return state;
+    }
+
+    /**
+     * <p>Restores a view state previously gotten with {@link #getCurrentViewState()} or
+     * {@link #onSaveInstanceState()}. </p>
+     * <p>The view handles restoring state with onSaveInstanceState for configuration changes or
+     * activity destruction, but the host application has to make sure the same pdf is loaded.
+     * This view has no way of knowing if the pdf loaded after restoring is the same as before.
+     * If the pdf content changed or a different pdf is loaded, it may restore to a incorrect position.
+     * To disable the automatic restoration use {@link #setSaveEnabled(boolean)}.</p>
+     * <p>Note: This must be called after a pdf file has been loaded. A good place to call this is
+     * in the {@link OnLoadCompleteListener} callback.</p>
+     * @throws IllegalStateException If pdf file is not loaded
+     */
+    public void restoreViewState(PdfViewState state) {
+        if (pdfFile == null) {
+            throw new IllegalStateException("Pdf file has not been loaded. Call restoreViewState from the loadCompleted callback.");
+        }
+        zoom = state.zoom;
+        int maxPageCount = pdfFile.getPagesCount() - 1;
+        currentPage = Math.min(maxPageCount, state.currentPage);
+
+        SizeF pageSize = pdfFile.getScaledPageSize(currentPage, zoom);
+        float pageX = pageSize.getWidth() * state.pageFocusX;
+        float pageY = pageSize.getHeight() * state.pageFocusY;
+        float mainOffset = pdfFile.getPageOffset(currentPage, zoom);
+        float secondaryOffset = pdfFile.getSecondaryPageOffset(currentPage, zoom);
+        float x, y;
+        if (swipeVertical) {
+            x = secondaryOffset + pageX - (getWidth() / 2f);
+            y = mainOffset + pageY - (getHeight() / 2f);
+        } else {
+            x = mainOffset + pageX - (getWidth() / 2f);
+            y = secondaryOffset + pageY - (getHeight() / 2f);
+        }
+        moveTo(-x, -y);
+        showPage(currentPage);
+        performPageSnap(false);
+        hasRestoredFromState = true;
     }
 
     /**
@@ -766,9 +852,17 @@ public class PDFView extends RelativeLayout {
 
         dragPinchManager.enable();
 
+        hasRestoredFromState = false;
         callbacks.callOnLoadComplete(pdfFile.getPagesCount());
 
-        jumpTo(defaultPage, false);
+        if (!hasRestoredFromState && restoredState != null) {
+            restoreViewState(restoredState);
+            restoredState = null;
+        }
+
+        if (!hasRestoredFromState) {
+            jumpTo(defaultPage, false);
+        }
     }
 
     void loadError(Throwable t) {
@@ -928,6 +1022,13 @@ public class PDFView extends RelativeLayout {
      * Animate to the nearest snapping position for the current SnapPolicy
      */
     public void performPageSnap() {
+        performPageSnap(true);
+    }
+
+    /**
+     * Snap to the nearest snapping position for the current SnapPolicy
+     */
+    public void performPageSnap(boolean animated) {
         if (!pageSnap || pdfFile == null || pdfFile.getPagesCount() == 0) {
             return;
         }
@@ -938,10 +1039,18 @@ public class PDFView extends RelativeLayout {
         }
 
         float offset = snapOffsetForPage(centerPage, edge);
-        if (swipeVertical) {
-            animationManager.startYAnimation(currentYOffset, -offset);
+        if (animated) {
+            if (swipeVertical) {
+                animationManager.startYAnimation(currentYOffset, -offset);
+            } else {
+                animationManager.startXAnimation(currentXOffset, -offset);
+            }
         } else {
-            animationManager.startXAnimation(currentXOffset, -offset);
+            if (swipeVertical) {
+                moveTo(currentXOffset, -offset);
+            } else {
+                moveTo(-offset, currentYOffset);
+            }
         }
     }
 
@@ -1319,6 +1428,7 @@ public class PDFView extends RelativeLayout {
 
     private enum State {DEFAULT, LOADED, SHOWN, ERROR}
 
+    @SuppressWarnings("unused")
     public class Configurator {
 
         private final DocumentSource documentSource;
@@ -1559,5 +1669,91 @@ public class PDFView extends RelativeLayout {
                 PDFView.this.load(documentSource, password);
             }
         }
+    }
+
+    /**
+     * Holds the zoom and position state for PdfView
+     */
+    public static class PdfViewState implements Serializable, Parcelable {
+
+        int currentPage;
+        float zoom = 1f;
+        // relative point of the page (0 to 1) that is in the center of the view
+        float pageFocusX;
+        float pageFocusY;
+
+        public PdfViewState() {
+        }
+
+        private PdfViewState(Parcel in) {
+            currentPage = in.readInt();
+            zoom = in.readFloat();
+            pageFocusX = in.readFloat();
+            pageFocusY = in.readFloat();
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            out.writeInt(currentPage);
+            out.writeFloat(zoom);
+            out.writeFloat(pageFocusX);
+            out.writeFloat(pageFocusY);
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        public static final Parcelable.Creator<PdfViewState> CREATOR =
+                new Parcelable.Creator<PdfViewState>() {
+                    public PdfViewState createFromParcel(Parcel in) {
+                        return new PdfViewState(in);
+                    }
+
+                    public PdfViewState[] newArray(int size) {
+                        return new PdfViewState[size];
+                    }
+                };
+    }
+
+    /**
+     * Wrapper around {@link PdfViewState} to not leak super state in public API.
+     */
+    static class SavedState extends BaseSavedState {
+
+        @Nullable PdfViewState viewState;
+
+        public SavedState(Parcelable superState) {
+            super(superState);
+        }
+
+        private SavedState(Parcel in) {
+            super(in);
+            if (in.readByte() == 1) {
+                viewState = in.readParcelable(getClass().getClassLoader());
+            }
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            super.writeToParcel(out, flags);
+            out.writeByte((byte) (viewState == null ? 0 : 1));
+            if (viewState != null) {
+                out.writeParcelable(viewState, 0);
+            }
+        }
+
+        public static final Parcelable.Creator<SavedState> CREATOR =
+                new Parcelable.Creator<SavedState>() {
+                    public SavedState createFromParcel(Parcel in) {
+                        return new SavedState(in);
+                    }
+
+                    public SavedState[] newArray(int size) {
+                        return new SavedState[size];
+                    }
+                };
+
     }
 }
