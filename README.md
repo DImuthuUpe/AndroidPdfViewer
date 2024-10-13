@@ -1,6 +1,7 @@
 
-# Looking for new maintainer!
+# Change of ownership and looking for contributors!
 
+The ownership of the project was recently changed and we are actively looking for contributors to bring the project back to track. Please [visit](https://github.com/DImuthuUpe/AndroidPdfViewer/issues/1186)
 
 # Android PdfViewer
 
