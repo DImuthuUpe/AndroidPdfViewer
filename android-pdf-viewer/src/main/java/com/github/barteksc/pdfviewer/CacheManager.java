@@ -16,7 +16,7 @@
 package com.github.barteksc.pdfviewer;
 
 import android.graphics.RectF;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import com.github.barteksc.pdfviewer.model.PagePart;
 
