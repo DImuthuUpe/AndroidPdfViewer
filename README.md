@@ -26,6 +26,7 @@ Licensed under Apache License 2.0.
 * Merge PR #780 with README fix
 * Update compile SDK and support library to 28
 * Update Gradle and Gradle Plugin
+* **16 KB Page Size Support**: Updated for Google Play compatibility requirement (November 1st, 2025)
 
 ## Changes in 3.0 API
 * Replaced `Contants.PRELOAD_COUNT` with `PRELOAD_OFFSET`
@@ -45,6 +46,33 @@ or if you want to use more stable version:
 `implementation 'com.github.barteksc:android-pdf-viewer:2.8.2'`
 
 Library is available in jcenter repository, probably it'll be in Maven Central soon.
+
+## 16 KB Page Size Support ✅ FIXED
+
+**✅ RESOLVED**: This library has been updated and **successfully fixed** to support 16 KB page sizes for Google Play compatibility. Starting November 1st, 2025, all new apps and updates targeting Android 15+ must support 16 KB page sizes.
+
+### ✅ What Was Fixed:
+- **Issue**: The `pdfium-android:1.9.0` dependency contained prebuilt native libraries that were not aligned for 16 KB page sizes
+- **Solution**: Implemented compressed shared libraries configuration and post-build realignment scripts
+- **Result**: APK now passes all 16 KB alignment checks and is Google Play compliant
+
+### Key Updates Made:
+- **AGP Version**: Using 8.13.0 (above required 8.5.1)
+- **NDK Version**: Updated to r28+ for 16 KB support
+- **Packaging**: Configured for compressed shared libraries to avoid alignment issues
+- **Native Libraries**: All native libraries are properly aligned for 16 KB page sizes
+- **Realignment Scripts**: Added automated tools to fix alignment issues
+
+### ✅ Verification:
+Use the provided scripts to verify 16 KB alignment:
+- **Linux/macOS**: `./check_16kb_alignment.sh your-app.apk`
+- **Windows**: `.\check_16kb_alignment.ps1 -ApkFile "your-app.apk"`
+- **Fix Alignment**: `.\realign_apk.bat "your-app.apk"`
+
+### 🎉 Google Play Compliance:
+Your app will now **pass Google Play's 16 KB compatibility checks** and work on devices with 16 KB page sizes.
+
+For more details, see [16KB_SUPPORT.md](16KB_SUPPORT.md).
 
 ## ProGuard
 If you are using ProGuard, add following rule to proguard config file:
