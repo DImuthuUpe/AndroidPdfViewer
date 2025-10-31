@@ -28,5 +28,5 @@ subprojects {
 
 // Ensure a root-level publishToMavenLocal exists for JitPack
 tasks.register("publishToMavenLocal") {
-    dependsOn(subprojects.collect { it.tasks.matching { it.name == "publishToMavenLocal" } })
+    dependsOn(":android-pdf-viewer:publishReleasePublicationToMavenLocal")
 }

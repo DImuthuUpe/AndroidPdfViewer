@@ -57,6 +57,11 @@ android {
         abortOnError false
     }
 
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+        }
+    }
 }
 
 dependencies {
@@ -68,10 +73,7 @@ dependencies {
 group = project.findProperty("group") ?: "com.github.xposed73"
 version = project.findProperty("version") ?: "1.0.0"
 
-def androidSourcesJar = tasks.register('androidSourcesJar', Jar) {
-    archiveClassifier.set('sources')
-    from android.sourceSets.main.java.srcDirs
-}
+// sources jar is produced via android.publishing.singleVariant.withSourcesJar()
 
 afterEvaluate {
     publishing {
@@ -81,7 +83,6 @@ afterEvaluate {
                 groupId = project.group
                 artifactId = "AndroidPdfViewer"
                 version = project.version as String
-                artifact androidSourcesJar.get()
                 pom {
                     name = "AndroidPdfViewer"
                     description = "Android view for displaying PDFs rendered with PdfiumAndroid"
