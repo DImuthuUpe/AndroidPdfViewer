@@ -27,14 +27,3 @@ dependencyResolutionManagement {
 ```gradle
 implementation 'com.github.xposed73:AndroidPdfViewer:1.0.0'
 ```
-
-## Publish (quickest: JitPack)
-
-1) Push this project to a public GitHub repo under your account.
-2) Create a release tag (example: `v1.0.0`).
-3) Visit `https://jitpack.io/#xposed73/AndroidPdfViewer` and trigger a build for the tag.
-4) Consumers can then use the dependency shown above.
-
-Notes:
-- If JitPack needs a specific JDK/Gradle, add a `jitpack.yml` with your settings.
-- Keep tags semantic (e.g., `v1.0.1`) to publish updates.
