@@ -25,3 +25,8 @@ subprojects {
         }
     }
 }
+
+// Ensure a root-level publishToMavenLocal exists for JitPack
+tasks.register("publishToMavenLocal") {
+    dependsOn(":android-pdf-viewer:publishReleasePublicationToMavenLocal")
+}

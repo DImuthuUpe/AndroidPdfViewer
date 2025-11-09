@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'maven-publish'
 
 ext {
     bintrayRepo = 'maven'
@@ -13,7 +14,7 @@ ext {
     siteUrl = 'https://github.com/barteksc/AndroidPdfViewer'
     gitUrl = 'https://github.com/barteksc/AndroidPdfViewer.git'
 
-    libraryVersion = '3.2.0-beta.1'
+    libraryVersion = '1.0.0'
 
     developerId = 'barteksc'
     developerName = 'Bartosz Schiller'
@@ -56,10 +57,47 @@ android {
         abortOnError false
     }
 
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+        }
+    }
 }
 
 dependencies {
     implementation 'androidx.core:core:1.17.0'
     api 'io.github.oothp:pdfium-android:1.9.5-beta01'
+}
+
+// Configure Maven publishing for JitPack
+group = project.findProperty("group") ?: "com.github.xposed73"
+version = project.findProperty("version") ?: "1.0.0"
+
+// sources jar is produced via android.publishing.singleVariant.withSourcesJar()
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId = project.group
+                artifactId = "AndroidPdfViewer"
+                version = project.version as String
+                pom {
+                    name = "AndroidPdfViewer"
+                    description = "Android view for displaying PDFs rendered with PdfiumAndroid"
+                    licenses {
+                        license {
+                            name = "The Apache Software License, Version 2.0"
+                            url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                        }
+                    }
+                    scm {
+                        url = "https://github.com/xposed73/AndroidPdfViewer"
+                    }
+                }
+            }
+        }
+    }
 }
 
