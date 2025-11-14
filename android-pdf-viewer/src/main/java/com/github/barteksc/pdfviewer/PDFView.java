@@ -32,8 +32,13 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.HandlerThread;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.view.NestedScrollingChild;
+import android.support.v4.view.NestedScrollingChildHelper;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.View;
 import android.widget.RelativeLayout;
 
 import com.github.barteksc.pdfviewer.exception.PageRenderingException;
@@ -91,7 +96,7 @@ import java.util.List;
  * using {@link #load(DocumentSource, String, int[])}. In this
  * particular case, a userPage of 5 can refer to a documentPage of 17.
  */
-public class PDFView extends RelativeLayout {
+public class PDFView extends RelativeLayout implements NestedScrollingChild {
 
     private static final String TAG = PDFView.class.getSimpleName();
 
@@ -122,6 +127,9 @@ public class PDFView extends RelativeLayout {
 
     /** Drag manager manage all touch events */
     private DragPinchManager dragPinchManager;
+
+    /** Helper for NestedScrolling in CoordinatorLayout */
+    private NestedScrollingChildHelper scrollingChildHelper;
 
     PdfFile pdfFile;
 
@@ -254,6 +262,7 @@ public class PDFView extends RelativeLayout {
         cacheManager = new CacheManager();
         animationManager = new AnimationManager(this);
         dragPinchManager = new DragPinchManager(this, animationManager);
+        scrollingChildHelper = new NestedScrollingChildHelper(this);
         pagesLoader = new PagesLoader(this);
 
         paint = new Paint();
@@ -473,7 +482,14 @@ public class PDFView extends RelativeLayout {
             }
             renderingHandlerThread = null;
         }
+
+        scrollingChildHelper.onDetachedFromWindow();
         super.onDetachedFromWindow();
+    }
+
+    @Override
+    public void onStopNestedScroll(@NonNull View child) {
+        scrollingChildHelper.onStopNestedScroll(child);
     }
 
     @Override
@@ -1315,6 +1331,51 @@ public class PDFView extends RelativeLayout {
     /** Use custom source as pdf source */
     public Configurator fromSource(DocumentSource docSource) {
         return new Configurator(docSource);
+    }
+
+    @Override
+    public void setNestedScrollingEnabled(boolean enabled) {
+        scrollingChildHelper.setNestedScrollingEnabled(enabled);
+    }
+
+    @Override
+    public boolean isNestedScrollingEnabled() {
+        return scrollingChildHelper.isNestedScrollingEnabled();
+    }
+
+    @Override
+    public boolean hasNestedScrollingParent() {
+        return scrollingChildHelper.hasNestedScrollingParent();
+    }
+
+    @Override
+    public boolean startNestedScroll(int axes) {
+        return scrollingChildHelper.startNestedScroll(axes);
+    }
+
+    @Override
+    public void stopNestedScroll() {
+        scrollingChildHelper.stopNestedScroll();
+    }
+
+    @Override
+    public boolean dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, @Nullable int[] offsetInWindow) {
+        return scrollingChildHelper.dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, offsetInWindow);
+    }
+
+    @Override
+    public boolean dispatchNestedPreScroll(int dx, int dy, @Nullable int[] consumed, @Nullable int[] offsetInWindow) {
+        return scrollingChildHelper.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow);
+    }
+
+    @Override
+    public boolean dispatchNestedFling(float velocityX, float velocityY, boolean consumed) {
+        return scrollingChildHelper.dispatchNestedFling(velocityX, velocityY, consumed);
+    }
+
+    @Override
+    public boolean dispatchNestedPreFling(float velocityX, float velocityY) {
+        return scrollingChildHelper.dispatchNestedPreFling(velocityX, velocityY);
     }
 
     private enum State {DEFAULT, LOADED, SHOWN, ERROR}
