@@ -53,6 +53,16 @@ public class Callbacks {
     private OnPageScrollListener onPageScrollListener;
 
     /**
+     * Call back object to call when the view is scrolled
+     */
+    private OnScrollListener onScrollListener;
+
+    /**
+     * Call back object to call when the view is pinched
+     */
+    private OnZoomChangeListener onZoomChangeListener;
+
+    /**
      * Call back object to call when the above layer is to drawn
      */
     private OnDrawListener onDrawListener;
@@ -131,6 +141,26 @@ public class Callbacks {
     public void callOnPageScroll(int currentPage, float offset) {
         if (onPageScrollListener != null) {
             onPageScrollListener.onPageScrolled(currentPage, offset);
+        }
+    }
+
+    public void setOnScroll(OnScrollListener onScrollListener) {
+        this.onScrollListener = onScrollListener;
+    }
+
+    public void callOnScroll(float x, float y) {
+        if (onScrollListener != null) {
+            onScrollListener.onScroll(x, y);
+        }
+    }
+
+    public void setOnZoomChange(OnZoomChangeListener onZoomChangeListener) {
+        this.onZoomChangeListener = onZoomChangeListener;
+    }
+
+    public void callOnZoomChange(float zoom) {
+        if (onZoomChangeListener != null) {
+            onZoomChangeListener.onZoomChanged(zoom);
         }
     }
 
