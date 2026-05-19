@@ -1,5 +1,5 @@
 [versions]
-project = "3.2.4"
+project = "3.2.5"
 android-sdk-min = "21"
 android-sdk-target = "36"
 android-sdk-compile = "36"

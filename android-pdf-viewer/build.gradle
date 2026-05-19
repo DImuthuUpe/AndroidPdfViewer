@@ -4,7 +4,7 @@ plugins {
 }
 
 group "com.github.lion1988dev"
-version = libs.versions.project
+version = libs.versions.project.get()
 
 android {
     namespace "com.github.barteksc.pdfviewer"
