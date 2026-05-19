@@ -1,3 +1,6 @@
+## 3.2.5 (2026-05-19)
+* Update [PdfiumAndroid library](https://github.com/lion1988dev/PdfiumAndroid) to 1.9.5
+
 ## 3.2.4 (2024-03-19)
 * Update [PdfiumAndroid library](https://github.com/lion1988dev/PdfiumAndroid) to 1.9.4
 
