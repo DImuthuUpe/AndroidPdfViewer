@@ -1,0 +1,22 @@
+[versions]
+project = "3.2.4"
+android-sdk-min = "21"
+android-sdk-target = "36"
+android-sdk-compile = "36"
+android-build-tools = "36.1.0"
+android-gradle-plugin = "9.2.1"
+androidannotations = "4.8.0"
+androidx-appcompat = "1.7.1"
+androidx-core = "1.17.0"
+pdfiumandroid = "1.9.5"
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "android-gradle-plugin" }
+android-library = { id = "com.android.library", version.ref = "android-gradle-plugin" }
+
+[libraries]
+androidannotations-api = { module = "org.androidannotations:androidannotations-api", version.ref = "androidannotations" }
+androidannotations-processor = { module = "org.androidannotations:androidannotations", version.ref = "androidannotations" }
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
+androidx-core = { module = "androidx.core:core", version.ref = "androidx-core" }
+pdfiumandroid = { module = "com.github.lion1988dev:PdfiumAndroid", version.ref = "pdfiumandroid" }

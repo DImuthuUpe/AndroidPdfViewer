@@ -1,27 +1,26 @@
 plugins {
-    id 'com.android.library'
+    alias libs.plugins.android.library
     id 'maven-publish'
 }
 
 group "com.github.lion1988dev"
+version = libs.versions.project
 
 android {
     namespace "com.github.barteksc.pdfviewer"
 
-    compileSdk rootProject.tools.compileSdk
+    compileSdk libs.versions.android.sdk.compile.get().toInteger()
+    buildToolsVersion libs.versions.android.build.tools.get()
 
     defaultConfig {
-        minSdk rootProject.tools.minSdk
-        targetSdk rootProject.tools.targetSdk
-
-        versionCode rootProject.tools.versionCode
-        versionName "${rootProject.tools.versionName}"
+        minSdkVersion libs.versions.android.sdk.min.get()
+        targetSdkVersion libs.versions.android.sdk.target.get()
     }
 
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 
@@ -41,16 +40,16 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    api 'com.github.lion1988dev:PdfiumAndroid:1.9.4'
+    implementation libs.androidx.core
+    api libs.pdfiumandroid
 }
 
 publishing {
     publications {
         release(MavenPublication) {
-            groupId = 'com.github.lion1988dev'
+            groupId = project.group
             artifactId = 'AndroidPdfViewer'
-            version = "3.2.4"
+            version = project.version
 
             afterEvaluate {
                 from components.release
